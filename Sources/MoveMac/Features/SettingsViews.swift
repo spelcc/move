@@ -257,7 +257,7 @@ struct SettingsView: View {
             launchAtLogin = LaunchAtLoginService.isEnabled
         } catch {
             launchAtLogin = LaunchAtLoginService.isEnabled
-            launchError = "Lancement automatique indisponible : \(error.localizedDescription)"
+            launchError = String(format: MoveCopy.text("settings.launchError"), error.localizedDescription)
         }
     }
     private func weekdayBinding(_ weekday: Int) -> Binding<Bool> {

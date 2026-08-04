@@ -191,3 +191,5 @@
 "history.completedCount" = "%d terminées";
 "history.skippedCount" = "%d passées";
 "history.round" = "Tour %d";
+"onboarding.notificationsDisabled" = "Les notifications sont désactivées. Tu peux les autoriser dans Réglages Système pour recevoir les rappels.";
+"settings.launchError" = "Lancement automatique indisponible : %@";

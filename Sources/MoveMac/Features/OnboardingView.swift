@@ -83,9 +83,7 @@ struct OnboardingView: View {
         store.persistSettings()
         Task {
             notificationsEnabled = (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
-            if !notificationsEnabled {
-                notificationError = "Les notifications sont désactivées. Tu peux les autoriser dans Réglages Système pour recevoir les rappels."
-            }
+            if !notificationsEnabled { notificationError = MoveCopy.text("onboarding.notificationsDisabled") }
             onTestNotch()
             completed = true
             NotificationCenter.default.post(name: .moveOnboardingCompleted, object: nil)

@@ -180,3 +180,14 @@
 "workouts.new" = "New workout";
 "workouts.editTitle" = "Edit workout";
 "workouts.steps" = "Workout movements";
+"common.edit" = "Edit";
+"common.delete" = "Delete";
+"common.close" = "Close";
+"history.from" = "From";
+"history.to" = "To";
+"history.completedAt" = "Completed %@";
+"history.plannedMinutes" = "Planned: %d min";
+"history.actualMinutes" = "Actual: %d min";
+"history.completedCount" = "%d completed";
+"history.skippedCount" = "%d skipped";
+"history.round" = "Round %d";

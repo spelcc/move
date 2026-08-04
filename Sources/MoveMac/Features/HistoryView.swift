@@ -68,8 +68,8 @@ struct HistoryView: View {
                 .contentShape(Rectangle())
                 .onTapGesture { editing = activity }
                 .contextMenu {
-                    Button("Modifier") { editing = activity }
-                    Button("Supprimer", role: .destructive) { modelContext.delete(activity); try? modelContext.save() }
+                    Button(MoveCopy.text("common.edit")) { editing = activity }
+                    Button(MoveCopy.text("common.delete"), role: .destructive) { modelContext.delete(activity); try? modelContext.save() }
                 }
             }
         }
@@ -78,8 +78,8 @@ struct HistoryView: View {
         .toolbar {
             Picker(MoveCopy.text("history.period"), selection: $period) { ForEach(HistoryPeriod.allCases, id: \.self) { Text(periodLabel($0)).tag($0) } }
             if period == .custom {
-                DatePicker("Du", selection: $customStart, displayedComponents: .date)
-                DatePicker("Au", selection: $customEnd, displayedComponents: .date)
+                DatePicker(MoveCopy.text("history.from"), selection: $customStart, displayedComponents: .date)
+                DatePicker(MoveCopy.text("history.to"), selection: $customEnd, displayedComponents: .date)
             }
             Menu(MoveCopy.text("history.filters"), systemImage: "line.3.horizontal.decrease.circle") {
                 Menu(MoveCopy.text("history.category")) {
@@ -217,25 +217,25 @@ private struct WorkoutSessionDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(session.workoutName).font(.title.bold())
-            Text("Terminée le \(session.updatedAt, style: .date) à \(session.updatedAt, style: .time)")
+            Text(String(format: MoveCopy.text("history.completedAt"), session.updatedAt.formatted(date: .long, time: .short)))
                 .foregroundStyle(.secondary)
             HStack {
-                Label("Prévue : \(session.plannedDurationSeconds / 60) min", systemImage: "calendar")
-                Label("Réelle : \(max(0, Int(session.updatedAt.timeIntervalSince(session.startedAt)) / 60)) min", systemImage: "stopwatch")
+                Label(String(format: MoveCopy.text("history.plannedMinutes"), session.plannedDurationSeconds / 60), systemImage: "calendar")
+                Label(String(format: MoveCopy.text("history.actualMinutes"), max(0, Int(session.updatedAt.timeIntervalSince(session.startedAt)) / 60)), systemImage: "stopwatch")
             }
             HStack {
-                Label("\(sessionResults.filter { $0.statusRaw == ActivityStatus.completed.rawValue }.count) terminées", systemImage: "checkmark")
-                Label("\(sessionResults.filter { $0.statusRaw == ActivityStatus.skipped.rawValue }.count) passées", systemImage: "forward")
+                Label(String(format: MoveCopy.text("history.completedCount"), sessionResults.filter { $0.statusRaw == ActivityStatus.completed.rawValue }.count), systemImage: "checkmark")
+                Label(String(format: MoveCopy.text("history.skippedCount"), sessionResults.filter { $0.statusRaw == ActivityStatus.skipped.rawValue }.count), systemImage: "forward")
             }
             List(sessionResults) { result in
                 HStack {
                     Text(result.statusRaw == ActivityStatus.completed.rawValue ? "✓" : "–")
                     Text(exerciseName(result.exerciseID))
                     Spacer()
-                    Text("Tour \(result.round)").foregroundStyle(.secondary)
+                    Text(String(format: MoveCopy.text("history.round"), result.round)).foregroundStyle(.secondary)
                 }
             }
-            HStack { Spacer(); Button("Fermer") { dismiss() }.buttonStyle(.borderedProminent) }
+            HStack { Spacer(); Button(MoveCopy.text("common.close")) { dismiss() }.buttonStyle(.borderedProminent) }
         }
         .padding()
         .frame(width: 480, height: 420)

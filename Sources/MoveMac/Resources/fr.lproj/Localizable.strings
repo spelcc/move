@@ -180,3 +180,14 @@
 "workouts.new" = "Nouvelle séance";
 "workouts.editTitle" = "Modifier la séance";
 "workouts.steps" = "Mouvements de la séance";
+"common.edit" = "Modifier";
+"common.delete" = "Supprimer";
+"common.close" = "Fermer";
+"history.from" = "Du";
+"history.to" = "Au";
+"history.completedAt" = "Terminée le %@";
+"history.plannedMinutes" = "Prévue : %d min";
+"history.actualMinutes" = "Réelle : %d min";
+"history.completedCount" = "%d terminées";
+"history.skippedCount" = "%d passées";
+"history.round" = "Tour %d";

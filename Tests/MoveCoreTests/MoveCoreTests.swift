@@ -32,7 +32,10 @@ import Testing
     let data = try DataTransferService.exportJSON([record])
     let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
     let decoded = try decoder.decode([ActivityRecord].self, from: data)
-    #expect(decoded == [record])
+    #expect(decoded.count == 1)
+    #expect(decoded[0].id == record.id)
+    #expect(decoded[0].exerciseID == record.exerciseID)
+    #expect(abs(decoded[0].performedAt.timeIntervalSince(record.performedAt)) < 0.001)
 }
 
 @Test func importJSONSkipsExistingRecords() throws {

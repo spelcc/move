@@ -158,11 +158,29 @@ import MoveCore
         guard activeWorkout != nil else { return }
         if workoutState == .paused { beginStep() } else { workoutState = .paused; timer?.invalidate(); saveWorkoutProgress() }
     }
-    func addTenSeconds() { secondsRemaining += 10 }
+    func addTenSeconds() { secondsRemaining += 10; saveWorkoutProgress() }
+    func subtractTenSeconds() { secondsRemaining = max(0, secondsRemaining - 10); saveWorkoutProgress() }
+    func previousWorkoutStep() {
+        guard let workout = activeWorkout else { return }
+        if workoutStepIndex > 0 {
+            workoutStepIndex -= 1
+        } else if workoutRound > 1 {
+            workoutRound -= 1
+            workoutStepIndex = workout.steps.count - 1
+        } else {
+            return
+        }
+        beginStep()
+    }
+    func skipWorkoutStep() { finishWorkoutStep(status: .skipped) }
     func advanceWorkout() {
+        finishWorkoutStep(status: .completed)
+    }
+
+    private func finishWorkoutStep(status: ActivityStatus) {
         guard let workout = activeWorkout else { return }
         let finishedStep = workout.steps[workoutStepIndex]
-        context.insert(ActivityEntity(record: .init(exerciseID: finishedStep.exerciseID, amount: finishedStep.workSeconds, metric: .seconds, status: .completed, source: .customWorkout, workoutID: workout.id)))
+        context.insert(ActivityEntity(record: .init(exerciseID: finishedStep.exerciseID, amount: finishedStep.workSeconds, metric: .seconds, status: status, source: .customWorkout, workoutID: workout.id)))
         try? context.save()
         workoutStepIndex += 1
         if workoutStepIndex >= workout.steps.count { workoutStepIndex = 0; workoutRound += 1 }

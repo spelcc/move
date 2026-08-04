@@ -155,17 +155,32 @@ private struct WorkoutRunnerView: View {
     var body: some View {
         ZStack { Color.black.opacity(0.9).ignoresSafeArea(); VStack(spacing: 22) {
             Text("Tour \(store.workoutRound)/\(workout.rounds)").foregroundStyle(.secondary)
+            ProgressView(value: progress)
+                .tint(.white)
+                .frame(maxWidth: 360)
             Text(exerciseName).font(.largeTitle.bold())
+            Text("Suivant : \(nextExerciseName)").foregroundStyle(.secondary)
             Text("\(store.secondsRemaining)").font(.system(size: 80, weight: .black, design: .rounded)).contentTransition(.numericText())
             HStack {
                 Button(store.workoutState == .paused ? "Reprendre" : "Pause") { store.togglePause() }
+                Button("−10 s") { store.subtractTenSeconds() }
                 Button("+10 s") { store.addTenSeconds() }
+                Button("Précédent") { store.previousWorkoutStep() }
                 Button("Suivant") { store.advanceWorkout() }
+                Button("Passer") { store.skipWorkoutStep() }
                 Button("Arrêter") { store.cancelWorkout() }
             }
         }.foregroundStyle(.white) }
     }
     private var exerciseName: String {
         store.exercise(withID: workout.steps[store.workoutStepIndex].exerciseID)?.name ?? "Mouvement"
+    }
+    private var nextExerciseName: String {
+        let next = (store.workoutStepIndex + 1) % workout.steps.count
+        return store.exercise(withID: workout.steps[next].exerciseID)?.name ?? "Mouvement"
+    }
+    private var progress: Double {
+        let completed = (store.workoutRound - 1) * workout.steps.count + store.workoutStepIndex
+        return Double(completed) / Double(max(1, workout.rounds * workout.steps.count))
     }
 }

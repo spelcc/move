@@ -13,7 +13,7 @@ import MoveCore
     init() {
         ReminderNotificationService.configure()
         UNUserNotificationCenter.current().delegate = notificationDelegate
-        let schema = Schema([ActivityEntity.self, AppSettingsEntity.self, CustomExerciseEntity.self, WorkoutSessionEntity.self, WorkoutTemplateEntity.self])
+        let schema = Schema([ActivityEntity.self, AppSettingsEntity.self, CustomExerciseEntity.self, WorkoutSessionEntity.self, WorkoutTemplateEntity.self, ReminderStateEntity.self])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         let container: ModelContainer
         do {
@@ -30,8 +30,14 @@ import MoveCore
     }
     var body: some Scene {
         MenuBarExtra("Move", systemImage: "figure.run") {
+            if let next = store.reminderState.nextReminderAt { Text("Prochain rappel : \(next, style: .time)") }
             Button("Bouger maintenant") { showNotch() }
             Button("Séance 10 min") { store.start(ExerciseLibrary.quickWorkouts[1]) }
+            Button("Pause 1 heure") { store.pauseReminders(until: .now.addingTimeInterval(3600)) }
+            Button("Pause jusqu’à demain") {
+                let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: .now)) ?? .now.addingTimeInterval(86400)
+                store.pauseReminders(until: tomorrow)
+            }
             Divider()
             SettingsLink { Text("Ouvrir Move") }
             Button("Quitter") { NSApplication.shared.terminate(nil) }

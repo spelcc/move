@@ -9,6 +9,7 @@ import MoveCore
     var isExpanded = false
     var selectedTab = "Aujourd’hui"
     var reminder = ReminderPreferences()
+    var reminderState = ReminderState()
     var movement = MovementPreferences()
     var activeWorkout: WorkoutTemplate?
     var workoutStepIndex = 0
@@ -18,6 +19,7 @@ import MoveCore
     var resumableWorkout: WorkoutSessionEntity?
     private var timer: Timer?
     private let selector = ExerciseSelector()
+    private let scheduler = ReminderScheduler()
     private let context: ModelContext
 
     init(context: ModelContext) {
@@ -26,7 +28,9 @@ import MoveCore
             let values = settings.values(); reminder = values.0; movement = values.1
         }
         resumableWorkout = (try? context.fetch(FetchDescriptor<WorkoutSessionEntity>()))?.first
+        if let savedReminder = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first { reminderState = savedReminder.state }
         chooseNext()
+        scheduleNextReminder()
     }
 
     func persistSettings() {
@@ -37,6 +41,25 @@ import MoveCore
         settings.updatedAt = .now
         if existing == nil { context.insert(settings) }
         try? context.save()
+    }
+
+    func scheduleNextReminder(from now: Date = .now) {
+        guard let next = scheduler.nextDate(now: now, preferences: reminder, state: reminderState) else { return }
+        reminderState.nextReminderAt = next
+        let entity = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first ?? ReminderStateEntity(state: reminderState)
+        entity.nextReminderAt = next; entity.updatedAt = .now
+        if entity.modelContext == nil { context.insert(entity) }
+        reminderState = entity.state
+        try? context.save()
+        Task { try? await ReminderNotificationService.schedule(exercise: currentExercise, at: next) }
+    }
+
+    func pauseReminders(until date: Date) {
+        reminderState.pausedUntil = date; reminderState.nextReminderAt = date
+        let entity = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first ?? ReminderStateEntity(state: reminderState)
+        entity.pausedUntil = date; entity.nextReminderAt = date; entity.updatedAt = .now
+        if entity.modelContext == nil { context.insert(entity) }
+        try? context.save(); ReminderNotificationService.cancelPending(); scheduleNextReminder()
     }
 
     func chooseNext() { currentExercise = selector.next(from: ExerciseLibrary.builtIn, preferences: movement, recentExerciseIDs: []) ?? ExerciseLibrary.builtIn[0]; persistSettings() }

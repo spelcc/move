@@ -269,10 +269,10 @@ private struct AddActivityView: View {
     @State private var status = ActivityStatus.completed
     var body: some View {
         Form {
-            Picker("Mouvement", selection: $exerciseID) { ForEach(allExercises) { Text($0.name).tag($0.id) } }
-            Stepper("Quantité : \(amount)", value: $amount, in: 0...9999)
-            Picker("Statut", selection: $status) { ForEach(ActivityStatus.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
-            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Ajouter") { save() }.buttonStyle(.borderedProminent) }
+            Picker(MoveCopy.text("history.movement"), selection: $exerciseID) { ForEach(allExercises) { Text($0.name).tag($0.id) } }
+            Stepper(String(format: MoveCopy.text("history.amount"), amount), value: $amount, in: 0...9999)
+            Picker(MoveCopy.text("history.status"), selection: $status) { ForEach(ActivityStatus.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
+            HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("history.add")) { save() }.buttonStyle(.borderedProminent) }
         }.padding().frame(width: 400)
     }
     private func save() {
@@ -293,11 +293,11 @@ private struct ActivityEditView: View {
     var body: some View {
         Form {
             Text(activity.exerciseID).font(.headline)
-            Stepper("Quantité : \(activity.amount)", value: $activity.amount, in: 0...9999)
-            Picker("Statut", selection: $activity.statusRaw) {
+            Stepper(String(format: MoveCopy.text("history.amount"), activity.amount), value: $activity.amount, in: 0...9999)
+            Picker(MoveCopy.text("history.status"), selection: $activity.statusRaw) {
                 ForEach(ActivityStatus.allCases, id: \.rawValue) { status in Text(status.rawValue).tag(status.rawValue) }
             }
-            Button("Terminer") { activity.updatedAt = .now; try? modelContext.save(); dismiss() }.buttonStyle(.borderedProminent)
+            Button(MoveCopy.text("common.done")) { activity.updatedAt = .now; try? modelContext.save(); dismiss() }.buttonStyle(.borderedProminent)
         }.padding().frame(width: 320)
         .onChange(of: activity.amount) { _, _ in activity.updatedAt = .now }
         .onChange(of: activity.statusRaw) { _, _ in activity.updatedAt = .now }

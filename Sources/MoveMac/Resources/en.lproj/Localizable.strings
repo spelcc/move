@@ -191,6 +191,8 @@
 "history.completedCount" = "%d completed";
 "history.skippedCount" = "%d skipped";
 "history.round" = "Round %d";
+"history.movement" = "Movement";
+"history.amount" = "Amount: %d";
 "onboarding.notificationsDisabled" = "Notifications are disabled. You can enable them in System Settings to receive reminders.";
 "settings.launchError" = "Launch at login unavailable: %@";
 "exercise.noneActive" = "No active movements";

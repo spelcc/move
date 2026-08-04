@@ -10,6 +10,7 @@ struct DashboardView: View {
             List(selection: $store.selectedTab) {
                 Label("Aujourd’hui", systemImage: "figure.run").tag("Aujourd’hui")
                 Label("Historique", systemImage: "clock").tag("Historique")
+                Label("Progression", systemImage: "chart.bar").tag("Progression")
                 Label("Séances", systemImage: "timer").tag("Séances")
                 Label("Mouvements", systemImage: "list.bullet").tag("Mouvements")
                 Label("Réglages", systemImage: "gear").tag("Réglages")
@@ -17,6 +18,7 @@ struct DashboardView: View {
         } detail: {
             switch store.selectedTab {
             case "Historique": HistoryView()
+            case "Progression": MoveProgressView()
             case "Séances": WorkoutLibraryView(store: store)
             case "Mouvements": MovementSettingsView(store: store)
             case "Réglages": SettingsView(store: store)

@@ -33,10 +33,12 @@ import MoveCore
         guard let category = ExerciseCategory(rawValue: categoryRaw),
               let metric = ExerciseMetric(rawValue: metricRaw) else { return nil }
         let difficulty = tags.compactMap { $0.hasPrefix("difficulty-") ? Int(String($0.dropFirst("difficulty-".count))) : nil }.first ?? 1
+        let easierVariantID = tags.first(where: { $0.hasPrefix("easier-") }).map { String($0.dropFirst("easier-".count)) }
+        let harderVariantID = tags.first(where: { $0.hasPrefix("harder-") }).map { String($0.dropFirst("harder-".count)) }
         return Exercise(id: id, name: name, category: category, metric: metric,
                         defaultAmount: max(0, defaultAmount), difficulty: min(3, max(1, difficulty)), equipment: equipment,
                         tags: tags.union(muscleZones.map { "zone-\($0)" }).union(["personnalisé"]),
-                        emoji: emoji)
+                        emoji: emoji, easierVariantID: easierVariantID, harderVariantID: harderVariantID)
     }
 
     var equipment: Set<String> { Set(equipmentRaw.split(separator: ",").map(String.init)) }

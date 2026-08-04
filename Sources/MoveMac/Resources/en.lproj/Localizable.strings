@@ -221,6 +221,9 @@
 "workout.copyName" = "%@ (copy)";
 "runner.stopWorkout" = "Stop workout";
 "exercise.defaultName" = "Movement";
+"exercise.variants" = "Variants";
+"exercise.easierVariantID" = "Easier variant ID";
+"exercise.harderVariantID" = "Harder variant ID";
 "exercise.muscleZones" = "Muscle zones";
 "constraint.floor" = "On the floor";
 "constraint.jump" = "Includes jumps";

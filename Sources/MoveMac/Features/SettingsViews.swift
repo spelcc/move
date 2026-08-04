@@ -127,6 +127,8 @@ private struct NewExerciseView: View {
     @State private var difficulty = 1
     @State private var metric = ExerciseMetric.repetitions
     @State private var instructions = ""
+    @State private var easierVariantID = ""
+    @State private var harderVariantID = ""
     @State private var equipment: Set<String> = []
     @State private var tags: Set<String> = []
     @State private var muscleZones: Set<String> = []
@@ -173,7 +175,11 @@ private struct NewExerciseView: View {
                 Toggle(MoveCopy.text("zone.hips"), isOn: setBinding("hips", in: $muscleZones))
             }
             TextField(MoveCopy.text("exercise.instructionsOptional"), text: $instructions, axis: .vertical)
-            HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("common.create")) { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags.union(["difficulty-\(difficulty)"]), muscleZones: muscleZones)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
+            Section(MoveCopy.text("exercise.variants")) {
+                TextField(MoveCopy.text("exercise.easierVariantID"), text: $easierVariantID)
+                TextField(MoveCopy.text("exercise.harderVariantID"), text: $harderVariantID)
+            }
+            HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("common.create")) { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags.union(["difficulty-\(difficulty)", easierVariantID.isEmpty ? "" : "easier-\(easierVariantID)", harderVariantID.isEmpty ? "" : "harder-\(harderVariantID)"]), muscleZones: muscleZones)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
         }.padding().frame(width: 420, height: 700)
     }
 
@@ -238,6 +244,10 @@ private struct EditExerciseView: View {
                 Toggle(MoveCopy.text("zone.hips"), isOn: zoneBinding("hips"))
             }
             TextField(MoveCopy.text("exercise.instructions"), text: $exercise.instructions, axis: .vertical)
+            Section(MoveCopy.text("exercise.variants")) {
+                TextField(MoveCopy.text("exercise.easierVariantID"), text: variantBinding(prefix: "easier-"))
+                TextField(MoveCopy.text("exercise.harderVariantID"), text: variantBinding(prefix: "harder-"))
+            }
             Button(MoveCopy.text("common.done")) { exercise.updatedAt = .now; dismiss() }.buttonStyle(.borderedProminent)
         }.padding().frame(width: 380, height: 740)
     }
@@ -274,6 +284,18 @@ private struct EditExerciseView: View {
             var zones = exercise.muscleZones
             if enabled { zones.insert(zone) } else { zones.remove(zone) }
             exercise.muscleZonesRaw = zones.sorted().joined(separator: ",")
+            exercise.updatedAt = .now
+        })
+    }
+
+    private func variantBinding(prefix: String) -> Binding<String> {
+        Binding(get: {
+            exercise.tags.first(where: { $0.hasPrefix(prefix) }).map { String($0.dropFirst(prefix.count)) } ?? ""
+        }, set: { value in
+            var tags = exercise.tags.filter { !$0.hasPrefix(prefix) }
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty { tags.insert(prefix + trimmed) }
+            exercise.tagsRaw = tags.sorted().joined(separator: ",")
             exercise.updatedAt = .now
         })
     }

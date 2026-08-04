@@ -50,7 +50,7 @@ struct MovementSettingsView: View {
     }
     private func archive(_ exercise: CustomExerciseEntity) { exercise.archived = true; exercise.updatedAt = .now; try? modelContext.save() }
     private func duplicate(_ exercise: CustomExerciseEntity) {
-        modelContext.insert(CustomExerciseEntity(name: "\(exercise.name) (copie)", emoji: exercise.emoji, category: ExerciseCategory(rawValue: exercise.categoryRaw) ?? .strength, metric: ExerciseMetric(rawValue: exercise.metricRaw) ?? .repetitions, defaultAmount: exercise.defaultAmount, instructions: exercise.instructions))
+        modelContext.insert(CustomExerciseEntity(name: "\(exercise.name) (copie)", emoji: exercise.emoji, category: ExerciseCategory(rawValue: exercise.categoryRaw) ?? .strength, metric: ExerciseMetric(rawValue: exercise.metricRaw) ?? .repetitions, defaultAmount: exercise.defaultAmount, instructions: exercise.instructions, equipment: exercise.equipment, tags: exercise.tags.subtracting(["personnalisé"])))
         try? modelContext.save()
     }
 }
@@ -63,6 +63,8 @@ private struct NewExerciseView: View {
     @State private var category = ExerciseCategory.strength
     @State private var metric = ExerciseMetric.repetitions
     @State private var instructions = ""
+    @State private var equipment: Set<String> = []
+    @State private var tags: Set<String> = []
     let onSave: (CustomExerciseEntity) -> Void
     var body: some View {
         Form {
@@ -71,9 +73,27 @@ private struct NewExerciseView: View {
             Picker("Catégorie", selection: $category) { ForEach(ExerciseCategory.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
             Picker("Mesure", selection: $metric) { Text("Répétitions").tag(ExerciseMetric.repetitions); Text("Secondes").tag(ExerciseMetric.seconds); Text("Minutes").tag(ExerciseMetric.minutes); Text("Libre").tag(ExerciseMetric.free) }
             Stepper("Quantité par défaut : \(amount)", value: $amount, in: 1...999)
+            Section("Matériel") {
+                Toggle("Chaise", isOn: setBinding("chair", in: $equipment))
+                Toggle("Barre de traction", isOn: setBinding("pullup-bar", in: $equipment))
+                Toggle("Élastique", isOn: setBinding("band", in: $equipment))
+                Toggle("Haltères", isOn: setBinding("dumbbells", in: $equipment))
+            }
+            Section("Contraintes") {
+                Toggle("Au sol", isOn: setBinding("floor", in: $tags))
+                Toggle("Avec sauts", isOn: setBinding("jump", in: $tags))
+                Toggle("Sollicite les poignets", isOn: setBinding("wrists", in: $tags))
+                Toggle("Bruyant", isOn: setBinding("noisy", in: $tags))
+            }
             TextField("Consigne (optionnel)", text: $instructions, axis: .vertical)
-            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Créer") { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
-        }.padding().frame(width: 400, height: 380)
+            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Créer") { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
+        }.padding().frame(width: 420, height: 620)
+    }
+
+    private func setBinding(_ value: String, in set: Binding<Set<String>>) -> Binding<Bool> {
+        Binding(get: { set.wrappedValue.contains(value) }, set: { enabled in
+            if enabled { set.wrappedValue.insert(value) } else { set.wrappedValue.remove(value) }
+        })
     }
 }
 
@@ -85,9 +105,24 @@ private struct EditExerciseView: View {
             TextField("Nom", text: $exercise.name)
             TextField("Emoji", text: $exercise.emoji)
             Stepper("Quantité par défaut : \(exercise.defaultAmount)", value: $exercise.defaultAmount, in: 1...999)
+            Section("Contraintes") {
+                Toggle("Au sol", isOn: tagBinding("floor"))
+                Toggle("Avec sauts", isOn: tagBinding("jump"))
+                Toggle("Sollicite les poignets", isOn: tagBinding("wrists"))
+                Toggle("Bruyant", isOn: tagBinding("noisy"))
+            }
             TextField("Consigne", text: $exercise.instructions, axis: .vertical)
             Button("Terminer") { exercise.updatedAt = .now; dismiss() }.buttonStyle(.borderedProminent)
-        }.padding().frame(width: 380, height: 300)
+        }.padding().frame(width: 380, height: 430)
+    }
+
+    private func tagBinding(_ tag: String) -> Binding<Bool> {
+        Binding(get: { exercise.tags.contains(tag) }, set: { enabled in
+            var tags = exercise.tags
+            if enabled { tags.insert(tag) } else { tags.remove(tag) }
+            exercise.tagsRaw = tags.sorted().joined(separator: ",")
+            exercise.updatedAt = .now
+        })
     }
 }
 

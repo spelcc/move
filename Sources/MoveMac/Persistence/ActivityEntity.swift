@@ -17,4 +17,9 @@ import MoveCore
     var record: ActivityRecord {
         .init(id: id, exerciseID: exerciseID, performedAt: performedAt, amount: amount, metric: ExerciseMetric(rawValue: metricRaw) ?? .free, status: ActivityStatus(rawValue: statusRaw) ?? .completed, source: ActivitySource(rawValue: sourceRaw) ?? .hourly)
     }
+
+    func update(amount: Int, status: ActivityStatus? = nil) {
+        self.amount = max(0, amount)
+        if let status { statusRaw = status.rawValue }
+    }
 }

@@ -5,7 +5,7 @@ public enum ExerciseMetric: String, Codable, Sendable { case repetitions, second
 public enum WorkoutMode: String, Codable, CaseIterable, Sendable { case interval, repetitions, circuit, emom, free }
 public enum WorkoutRunnerState: String, Codable, Sendable { case preparing, working, resting, roundRest, paused, completed, cancelled }
 public enum ActivityStatus: String, Codable, Sendable { case proposed, completed, skipped, snoozed, replaced }
-public enum ActivitySource: String, Codable, Sendable { case hourly, quickWorkout, customWorkout, freeMovement }
+public enum ActivitySource: String, Codable, Sendable { case hourly, quickWorkout, customWorkout, freeMovement, manual }
 
 public struct Exercise: Identifiable, Codable, Hashable, Sendable {
     public let id: String

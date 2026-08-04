@@ -50,14 +50,17 @@ import MoveCore
     }
 
     func scheduleNextReminder(from now: Date = .now) {
-        guard let next = scheduler.nextDate(now: now, preferences: reminder, state: reminderState) else { return }
+        guard let next = scheduler.nextDate(now: now, preferences: reminder, state: reminderState) else { MoveLogger.scheduler.warning("No compatible reminder date") ; return }
         reminderState.nextReminderAt = next
         let entity = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first ?? ReminderStateEntity(state: reminderState)
         entity.nextReminderAt = next; entity.updatedAt = .now
         if entity.modelContext == nil { context.insert(entity) }
         reminderState = entity.state
         try? context.save()
-        Task { try? await ReminderNotificationService.schedule(exercise: currentExercise, at: next) }
+        Task {
+            do { try await ReminderNotificationService.schedule(exercise: currentExercise, at: next); MoveLogger.notifications.debug("Reminder scheduled") }
+            catch { MoveLogger.notifications.error("Reminder scheduling failed: \(String(describing: error), privacy: .public)") }
+        }
     }
 
     func pauseReminders(until date: Date) {

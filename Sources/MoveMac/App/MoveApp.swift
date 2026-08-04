@@ -58,7 +58,7 @@ import MoveCore
             SettingsLink { Text("Ouvrir Move") }
             Button("Quitter") { NSApplication.shared.terminate(nil) }
         }
-        .task {
+        .onAppear {
             guard !onboardingCompleted else { return }
             openWindow(id: "onboarding")
         }

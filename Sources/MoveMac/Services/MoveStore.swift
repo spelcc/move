@@ -15,6 +15,7 @@ import MoveCore
     var noCompatibleExercises = false
     var appearance = AppearancePreferences()
     var activeWorkout: WorkoutTemplate?
+    var completedWorkout: WorkoutTemplate?
     private var recentExerciseIDs: [String] = []
     var workoutStepIndex = 0
     var workoutRound = 1
@@ -196,6 +197,7 @@ import MoveCore
     }
     func start(_ workout: WorkoutTemplate) {
         guard workout.validationError == nil else { return }
+        completedWorkout = nil
         activeWorkout = workout; workoutStepIndex = 0; workoutRound = 1; workoutState = .preparing; beginStep(); saveWorkoutProgress()
     }
 
@@ -278,11 +280,20 @@ import MoveCore
         try? context.save()
         workoutStepIndex += 1
         if workoutStepIndex >= workout.steps.count { workoutStepIndex = 0; workoutRound += 1 }
-        if workoutRound > workout.rounds { timer?.invalidate(); workoutState = .completed; activeWorkout = nil; clearWorkoutProgress(); return }
+        if workoutRound > workout.rounds {
+            timer?.invalidate()
+            workoutState = .completed
+            completedWorkout = workout
+            activeWorkout = nil
+            clearWorkoutProgress()
+            return
+        }
         beginStep()
     }
 
-    func cancelWorkout() { timer?.invalidate(); workoutState = .cancelled; activeWorkout = nil; clearWorkoutProgress() }
+    func cancelWorkout() { timer?.invalidate(); workoutState = .cancelled; activeWorkout = nil; completedWorkout = nil; clearWorkoutProgress() }
+
+    func dismissCompletion() { completedWorkout = nil }
 
     private func saveWorkoutProgress() {
         guard let workout = activeWorkout else { return }

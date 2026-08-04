@@ -35,7 +35,13 @@ struct WorkoutLibraryView: View {
             }
             }
         }.padding(28) }
-        .overlay { if let workout = store.activeWorkout { WorkoutRunnerView(store: store, workout: workout) } }
+        .overlay {
+            if let workout = store.activeWorkout {
+                WorkoutRunnerView(store: store, workout: workout)
+            } else if let workout = store.completedWorkout {
+                WorkoutCompletionView(workout: workout) { store.dismissCompletion() }
+            }
+        }
         .sheet(isPresented: $showingEditor) { WorkoutEditorView { template in
             modelContext.insert(WorkoutTemplateEntity(template: template)); try? modelContext.save()
         } }
@@ -100,6 +106,27 @@ private struct WorkoutRenameView: View {
         }
         .padding()
         .frame(width: 360)
+    }
+}
+
+private struct WorkoutCompletionView: View {
+    let workout: WorkoutTemplate
+    let onClose: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.92).ignoresSafeArea()
+            VStack(spacing: 18) {
+                Image(systemName: "checkmark.circle.fill").font(.system(size: 64)).foregroundStyle(.green)
+                Text("Séance terminée").font(.largeTitle.bold())
+                Text(workout.name).font(.title2)
+                HStack(spacing: 20) {
+                    Label("\(workout.rounds) tours", systemImage: "repeat")
+                    Label("\(workout.estimatedDuration / 60) min", systemImage: "clock")
+                }.foregroundStyle(.secondary)
+                Button("Terminer") { onClose() }.buttonStyle(.borderedProminent)
+            }.foregroundStyle(.white)
+        }
     }
 }
 

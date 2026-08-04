@@ -5,7 +5,7 @@ final class MoveUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
-        app = XCUIApplication()
+        app = XCUIApplication(bundleIdentifier: "cc.spel.move")
         app.launchArguments = ["--ui-testing"]
         app.launch()
     }

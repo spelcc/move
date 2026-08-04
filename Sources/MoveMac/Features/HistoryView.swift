@@ -20,9 +20,11 @@ struct HistoryView: View {
     @State private var period = HistoryPeriod.all
     @State private var sourceFilter: ActivitySource?
     @State private var statusFilter: ActivityStatus?
+    @State private var customStart = Calendar.current.date(byAdding: .day, value: -7, to: .now) ?? .now
+    @State private var customEnd = Date.now
 
     private enum HistoryPeriod: String, CaseIterable {
-        case today = "Aujourd’hui", week = "Semaine", month = "Mois", all = "Tout"
+        case today = "Aujourd’hui", week = "Semaine", month = "Mois", custom = "Personnalisée", all = "Tout"
     }
 
     var body: some View {
@@ -54,6 +56,10 @@ struct HistoryView: View {
         .navigationTitle("Historique")
         .toolbar {
             Picker("Période", selection: $period) { ForEach(HistoryPeriod.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
+            if period == .custom {
+                DatePicker("Du", selection: $customStart, displayedComponents: .date)
+                DatePicker("Au", selection: $customEnd, displayedComponents: .date)
+            }
             Menu("Filtres", systemImage: "line.3.horizontal.decrease.circle") {
                 Menu("Source") {
                     Button("Toutes") { sourceFilter = nil }
@@ -103,10 +109,12 @@ struct HistoryView: View {
         case .today: start = calendar.startOfDay(for: now)
         case .week: start = calendar.date(byAdding: .day, value: -7, to: now)
         case .month: start = calendar.date(byAdding: .month, value: -1, to: now)
+        case .custom: start = calendar.startOfDay(for: customStart)
         case .all: start = nil
         }
+        let end = period == .custom ? calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: customEnd)) ?? customEnd : now
         return activities.filter { activity in
-            (start == nil || activity.performedAt >= start!) &&
+            (start == nil || (activity.performedAt >= start! && activity.performedAt < end)) &&
             (search.isEmpty || activity.exerciseID.localizedStandardContains(search)) &&
             (sourceFilter == nil || ActivitySource(rawValue: activity.sourceRaw) == sourceFilter) &&
             (statusFilter == nil || ActivityStatus(rawValue: activity.statusRaw) == statusFilter)

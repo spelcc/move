@@ -152,6 +152,9 @@ import MoveCore
     func addTenSeconds() { secondsRemaining += 10 }
     func advanceWorkout() {
         guard let workout = activeWorkout else { return }
+        let finishedStep = workout.steps[workoutStepIndex]
+        context.insert(ActivityEntity(record: .init(exerciseID: finishedStep.exerciseID, amount: finishedStep.workSeconds, metric: .seconds, status: .completed, source: .customWorkout, workoutID: workout.id)))
+        try? context.save()
         workoutStepIndex += 1
         if workoutStepIndex >= workout.steps.count { workoutStepIndex = 0; workoutRound += 1 }
         if workoutRound > workout.rounds { timer?.invalidate(); workoutState = .completed; activeWorkout = nil; clearWorkoutProgress(); return }

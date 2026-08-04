@@ -9,6 +9,7 @@ public enum ActivitySource: String, Codable, Sendable { case hourly, quickWorkou
 public enum HumorMode: String, Codable, CaseIterable, Sendable { case normal, discreet, disabled }
 public enum AnimationMode: String, Codable, CaseIterable, Sendable { case full, reduced, disabled }
 public enum SoundMode: String, Codable, CaseIterable, Sendable { case off, discreet, normal }
+public enum ReminderScreenTarget: String, Codable, CaseIterable, Sendable { case main, active, macBook }
 
 public struct Exercise: Identifiable, Codable, Hashable, Sendable {
     public let id: String
@@ -63,6 +64,7 @@ public struct AppearancePreferences: Codable, Equatable, Sendable {
     public var emojisEnabled = true
     public var animations: AnimationMode = .full
     public var sounds: SoundMode = .off
+    public var screenTarget: ReminderScreenTarget = .main
     public init() {}
 }
 

@@ -103,6 +103,11 @@ struct SettingsView: View {
             Section("Rappels") { Stepper("Toutes les \(store.reminder.intervalMinutes) minutes", value: $store.reminder.intervalMinutes, in: 15...180, step: 15); Stepper("Début à \(store.reminder.activeStartHour) h", value: $store.reminder.activeStartHour, in: 0...23); Stepper("Fin à \(store.reminder.activeEndHour) h", value: $store.reminder.activeEndHour, in: 1...24) }
             Section("Contraintes") { Toggle("Sans sauts", isOn: tagBinding("jump")); Toggle("Silencieux", isOn: tagBinding("noisy")); Toggle("Éviter le sol", isOn: tagBinding("floor")); Toggle("Éviter les poignets", isOn: tagBinding("wrists")); Toggle("Barre de traction disponible", isOn: equipmentBinding("pullup-bar")) }
             Section("Apparence et ambiance") {
+                Picker("Afficher les rappels sur", selection: $store.appearance.screenTarget) {
+                    Text("Écran principal").tag(ReminderScreenTarget.main)
+                    Text("Écran actif").tag(ReminderScreenTarget.active)
+                    Text("Écran du MacBook").tag(ReminderScreenTarget.macBook)
+                }
                 Picker("Humour", selection: $store.appearance.humor) {
                     Text("Normal").tag(HumorMode.normal)
                     Text("Discret").tag(HumorMode.discreet)

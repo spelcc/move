@@ -240,18 +240,21 @@ private struct WorkoutRunnerView: View {
                 .frame(maxWidth: 360)
             Text(store.workoutState == .resting ? "Repos" : exerciseName).font(.largeTitle.bold())
             Text(store.workoutState == .resting ? "Prochain : \(nextExerciseName)" : "Suivant : \(nextExerciseName)").foregroundStyle(.secondary)
-            Text("\(store.secondsRemaining)").font(.system(size: 80, weight: .black, design: .rounded)).contentTransition(.numericText())
+            Text(store.workout.mode == .repetitions ? "\(store.secondsRemaining) reps" : "\(store.secondsRemaining)")
+                .font(.system(size: 80, weight: .black, design: .rounded)).contentTransition(.numericText())
             HStack {
                 Button(store.workoutState == .paused ? "Reprendre" : "Pause") { store.togglePause() }
                     .keyboardShortcut(.space, modifiers: [])
                     .accessibilityLabel(store.workoutState == .paused ? "Reprendre la séance" : "Mettre la séance en pause")
-                Button("−10 s") { store.subtractTenSeconds() }
-                    .accessibilityLabel("Retirer dix secondes")
-                Button("+10 s") { store.addTenSeconds() }
-                    .accessibilityLabel("Ajouter dix secondes")
+                if workout.mode != .repetitions {
+                    Button("−10 s") { store.subtractTenSeconds() }
+                        .accessibilityLabel("Retirer dix secondes")
+                    Button("+10 s") { store.addTenSeconds() }
+                        .accessibilityLabel("Ajouter dix secondes")
+                }
                 Button("Précédent") { store.previousWorkoutStep() }
                     .keyboardShortcut(.leftArrow, modifiers: [])
-                Button("Suivant") { store.advanceWorkout() }
+                Button(workout.mode == .repetitions ? "Fait" : "Suivant") { store.advanceWorkout() }
                     .keyboardShortcut(.rightArrow, modifiers: [])
                 if store.workoutState == .resting {
                     Button("Passer le repos") { store.advanceWorkout() }

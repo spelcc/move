@@ -223,6 +223,7 @@ import MoveCore
         guard let workout = activeWorkout else { return }
         switch workoutState {
         case .working:
+            if workout.mode == .repetitions { return }
             if secondsRemaining > 0 {
                 secondsRemaining -= 1
                 saveWorkoutProgress()

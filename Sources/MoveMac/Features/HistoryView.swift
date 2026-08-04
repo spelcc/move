@@ -13,13 +13,27 @@ struct HistoryView: View {
     @State private var importing = false
     @State private var importError: String?
     @State private var search = ""
+    @State private var period = HistoryPeriod.all
+
+    private enum HistoryPeriod: String, CaseIterable {
+        case today = "Aujourd’hui", week = "Semaine", month = "Mois", all = "Tout"
+    }
 
     var body: some View {
         List {
-            ForEach(activities.filter { search.isEmpty || $0.exerciseID.localizedStandardContains(search) }) { activity in
+            ForEach(filteredActivities) { activity in
                 HStack {
                     Text(activity.statusRaw == ActivityStatus.completed.rawValue ? "✓" : "–")
-                    VStack(alignment: .leading) { Text(activity.exerciseID); Text(activity.performedAt, style: .date).font(.caption).foregroundStyle(.secondary) }
+                    VStack(alignment: .leading) {
+                        Text(activity.exerciseID)
+                        HStack(spacing: 4) {
+                            Text(sourceLabel(activity.sourceRaw))
+                            Text("•")
+                            Text(activity.performedAt, style: .date)
+                            Text("à")
+                            Text(activity.performedAt, style: .time)
+                        }.font(.caption).foregroundStyle(.secondary)
+                    }
                     Spacer(); Text("\(activity.amount)").monospacedDigit(); Text(activity.metricRaw).foregroundStyle(.secondary)
                 }
                 .contentShape(Rectangle())
@@ -33,6 +47,7 @@ struct HistoryView: View {
         .searchable(text: $search, prompt: "Rechercher dans l’historique")
         .navigationTitle("Historique")
         .toolbar {
+            Picker("Période", selection: $period) { ForEach(HistoryPeriod.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
             Button("Ajouter", systemImage: "plus") { adding = true }
             Menu("Exporter", systemImage: "square.and.arrow.up") {
                 Button("JSON") { exportingJSON = true }
@@ -40,7 +55,7 @@ struct HistoryView: View {
             }
             Button("Importer", systemImage: "square.and.arrow.down") { importing = true }
         }
-        .overlay { if activities.isEmpty { ContentUnavailableView("Rien pour le moment", systemImage: "clock") } }
+        .overlay { if filteredActivities.isEmpty { ContentUnavailableView("Rien pour le moment", systemImage: "clock") } }
         .sheet(item: $editing) { ActivityEditView(activity: $0) }
         .sheet(isPresented: $adding) { AddActivityView() }
         .fileExporter(isPresented: $exportingJSON, document: ActivityExportDocument(data: jsonData), contentType: .json, defaultFilename: "move-activities.json") { _ in }
@@ -53,6 +68,33 @@ struct HistoryView: View {
 
     private var jsonData: Data { (try? DataTransferService.exportJSON(activities.map(\.record))) ?? Data() }
     private var csvData: Data { Data(DataTransferService.exportCSV(activities.map(\.record)).utf8) }
+
+    private var filteredActivities: [ActivityEntity] {
+        let calendar = Calendar.current
+        let now = Date()
+        let start: Date?
+        switch period {
+        case .today: start = calendar.startOfDay(for: now)
+        case .week: start = calendar.date(byAdding: .day, value: -7, to: now)
+        case .month: start = calendar.date(byAdding: .month, value: -1, to: now)
+        case .all: start = nil
+        }
+        return activities.filter { activity in
+            (start == nil || activity.performedAt >= start!) &&
+            (search.isEmpty || activity.exerciseID.localizedStandardContains(search))
+        }
+    }
+
+    private func sourceLabel(_ rawValue: String) -> String {
+        switch ActivitySource(rawValue: rawValue) {
+        case .hourly: "Rappel"
+        case .quickWorkout: "Séance rapide"
+        case .customWorkout: "Séance personnalisée"
+        case .freeMovement: "Mouvement libre"
+        case .manual: "Ajout manuel"
+        case .none: "Inconnu"
+        }
+    }
 
     private func importJSON(_ result: Result<[URL], Error>) {
         do {

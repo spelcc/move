@@ -156,16 +156,22 @@ private struct NewExerciseView: View {
                 Toggle("Bruyant", isOn: setBinding("noisy", in: $tags))
             }
             Section("Zones musculaires") {
+                Toggle(MoveCopy.text("zone.fullBody"), isOn: setBinding("fullBody", in: $muscleZones))
+                Toggle(MoveCopy.text("zone.chest"), isOn: setBinding("chest", in: $muscleZones))
                 Toggle("Jambes", isOn: setBinding("legs", in: $muscleZones))
                 Toggle("Fessiers", isOn: setBinding("glutes", in: $muscleZones))
                 Toggle("Dos", isOn: setBinding("back", in: $muscleZones))
                 Toggle("Épaules", isOn: setBinding("shoulders", in: $muscleZones))
                 Toggle("Bras", isOn: setBinding("arms", in: $muscleZones))
                 Toggle("Centre du corps", isOn: setBinding("core", in: $muscleZones))
+                Toggle(MoveCopy.text("zone.calves"), isOn: setBinding("calves", in: $muscleZones))
+                Toggle(MoveCopy.text("zone.neck"), isOn: setBinding("neck", in: $muscleZones))
+                Toggle(MoveCopy.text("zone.wrists"), isOn: setBinding("wrists", in: $muscleZones))
+                Toggle(MoveCopy.text("zone.hips"), isOn: setBinding("hips", in: $muscleZones))
             }
             TextField(MoveCopy.text("exercise.instructionsOptional"), text: $instructions, axis: .vertical)
             HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("common.create")) { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags.union(["difficulty-\(difficulty)"]), muscleZones: muscleZones)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
-        }.padding().frame(width: 420, height: 620)
+        }.padding().frame(width: 420, height: 700)
     }
 
     private func setBinding(_ value: String, in set: Binding<Set<String>>) -> Binding<Bool> {
@@ -212,16 +218,22 @@ private struct EditExerciseView: View {
                 Toggle("Bruyant", isOn: tagBinding("noisy"))
             }
             Section("Zones musculaires") {
+                Toggle(MoveCopy.text("zone.fullBody"), isOn: zoneBinding("fullBody"))
+                Toggle(MoveCopy.text("zone.chest"), isOn: zoneBinding("chest"))
                 Toggle("Jambes", isOn: zoneBinding("legs"))
                 Toggle("Fessiers", isOn: zoneBinding("glutes"))
                 Toggle("Dos", isOn: zoneBinding("back"))
                 Toggle("Épaules", isOn: zoneBinding("shoulders"))
                 Toggle("Bras", isOn: zoneBinding("arms"))
                 Toggle("Centre du corps", isOn: zoneBinding("core"))
+                Toggle(MoveCopy.text("zone.calves"), isOn: zoneBinding("calves"))
+                Toggle(MoveCopy.text("zone.neck"), isOn: zoneBinding("neck"))
+                Toggle(MoveCopy.text("zone.wrists"), isOn: zoneBinding("wrists"))
+                Toggle(MoveCopy.text("zone.hips"), isOn: zoneBinding("hips"))
             }
             TextField(MoveCopy.text("exercise.instructions"), text: $exercise.instructions, axis: .vertical)
             Button(MoveCopy.text("common.done")) { exercise.updatedAt = .now; dismiss() }.buttonStyle(.borderedProminent)
-        }.padding().frame(width: 380, height: 600)
+        }.padding().frame(width: 380, height: 740)
     }
 
     private func tagBinding(_ tag: String) -> Binding<Bool> {

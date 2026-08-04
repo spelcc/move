@@ -209,6 +209,12 @@
 "exercise.intermediate" = "Intermediate";
 "exercise.hard" = "Hard";
 "exercise.activeOnly" = "Active movements only";
+"zone.fullBody" = "Full body";
+"zone.chest" = "Chest";
+"zone.calves" = "Calves";
+"zone.neck" = "Neck";
+"zone.wrists" = "Wrists";
+"zone.hips" = "Hips";
 "settings.interval" = "Every %d minutes";
 "settings.snoozeDefault" = "Default snooze: %d min";
 "settings.startHour" = "Start at %d h";

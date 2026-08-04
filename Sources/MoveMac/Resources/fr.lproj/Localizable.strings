@@ -209,6 +209,12 @@
 "exercise.intermediate" = "Intermédiaire";
 "exercise.hard" = "Difficile";
 "exercise.activeOnly" = "Mouvements actifs uniquement";
+"zone.fullBody" = "Corps entier";
+"zone.chest" = "Pectoraux";
+"zone.calves" = "Mollets";
+"zone.neck" = "Cou";
+"zone.wrists" = "Poignets";
+"zone.hips" = "Hanches";
 "settings.interval" = "Toutes les %d minutes";
 "settings.snoozeDefault" = "Snooze par défaut : %d min";
 "settings.startHour" = "Début à %d h";

@@ -400,13 +400,14 @@ import MoveCore
     func dismissCompletion() { completedWorkout = nil }
 
     func recordFreeMovement() {
-        guard activeWorkout?.mode == .free else { return }
+        guard let workout = activeWorkout, workout.mode == .free else { return }
         context.insert(ActivityEntity(record: .init(
             exerciseID: currentExercise.id,
             amount: currentExercise.defaultAmount,
             metric: currentExercise.metric,
             status: .completed,
-            source: .freeMovement
+            source: .freeMovement,
+            workoutID: workout.id
         )))
         try? context.save()
         chooseNext()

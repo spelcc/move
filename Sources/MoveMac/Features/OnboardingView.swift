@@ -29,32 +29,32 @@ struct OnboardingView: View {
             Text(pages[step].0).font(.title.bold())
             Text(pages[step].1).font(.body).foregroundStyle(.secondary)
             if step == 1 {
-                Stepper("Toutes les \(interval) minutes", value: $interval, in: 15...180, step: 15)
-                Stepper("Début : \(store.reminder.activeStartHour) h", value: $store.reminder.activeStartHour, in: 0...23)
-                Stepper("Fin : \(store.reminder.activeEndHour) h", value: $store.reminder.activeEndHour, in: 1...24)
+                Stepper(String(format: MoveCopy.text("onboarding.interval"), interval), value: $interval, in: 15...180, step: 15)
+                Stepper(String(format: MoveCopy.text("onboarding.startHour"), store.reminder.activeStartHour), value: $store.reminder.activeStartHour, in: 0...23)
+                Stepper(String(format: MoveCopy.text("onboarding.endHour"), store.reminder.activeEndHour), value: $store.reminder.activeEndHour, in: 1...24)
             } else if step == 2 {
-                Toggle("J’ai une chaise", isOn: equipmentBinding("chair"))
-                Toggle("J’ai une barre de traction", isOn: equipmentBinding("pullup-bar"))
-                Toggle("J’ai des haltères", isOn: equipmentBinding("dumbbells"))
-                Toggle("J’ai un élastique", isOn: equipmentBinding("band"))
+                Toggle(MoveCopy.text("equipment.chair"), isOn: equipmentBinding("chair"))
+                Toggle(MoveCopy.text("equipment.pullupBar"), isOn: equipmentBinding("pullup-bar"))
+                Toggle(MoveCopy.text("equipment.dumbbells"), isOn: equipmentBinding("dumbbells"))
+                Toggle(MoveCopy.text("equipment.band"), isOn: equipmentBinding("band"))
             } else if step == 3 {
-                Toggle("Afficher les emojis", isOn: $store.appearance.emojisEnabled)
-                Picker("Animations", selection: $store.appearance.animations) {
-                    Text("Complètes").tag(AnimationMode.full)
-                    Text("Réduites").tag(AnimationMode.reduced)
-                    Text("Désactivées").tag(AnimationMode.disabled)
+                Toggle(MoveCopy.text("settings.emojis"), isOn: $store.appearance.emojisEnabled)
+                Picker(MoveCopy.text("settings.animations"), selection: $store.appearance.animations) {
+                    Text(MoveCopy.text("settings.full")).tag(AnimationMode.full)
+                    Text(MoveCopy.text("settings.reduced")).tag(AnimationMode.reduced)
+                    Text(MoveCopy.text("settings.disabled")).tag(AnimationMode.disabled)
                 }
             } else if step == 4 {
-                Toggle("Lancer Move à la connexion", isOn: $launchAtLogin)
+                Toggle(MoveCopy.text("settings.launchAtLogin"), isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
                 if let launchError { Text(launchError).font(.caption).foregroundStyle(.red) }
                 if let notificationError { Text(notificationError).font(.caption).foregroundStyle(.red) }
             }
             Spacer()
             HStack {
-                if step > 0 { Button("Retour") { step -= 1 } }
+                if step > 0 { Button(MoveCopy.text("onboarding.back")) { step -= 1 } }
                 Spacer()
-                Button(step == pages.count - 1 ? "Tester l’encoche" : "Continuer") {
+                Button(step == pages.count - 1 ? MoveCopy.text("onboarding.testNotch") : MoveCopy.text("onboarding.continue")) {
                     if step < pages.count - 1 { step += 1 } else { finish() }
                 }.buttonStyle(.borderedProminent)
             }

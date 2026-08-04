@@ -141,3 +141,13 @@
 "common.create" = "Créer";
 "common.confirm" = "Confirmer";
 "settings.title" = "Réglages";
+"onboarding.interval" = "Toutes les %d minutes";
+"onboarding.startHour" = "Début : %d h";
+"onboarding.endHour" = "Fin : %d h";
+"onboarding.back" = "Retour";
+"onboarding.continue" = "Continuer";
+"onboarding.testNotch" = "Tester l’encoche";
+"equipment.chair" = "J’ai une chaise";
+"equipment.pullupBar" = "J’ai une barre de traction";
+"equipment.dumbbells" = "J’ai des haltères";
+"equipment.band" = "J’ai un élastique";

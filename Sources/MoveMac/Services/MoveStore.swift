@@ -99,6 +99,7 @@ import MoveCore
         movement = MovementPreferences()
         appearance = AppearancePreferences()
         reminderState = ReminderState()
+        resetAdaptationState()
         persistSettings()
         chooseNext()
         scheduleNextReminder()
@@ -117,6 +118,7 @@ import MoveCore
         movement = MovementPreferences()
         appearance = AppearancePreferences()
         reminderState = ReminderState()
+        resetAdaptationState()
         resumableWorkout = nil
         activeWorkout = nil
         timer?.invalidate()
@@ -224,6 +226,14 @@ import MoveCore
         if let data = try? JSONEncoder().encode(easyCompletionCounts) {
             UserDefaults.standard.set(data, forKey: "move.easyCompletionCounts")
         }
+    }
+
+    private func resetAdaptationState() {
+        refusalCounts.removeAll()
+        easyCompletionCounts.removeAll()
+        recentExerciseIDs.removeAll()
+        UserDefaults.standard.removeObject(forKey: "move.refusalCounts")
+        UserDefaults.standard.removeObject(forKey: "move.easyCompletionCounts")
     }
 
     func snoozeCurrent(for minutes: Int = 15) {

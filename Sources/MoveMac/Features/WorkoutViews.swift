@@ -70,9 +70,9 @@ private struct WorkoutEditorView: View {
                             HStack {
                                 Text(exerciseName(step.exerciseID)).font(.headline)
                                 Spacer()
-                                Button("Dupliquer", systemImage: "plus.square.on.square") { duplicate(step.wrappedValue) }
+                                Button("Dupliquer", systemImage: "plus.square.on.square") { duplicate(step) }
                                     .labelStyle(.iconOnly)
-                                Button("Supprimer", systemImage: "trash", role: .destructive) { remove(step.wrappedValue) }
+                                Button("Supprimer", systemImage: "trash", role: .destructive) { remove(step) }
                                     .labelStyle(.iconOnly)
                             }
                             if mode == .interval {

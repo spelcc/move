@@ -10,8 +10,8 @@ import MoveCore
     var metricRaw: String
     var statusRaw: String
     var sourceRaw: String
-    var createdAt: Date = .now
-    var updatedAt: Date = .now
+    var createdAt: Date = Date()
+    var updatedAt: Date = Date()
     init(record: ActivityRecord) {
         id = record.id; exerciseID = record.exerciseID; performedAt = record.performedAt; amount = record.amount
         metricRaw = record.metric.rawValue; statusRaw = record.status.rawValue; sourceRaw = record.source.rawValue

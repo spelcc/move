@@ -13,15 +13,15 @@ import MoveCore
     init() {
         ReminderNotificationService.configure()
         UNUserNotificationCenter.current().delegate = notificationDelegate
-        let schema = Schema([ActivityEntity.self, AppSettingsEntity.self, CustomExerciseEntity.self, WorkoutSessionEntity.self, WorkoutTemplateEntity.self, ReminderStateEntity.self])
+        let schema = MoveSchemaV1.schema
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         let container: ModelContainer
         do {
-            container = try ModelContainer(for: schema, configurations: configuration)
+            container = try ModelContainer(for: schema, migrationPlan: MoveMigrationPlan.self, configurations: configuration)
         } catch {
             NSLog("Move persistence failed: %@", String(describing: error))
             let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-            container = (try? ModelContainer(for: schema, configurations: fallback)) ?? {
+            container = (try? ModelContainer(for: schema, migrationPlan: MoveMigrationPlan.self, configurations: fallback)) ?? {
                 fatalError("Unable to create Move storage")
             }()
         }

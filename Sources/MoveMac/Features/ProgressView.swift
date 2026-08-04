@@ -4,6 +4,7 @@ import MoveCore
 
 struct MoveProgressView: View {
     @Query private var activities: [ActivityEntity]
+    @Query private var customExercises: [CustomExerciseEntity]
     var body: some View {
         let stats = StatisticsService.currentWeek(activities.map(\.record))
         ScrollView {
@@ -24,7 +25,7 @@ struct MoveProgressView: View {
                 Text("Par exercice").font(.title2.bold())
                 ForEach(exerciseRows) { row in
                     HStack {
-                        Text(row.id)
+                        Text(exerciseName(for: row.id))
                         Spacer()
                         Text("\(row.totalAmount) • record \(row.bestDayAmount)").foregroundStyle(.secondary).monospacedDigit()
                     }
@@ -36,6 +37,11 @@ struct MoveProgressView: View {
     private var exerciseRows: [ExerciseStatistics] {
         let records = activities.map(\.record)
         return Set(records.map(\.exerciseID)).sorted().map { StatisticsService.forExercise(records, exerciseID: $0) }
+    }
+
+    private func exerciseName(for id: String) -> String {
+        if let builtIn = ExerciseLibrary.all.first(where: { $0.id == id }) { return builtIn.name }
+        return customExercises.first(where: { $0.id == id })?.name ?? id
     }
 }
 

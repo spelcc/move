@@ -5,6 +5,7 @@ import UserNotifications
 import MoveCore
 
 @main struct MoveApp: App {
+    @Environment(\.openWindow) private var openWindow
     private let container: ModelContainer
     private let notificationDelegate = MoveNotificationDelegate()
     @State private var store: MoveStore
@@ -56,6 +57,10 @@ import MoveCore
             Divider()
             SettingsLink { Text("Ouvrir Move") }
             Button("Quitter") { NSApplication.shared.terminate(nil) }
+        }
+        .task {
+            guard !onboardingCompleted else { return }
+            openWindow(id: "onboarding")
         }
         Window("Move", id: "dashboard") { DashboardView(store: store).modelContainer(container) }
         Window("Bienvenue dans Move", id: "onboarding") { OnboardingView(store: store) { showNotch() } }

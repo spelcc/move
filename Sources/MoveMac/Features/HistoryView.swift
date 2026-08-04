@@ -106,5 +106,7 @@ private struct ActivityEditView: View {
             }
             Button("Terminer") { dismiss() }.buttonStyle(.borderedProminent)
         }.padding().frame(width: 320)
+        .onChange(of: activity.amount) { _, _ in activity.updatedAt = .now }
+        .onChange(of: activity.statusRaw) { _, _ in activity.updatedAt = .now }
     }
 }

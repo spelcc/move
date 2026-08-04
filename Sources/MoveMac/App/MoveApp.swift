@@ -41,7 +41,12 @@ import MoveCore
                     .font(.caption)
                 Divider()
             }
-            if let next = store.reminderState.nextReminderAt { Text("Prochain rappel : \(next, style: .time)") }
+            if let pausedUntil = store.reminderState.pausedUntil, pausedUntil > .now {
+                Label("Rappels en pause jusqu’à \(pausedUntil, style: .time)", systemImage: "pause.circle")
+                    .foregroundStyle(.orange)
+            } else if let next = store.reminderState.nextReminderAt {
+                Text("Prochain rappel : \(next, style: .time)")
+            }
             Button("Bouger maintenant") { showNotch() }
             Button("Séance 10 min") { store.start(ExerciseLibrary.quickWorkouts[1]) }
             Button("Pause 1 heure") { store.pauseReminders(until: .now.addingTimeInterval(3600)) }

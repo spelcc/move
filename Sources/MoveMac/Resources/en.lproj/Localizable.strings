@@ -102,6 +102,7 @@
 "workouts.rename" = "Rename";
 "workouts.archive" = "Archive";
 "workouts.delete" = "Delete";
+"workouts.edit" = "Edit";
 "workouts.rounds" = "rounds";
 "workouts.start" = "Start";
 "empty.workouts.title" = "No custom workouts";

@@ -10,6 +10,7 @@ struct WorkoutLibraryView: View {
     @State private var showingEditor = false
     @State private var previewing: WorkoutTemplate?
     @State private var renaming: WorkoutTemplateEntity?
+    @State private var editingWorkout: WorkoutTemplateEntity?
     @State private var exportingTemplates = false
     var body: some View {
         ScrollView { VStack(alignment: .leading, spacing: 16) {
@@ -33,6 +34,7 @@ struct WorkoutLibraryView: View {
                     workoutCard(workout)
                         .contextMenu {
                             Button(MoveCopy.text("workouts.duplicate")) { duplicate(entity) }
+                            Button(MoveCopy.text("workouts.edit")) { editingWorkout = entity }
                             Button(MoveCopy.text("workouts.rename")) { renaming = entity }
                             Button(MoveCopy.text("workouts.archive")) { archive(entity) }
                             Button(MoveCopy.text("workouts.delete"), role: .destructive) { delete(entity) }
@@ -56,6 +58,15 @@ struct WorkoutLibraryView: View {
         .sheet(isPresented: $showingEditor) { WorkoutEditorView { template in
             modelContext.insert(WorkoutTemplateEntity(template: template)); try? modelContext.save()
         } }
+        .sheet(item: $editingWorkout) { entity in
+            WorkoutEditorView(template: entity.template) { template in
+                entity.id = template.id
+                entity.name = template.name
+                entity.templateData = (try? JSONEncoder().encode(template)) ?? entity.templateData
+                entity.updatedAt = .now
+                try? modelContext.save()
+            }
+        }
         .sheet(item: $previewing) { workout in
             WorkoutSummaryView(workout: workout) { store.start(workout); previewing = nil }
         }
@@ -200,10 +211,24 @@ private struct WorkoutEditorView: View {
     @State private var steps: [WorkoutStep] = []
     @State private var search = ""
     @State private var validationMessage: String?
+    private let initialTemplate: WorkoutTemplate?
     let onSave: (WorkoutTemplate) -> Void
+    init(template: WorkoutTemplate? = nil, onSave: @escaping (WorkoutTemplate) -> Void) {
+        initialTemplate = template
+        self.onSave = onSave
+        _name = State(initialValue: template?.name ?? "Ma séance")
+        _description = State(initialValue: template?.description ?? "")
+        _emoji = State(initialValue: template?.emoji ?? "💪")
+        _rounds = State(initialValue: template?.rounds ?? 2)
+        _preparationSeconds = State(initialValue: template?.preparationSeconds ?? 0)
+        _roundRestSeconds = State(initialValue: template?.roundRestSeconds ?? 0)
+        _finalRecoverySeconds = State(initialValue: template?.finalRecoverySeconds ?? 0)
+        _mode = State(initialValue: template?.mode ?? .interval)
+        _steps = State(initialValue: template?.steps ?? [])
+    }
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Nouvelle séance").font(.title.bold())
+            Text(initialTemplate == nil ? "Nouvelle séance" : "Modifier la séance").font(.title.bold())
             TextField("Nom", text: $name)
             HStack {
                 TextField("Emoji", text: $emoji).frame(width: 80)

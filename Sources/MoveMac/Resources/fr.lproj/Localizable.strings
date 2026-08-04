@@ -102,6 +102,7 @@
 "workouts.rename" = "Renommer";
 "workouts.archive" = "Archiver";
 "workouts.delete" = "Supprimer";
+"workouts.edit" = "Modifier";
 "workouts.rounds" = "tours";
 "workouts.start" = "Démarrer";
 "empty.workouts.title" = "Aucune séance personnalisée";

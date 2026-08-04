@@ -109,7 +109,7 @@ struct HistoryView: View {
             let data = try Data(contentsOf: url)
             let preview = try DataTransferService.previewImport(data, existing: activities.map(\.record))
             pendingImport = preview.records
-            importSummary = "(preview.summary.newRecords) nouvelle(s) activité(s) seront ajoutée(s). (preview.summary.duplicateRecords) doublon(s) seront ignoré(s)."
+            importSummary = "\(preview.summary.newRecords) nouvelle(s) activité(s) seront ajoutée(s). \(preview.summary.duplicateRecords) doublon(s) seront ignoré(s)."
             showingImportConfirmation = true
         } catch { importError = error.localizedDescription }
     }
@@ -157,6 +157,7 @@ private struct AddActivityView: View {
 
 private struct ActivityEditView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @Bindable var activity: ActivityEntity
     var body: some View {
         Form {
@@ -165,7 +166,7 @@ private struct ActivityEditView: View {
             Picker("Statut", selection: $activity.statusRaw) {
                 ForEach(ActivityStatus.allCases, id: \.rawValue) { status in Text(status.rawValue).tag(status.rawValue) }
             }
-            Button("Terminer") { dismiss() }.buttonStyle(.borderedProminent)
+            Button("Terminer") { activity.updatedAt = .now; try? modelContext.save(); dismiss() }.buttonStyle(.borderedProminent)
         }.padding().frame(width: 320)
         .onChange(of: activity.amount) { _, _ in activity.updatedAt = .now }
         .onChange(of: activity.statusRaw) { _, _ in activity.updatedAt = .now }

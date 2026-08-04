@@ -1,0 +1,14 @@
+"notch.noCompatible.title" = "No movement matches your settings.";
+"notch.noCompatible.message" = "Re-enable a movement or remove a restriction.";
+"notch.noCompatible.reset" = "Re-enable movements";
+"notch.reaction.success" = "Nice. The chair is losing ground.";
+"notch.reaction.skipped" = "The slump wins this round.";
+"notch.reaction.snoozed" = "Okay, we’ll try again soon.";
+"notch.reaction.untilNext" = "See you soon.";
+"notch.humor.normal" = "Your skeleton has filed another complaint.";
+"notch.humor.discreet" = "A little movement break?";
+"notch.humor.disabled" = "Movement reminder.";
+"notch.action.done" = "Done";
+"notch.action.skip" = "Not now";
+"notch.action.snooze" = "Snooze";
+"notch.action.change" = "Change";

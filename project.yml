@@ -17,6 +17,8 @@ targets:
     platform: macOS
     sources:
       - Sources/MoveMac
+    resources:
+      - Sources/MoveMac/Resources
     dependencies:
       - package: MoveCore
         product: MoveCore

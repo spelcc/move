@@ -1,0 +1,14 @@
+"notch.noCompatible.title" = "Aucun mouvement ne correspond à tes réglages.";
+"notch.noCompatible.message" = "Réactive un mouvement ou retire une contrainte.";
+"notch.noCompatible.reset" = "Réactiver les mouvements";
+"notch.reaction.success" = "Bien joué. La chaise perd du terrain.";
+"notch.reaction.skipped" = "La flemme gagne cette manche.";
+"notch.reaction.snoozed" = "D’accord, on remet ça bientôt.";
+"notch.reaction.untilNext" = "À bientôt.";
+"notch.humor.normal" = "Ton squelette a encore déposé une réclamation.";
+"notch.humor.discreet" = "Une petite pause mouvement ?";
+"notch.humor.disabled" = "Rappel de mouvement.";
+"notch.action.done" = "C’est fait";
+"notch.action.skip" = "La flemme";
+"notch.action.snooze" = "Reporter";
+"notch.action.change" = "Changer";

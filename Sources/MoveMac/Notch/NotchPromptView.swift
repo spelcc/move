@@ -17,9 +17,9 @@ struct NotchPromptView: View {
 
         var title: String {
             switch self {
-            case .success: "Bien joué. La chaise perd du terrain."
-            case .skipped: "La flemme gagne cette manche."
-            case .snoozed: "D’accord, on remet ça bientôt."
+            case .success: MoveCopy.text("notch.reaction.success")
+            case .skipped: MoveCopy.text("notch.reaction.skipped")
+            case .snoozed: MoveCopy.text("notch.reaction.snoozed")
             }
         }
     }
@@ -27,15 +27,15 @@ struct NotchPromptView: View {
     var body: some View {
         VStack(spacing: 12) {
             if store.noCompatibleExercises {
-                Text("Aucun mouvement ne correspond à tes réglages.")
+                Text(MoveCopy.text("notch.noCompatible.title"))
                     .font(.headline).foregroundStyle(.white).multilineTextAlignment(.center)
-                Text("Réactive un mouvement ou retire une contrainte.")
+                Text(MoveCopy.text("notch.noCompatible.message"))
                     .font(.caption).foregroundStyle(.white.opacity(0.65))
-                Button("Réactiver les mouvements") { store.enableAllExercises() }
+                Button(MoveCopy.text("notch.noCompatible.reset")) { store.enableAllExercises() }
                     .buttonStyle(.borderedProminent).tint(.white).foregroundStyle(.black)
             } else if let reaction {
                 Text(reaction.title).font(.headline).foregroundStyle(.white).multilineTextAlignment(.center)
-                Text("À bientôt.").font(.caption).foregroundStyle(.white.opacity(0.65))
+                Text(MoveCopy.text("notch.reaction.untilNext")).font(.caption).foregroundStyle(.white.opacity(0.65))
             } else {
                 HStack(spacing: 10) {
                     if store.appearance.emojisEnabled {
@@ -48,12 +48,12 @@ struct NotchPromptView: View {
                     Spacer()
                 }
                 HStack(spacing: 8) {
-                    Button("C’est fait") { complete() }.buttonStyle(.borderedProminent).tint(.white).foregroundStyle(.black)
-                    Button("La flemme") { skip() }.buttonStyle(.bordered).tint(.white)
+                    Button(MoveCopy.text("notch.action.done")) { complete() }.buttonStyle(.borderedProminent).tint(.white).foregroundStyle(.black)
+                    Button(MoveCopy.text("notch.action.skip")) { skip() }.buttonStyle(.bordered).tint(.white)
                 }
                 HStack(spacing: 18) {
-                    Button("Reporter") { snooze() }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
-                    Button("Changer") { store.chooseNext() }.keyboardShortcut("c", modifiers: [.command]).buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
+                    Button(MoveCopy.text("notch.action.snooze")) { snooze() }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
+                    Button(MoveCopy.text("notch.action.change")) { store.chooseNext() }.keyboardShortcut("c", modifiers: [.command]).buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
                 }
             }
         }
@@ -98,9 +98,9 @@ struct NotchPromptView: View {
 
     private var subMessage: String {
         switch store.appearance.humor {
-        case .normal: "Ton squelette a encore déposé une réclamation."
-        case .discreet: "Une petite pause mouvement ?"
-        case .disabled: "Rappel de mouvement."
+        case .normal: MoveCopy.text("notch.humor.normal")
+        case .discreet: MoveCopy.text("notch.humor.discreet")
+        case .disabled: MoveCopy.text("notch.humor.disabled")
         }
     }
 }

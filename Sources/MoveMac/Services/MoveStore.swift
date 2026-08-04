@@ -217,7 +217,34 @@ import MoveCore
         timer?.invalidate(); timer = .scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in Task { @MainActor in self?.tick() } }
         saveWorkoutProgress()
     }
-    private func tick() { if secondsRemaining > 0 { secondsRemaining -= 1; saveWorkoutProgress() } else { advanceWorkout() } }
+    private func tick() {
+        guard let workout = activeWorkout else { return }
+        switch workoutState {
+        case .working:
+            if secondsRemaining > 0 {
+                secondsRemaining -= 1
+                saveWorkoutProgress()
+            } else {
+                let rest = workout.steps[workoutStepIndex].restSeconds
+                if rest > 0 {
+                    workoutState = .resting
+                    secondsRemaining = rest
+                    saveWorkoutProgress()
+                } else {
+                    advanceWorkout()
+                }
+            }
+        case .resting:
+            if secondsRemaining > 0 {
+                secondsRemaining -= 1
+                saveWorkoutProgress()
+            } else {
+                advanceWorkout()
+            }
+        default:
+            break
+        }
+    }
     func togglePause() {
         guard activeWorkout != nil else { return }
         if workoutState == .paused { beginStep() } else { workoutState = .paused; timer?.invalidate(); saveWorkoutProgress() }

@@ -158,8 +158,8 @@ private struct WorkoutRunnerView: View {
             ProgressView(value: progress)
                 .tint(.white)
                 .frame(maxWidth: 360)
-            Text(exerciseName).font(.largeTitle.bold())
-            Text("Suivant : \(nextExerciseName)").foregroundStyle(.secondary)
+            Text(store.workoutState == .resting ? "Repos" : exerciseName).font(.largeTitle.bold())
+            Text(store.workoutState == .resting ? "Prochain : \(nextExerciseName)" : "Suivant : \(nextExerciseName)").foregroundStyle(.secondary)
             Text("\(store.secondsRemaining)").font(.system(size: 80, weight: .black, design: .rounded)).contentTransition(.numericText())
             HStack {
                 Button(store.workoutState == .paused ? "Reprendre" : "Pause") { store.togglePause() }
@@ -173,6 +173,9 @@ private struct WorkoutRunnerView: View {
                     .keyboardShortcut(.leftArrow, modifiers: [])
                 Button("Suivant") { store.advanceWorkout() }
                     .keyboardShortcut(.rightArrow, modifiers: [])
+                if store.workoutState == .resting {
+                    Button("Passer le repos") { store.advanceWorkout() }
+                }
                 Button("Passer") { store.skipWorkoutStep() }
                     .accessibilityLabel("Passer cet exercice")
                 Button("Arrêter") { store.cancelWorkout() }

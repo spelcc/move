@@ -304,6 +304,19 @@ import MoveCore
 
     func dismissCompletion() { completedWorkout = nil }
 
+    func recordFreeMovement() {
+        guard activeWorkout?.mode == .free else { return }
+        context.insert(ActivityEntity(record: .init(
+            exerciseID: currentExercise.id,
+            amount: currentExercise.defaultAmount,
+            metric: currentExercise.metric,
+            status: .completed,
+            source: .freeMovement
+        )))
+        try? context.save()
+        chooseNext()
+    }
+
     private func saveWorkoutProgress() {
         guard let workout = activeWorkout else { return }
         let session = resumableWorkout ?? WorkoutSessionEntity(workout: workout)

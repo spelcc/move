@@ -256,6 +256,10 @@ private struct WorkoutRunnerView: View {
                     .keyboardShortcut(.leftArrow, modifiers: [])
                 Button(workout.mode == .repetitions ? "Fait" : "Suivant") { store.advanceWorkout() }
                     .keyboardShortcut(.rightArrow, modifiers: [])
+                if workout.mode == .free {
+                    Button("Ajouter mouvement") { store.recordFreeMovement() }
+                        .accessibilityLabel("Enregistrer un mouvement libre")
+                }
                 if store.workoutState == .resting {
                     Button("Passer le repos") { store.advanceWorkout() }
                 }

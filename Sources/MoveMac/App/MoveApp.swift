@@ -13,7 +13,7 @@ import MoveCore
     init() {
         ReminderNotificationService.configure()
         UNUserNotificationCenter.current().delegate = notificationDelegate
-        let schema = Schema([ActivityEntity.self, AppSettingsEntity.self, CustomExerciseEntity.self, WorkoutSessionEntity.self])
+        let schema = Schema([ActivityEntity.self, AppSettingsEntity.self, CustomExerciseEntity.self, WorkoutSessionEntity.self, WorkoutTemplateEntity.self])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         let container: ModelContainer
         do {

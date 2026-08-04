@@ -115,8 +115,8 @@ import Testing
 
 @Test func selectorAvoidsRecentlyShownExercisesWhenAlternativesExist() {
     let exercises = [
-        Exercise(id: "one", name: "Un", category: .mobility, metric: .repetitions, defaultAmount: 1),
-        Exercise(id: "two", name: "Deux", category: .mobility, metric: .repetitions, defaultAmount: 1)
+        Exercise(id: "one", name: "Un", category: .mobility, metric: .repetitions, defaultAmount: 1, emoji: "1️⃣"),
+        Exercise(id: "two", name: "Deux", category: .mobility, metric: .repetitions, defaultAmount: 1, emoji: "2️⃣")
     ]
     let next = ExerciseSelector().next(from: exercises, preferences: .init(), recentExerciseIDs: ["one"], seed: 0)
     #expect(next?.id == "two")

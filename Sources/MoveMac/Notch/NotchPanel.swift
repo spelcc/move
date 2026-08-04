@@ -21,9 +21,6 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         }
     }
 
-    deinit {
-        if let screenChangeObserver { NotificationCenter.default.removeObserver(screenChangeObserver) }
-    }
     private(set) var state: NotchPanelState = .hidden
 
     func show(target: ReminderScreenTarget = .main, width: CGFloat = 236, height: CGFloat = 72) {

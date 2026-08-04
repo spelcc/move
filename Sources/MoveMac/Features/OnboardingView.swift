@@ -8,6 +8,7 @@ struct OnboardingView: View {
     @State private var step = 0
     @State private var interval = 60
     @State private var notificationsEnabled = false
+    @State private var notificationError: String?
     @State private var launchAtLogin = false
     @State private var launchError: String?
     let onTestNotch: () -> Void
@@ -41,6 +42,7 @@ struct OnboardingView: View {
                 Toggle("Lancer Move à la connexion", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
                 if let launchError { Text(launchError).font(.caption).foregroundStyle(.red) }
+                if let notificationError { Text(notificationError).font(.caption).foregroundStyle(.red) }
             }
             Spacer()
             HStack {
@@ -65,6 +67,9 @@ struct OnboardingView: View {
         store.persistSettings()
         Task {
             notificationsEnabled = (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
+            if !notificationsEnabled {
+                notificationError = "Les notifications sont désactivées. Tu peux les autoriser dans Réglages Système pour recevoir les rappels."
+            }
             onTestNotch()
             completed = true
         }

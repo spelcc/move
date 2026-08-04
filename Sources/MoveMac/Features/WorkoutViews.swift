@@ -19,7 +19,11 @@ struct WorkoutLibraryView: View {
             ForEach(customWorkouts.filter { !$0.archived }) { entity in
                 if let workout = entity.template {
                     workoutCard(workout)
-                        .contextMenu { Button("Archiver") { entity.archived = true; entity.updatedAt = .now; try? modelContext.save() } }
+                        .contextMenu {
+                            Button("Dupliquer") { duplicate(entity) }
+                            Button("Archiver") { archive(entity) }
+                            Button("Supprimer", role: .destructive) { delete(entity) }
+                        }
                 }
             }
             ForEach(ExerciseLibrary.quickWorkouts) { workout in
@@ -47,6 +51,24 @@ struct WorkoutLibraryView: View {
     private func resumableWorkout(_ session: WorkoutSessionEntity) -> WorkoutTemplate? {
         if let builtIn = ExerciseLibrary.quickWorkouts.first(where: { $0.id == session.workoutID }) { return builtIn }
         return customWorkouts.first(where: { $0.id == session.workoutID && !$0.archived })?.template
+    }
+
+    private func archive(_ entity: WorkoutTemplateEntity) {
+        entity.archived = true
+        entity.updatedAt = .now
+        try? modelContext.save()
+    }
+
+    private func delete(_ entity: WorkoutTemplateEntity) {
+        modelContext.delete(entity)
+        try? modelContext.save()
+    }
+
+    private func duplicate(_ entity: WorkoutTemplateEntity) {
+        guard let template = entity.template else { return }
+        let copy = WorkoutTemplate(id: UUID(), name: "\(template.name) (copie)", rounds: template.rounds, steps: template.steps, mode: template.mode)
+        modelContext.insert(WorkoutTemplateEntity(template: copy))
+        try? modelContext.save()
     }
 }
 

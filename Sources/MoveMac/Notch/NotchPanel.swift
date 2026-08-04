@@ -17,7 +17,7 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
     }
     private(set) var state: NotchPanelState = .hidden
 
-    func show(target: ReminderScreenTarget = .main, width: CGFloat = 460, height: CGFloat = 214) {
+    func show(target: ReminderScreenTarget = .main, width: CGFloat = 236, height: CGFloat = 72) {
         guard let screen = targetScreen(target) else { return }
         state = .bumping
         let notch = screen.auxiliaryTopLeftArea.map { left in
@@ -30,7 +30,28 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         let y = screen.frame.maxY - height
         panel.setFrame(NSRect(x: x, y: y, width: width, height: height), display: true)
         panel.orderFrontRegardless()
-        withAnimation(.spring(response: 0.42, dampingFraction: 0.68)) { state = .expanded }
+        state = .compact
+        resize(width: 460, height: 214, on: screen, anchor: anchor, animated: true) { [weak self] in self?.state = .expanded }
+    }
+
+    func resize(width: CGFloat, height: CGFloat, animated: Bool = true, completion: (() -> Void)? = nil) {
+        guard let screen = panel.screen ?? NSScreen.main else { completion?(); return }
+        let anchor = screen.auxiliaryTopLeftArea.map { left in
+            (left.maxX + (screen.auxiliaryTopRightArea?.minX ?? left.maxX)) / 2
+        } ?? screen.frame.midX
+        resize(width: width, height: height, on: screen, anchor: anchor, animated: animated, completion: completion)
+    }
+
+    private func resize(width: CGFloat, height: CGFloat, on screen: NSScreen, anchor: CGFloat, animated: Bool, completion: (() -> Void)? = nil) {
+        let x = min(max(anchor - width / 2, screen.visibleFrame.minX + 8), screen.visibleFrame.maxX - width - 8)
+        let frame = NSRect(x: x, y: screen.frame.maxY - height, width: width, height: height)
+        if animated {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.42
+                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                panel.animator().setFrame(frame, display: true)
+            } completionHandler: { completion?() }
+        } else { panel.setFrame(frame, display: true); completion?() }
     }
 
     private func targetScreen(_ target: ReminderScreenTarget) -> NSScreen? {
@@ -44,5 +65,10 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
             return screens.first(where: { $0.auxiliaryTopLeftArea != nil && $0.auxiliaryTopRightArea != nil }) ?? NSScreen.main ?? screens.first
         }
     }
-    func hide() { state = .closing; panel.orderOut(nil); state = .hidden }
+    func hide() {
+        state = .closing
+        resize(width: 184, height: 52) { [weak self] in
+            self?.panel.orderOut(nil); self?.state = .hidden
+        }
+    }
 }

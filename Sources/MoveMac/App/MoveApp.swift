@@ -57,7 +57,9 @@ import MoveCore
     }
     private func showNotch() {
         var controller: NotchPanelController?
-        let rootView = NotchPromptView(store: store, onClose: { controller?.hide() }).modelContainer(container)
+        let rootView = NotchPromptView(store: store, onClose: { controller?.hide() }, onResize: { width, height in
+            controller?.resize(width: width, height: height)
+        }).modelContainer(container)
         controller = NotchPanelController(rootView: rootView)
         panel = controller
         controller?.show(target: store.appearance.screenTarget)

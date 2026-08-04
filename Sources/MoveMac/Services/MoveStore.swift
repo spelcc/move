@@ -286,6 +286,17 @@ import MoveCore
         let metric: ExerciseMetric = workout.mode == .repetitions ? .repetitions : (exercise?.metric == .minutes ? .minutes : .seconds)
         let source: ActivitySource = workout.mode == .free ? .freeMovement : (ExerciseLibrary.quickWorkouts.contains(where: { $0.id == workout.id }) ? .quickWorkout : .customWorkout)
         context.insert(ActivityEntity(record: .init(exerciseID: finishedStep.exerciseID, amount: finishedStep.workSeconds, metric: metric, status: status, source: source, workoutID: workout.id)))
+        if let session = resumableWorkout {
+            context.insert(WorkoutStepResultEntity(
+                sessionID: session.id,
+                stepID: finishedStep.id,
+                exerciseID: finishedStep.exerciseID,
+                round: workoutRound,
+                status: status,
+                amount: finishedStep.workSeconds,
+                durationSeconds: workout.mode == .repetitions ? 0 : finishedStep.workSeconds
+            ))
+        }
         try? context.save()
         workoutStepIndex += 1
         if workoutStepIndex >= workout.steps.count { workoutStepIndex = 0; workoutRound += 1 }

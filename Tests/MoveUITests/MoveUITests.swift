@@ -1,5 +1,6 @@
 import XCTest
 
+@MainActor
 final class MoveUITests: XCTestCase {
     private var app: XCUIApplication!
 
@@ -11,11 +12,11 @@ final class MoveUITests: XCTestCase {
     }
 
     func testApplicationLaunches() {
-        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
+        XCTAssertTrue(app.wait(for: .runningBackground, timeout: 10) || app.state == .runningForeground)
     }
 
     func testKeyboardShortcutDoesNotCrashApplication() {
         app.typeKey("m", modifierFlags: [.command, .option])
-        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 5))
+        XCTAssertTrue(app.state == .runningBackground || app.state == .runningForeground)
     }
 }

@@ -24,6 +24,15 @@ import Testing
     #expect(adapted.defaultAmount == 8)
 }
 
+@Test func statisticsCanBeLimitedToPeriod() {
+    let now = Date()
+    let recent = ActivityRecord(exerciseID: "squats", performedAt: now, amount: 10, metric: .repetitions, status: .completed, source: .manual)
+    let old = ActivityRecord(exerciseID: "pushups", performedAt: now.addingTimeInterval(-86400 * 10), amount: 20, metric: .repetitions, status: .completed, source: .manual)
+    let stats = StatisticsService.calculate([recent, old], since: now.addingTimeInterval(-86400))
+    #expect(stats.completedCount == 1)
+    #expect(stats.totalRepetitions == 10)
+}
+
 @Test func workoutValidationRejectsEmptyWorkout() {
     let workout = WorkoutTemplate(name: "", rounds: 0, steps: [])
     #expect(workout.validationError != nil)

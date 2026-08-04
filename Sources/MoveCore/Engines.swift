@@ -82,4 +82,13 @@ public enum StatisticsService {
         }
         return .init(completedCount: done.count, totalRepetitions: reps, activeSeconds: seconds, byExercise: byExercise, activeDays: days.count, currentStreak: streak)
     }
+
+    public static func calculate(_ records: [ActivityRecord], since start: Date, until end: Date = .now) -> Statistics {
+        calculate(records.filter { $0.performedAt >= start && $0.performedAt <= end })
+    }
+
+    public static func currentWeek(_ records: [ActivityRecord], calendar: Calendar = .current, now: Date = .now) -> Statistics {
+        let start = calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? now
+        return calculate(records, since: start, until: now)
+    }
 }

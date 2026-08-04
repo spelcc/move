@@ -114,7 +114,7 @@ public enum StatisticsService {
         let skipped = records.filter { $0.status == .skipped }.count
         let snoozed = records.filter { $0.status == .snoozed }.count
         let acceptedReminders = done.filter { $0.source == .hourly }.count
-        let completedWorkouts = Set(done.compactMap { record in
+        let completedWorkouts = Set(done.compactMap { (record: ActivityRecord) -> UUID? in
             guard record.source == .quickWorkout || record.source == .customWorkout else { return nil }
             return record.workoutID
         }).count

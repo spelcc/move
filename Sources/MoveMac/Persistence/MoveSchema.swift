@@ -7,6 +7,7 @@ enum MoveSchemaV1: VersionedSchema {
         WorkoutSessionEntity.self, WorkoutStepResultEntity.self, AppSettingsEntity.self,
         CustomExerciseEntity.self, ReminderStateEntity.self
     ]
+    static var schema: Schema { Schema(models) }
 }
 
 enum MoveMigrationPlan: SchemaMigrationPlan {

@@ -6,6 +6,7 @@ struct HistoryView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ActivityEntity.performedAt, order: .reverse) private var activities: [ActivityEntity]
     @State private var editing: ActivityEntity?
+    @State private var adding = false
     @State private var search = ""
 
     var body: some View {
@@ -26,8 +27,31 @@ struct HistoryView: View {
         }
         .searchable(text: $search, prompt: "Rechercher dans l’historique")
         .navigationTitle("Historique")
+        .toolbar { Button("Ajouter", systemImage: "plus") { adding = true } }
         .overlay { if activities.isEmpty { ContentUnavailableView("Rien pour le moment", systemImage: "clock") } }
         .sheet(item: $editing) { ActivityEditView(activity: $0) }
+        .sheet(isPresented: $adding) { AddActivityView() }
+    }
+}
+
+private struct AddActivityView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @State private var exerciseID = ExerciseLibrary.all.first?.id ?? ""
+    @State private var amount = 10
+    @State private var status = ActivityStatus.completed
+    var body: some View {
+        Form {
+            Picker("Mouvement", selection: $exerciseID) { ForEach(ExerciseLibrary.all) { Text($0.name).tag($0.id) } }
+            Stepper("Quantité : \(amount)", value: $amount, in: 0...9999)
+            Picker("Statut", selection: $status) { ForEach(ActivityStatus.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
+            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Ajouter") { save() }.buttonStyle(.borderedProminent) }
+        }.padding().frame(width: 400)
+    }
+    private func save() {
+        let exercise = ExerciseLibrary.all.first { $0.id == exerciseID } ?? ExerciseLibrary.all[0]
+        modelContext.insert(ActivityEntity(record: .init(exerciseID: exercise.id, amount: amount, metric: exercise.metric, status: status, source: .manual)))
+        try? modelContext.save(); dismiss()
     }
 }
 

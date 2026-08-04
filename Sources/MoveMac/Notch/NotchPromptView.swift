@@ -17,6 +17,7 @@ struct NotchPromptView: View {
             HStack {
                 Button("C’est fait") { store.completeCurrent() }.buttonStyle(.borderedProminent).tint(.white).foregroundStyle(.black)
                 Button("La flemme") { store.skipCurrent() }.buttonStyle(.bordered).tint(.white)
+                Button("Reporter") { store.snoozeCurrent(for: store.reminder.snoozeMinutes) }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
                 Button("Changer") { store.chooseNext() }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
             }
         }

@@ -18,7 +18,8 @@ struct OnboardingView: View {
     private let pages = [
         ("Bouge un peu, souvent.", "Move te rappelle de bouger.\nPas de compte. Pas de classement. Pas de coach qui crie."),
         ("Choisis ton rythme.", "Un rappel toutes les 15 à 180 minutes, dans la plage horaire qui te convient."),
-        ("Règle l’ambiance.", "Choisis les mouvements, les emojis et les animations qui te ressemblent."),
+        ("Adapte tes mouvements.", "Indique le matériel disponible pour recevoir des défis compatibles."),
+        ("Règle l’ambiance.", "Choisis les emojis et les animations qui te ressemblent."),
         ("Teste l’encoche.", "Une petite capsule noire apparaît au bon moment, sans interrompre ton travail.")
     ]
 
@@ -32,6 +33,11 @@ struct OnboardingView: View {
                 Stepper("Début : \(store.reminder.activeStartHour) h", value: $store.reminder.activeStartHour, in: 0...23)
                 Stepper("Fin : \(store.reminder.activeEndHour) h", value: $store.reminder.activeEndHour, in: 1...24)
             } else if step == 2 {
+                Toggle("J’ai une chaise", isOn: equipmentBinding("chair"))
+                Toggle("J’ai une barre de traction", isOn: equipmentBinding("pullup-bar"))
+                Toggle("J’ai des haltères", isOn: equipmentBinding("dumbbells"))
+                Toggle("J’ai un élastique", isOn: equipmentBinding("band"))
+            } else if step == 3 {
                 Toggle("Afficher les emojis", isOn: $store.appearance.emojisEnabled)
                 Picker("Animations", selection: $store.appearance.animations) {
                     Text("Complètes").tag(AnimationMode.full)
@@ -60,6 +66,16 @@ struct OnboardingView: View {
     private func setLaunchAtLogin(_ enabled: Bool) {
         do { try LaunchAtLoginService.setEnabled(enabled); launchAtLogin = enabled }
         catch { launchError = "Lancement automatique indisponible pour le moment." }
+    }
+
+    private func equipmentBinding(_ equipment: String) -> Binding<Bool> {
+        Binding(
+            get: { store.movement.availableEquipment.contains(equipment) },
+            set: { enabled in
+                if enabled { store.movement.availableEquipment.insert(equipment) }
+                else { store.movement.availableEquipment.remove(equipment) }
+            }
+        )
     }
 
     private func finish() {

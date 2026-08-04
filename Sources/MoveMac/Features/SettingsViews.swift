@@ -134,56 +134,75 @@ private struct NewExerciseView: View {
     @State private var muscleZones: Set<String> = []
     let onSave: (CustomExerciseEntity) -> Void
     var body: some View {
-        Form {
-            TextField(MoveCopy.text("exercise.name"), text: $name)
-            TextField(MoveCopy.text("exercise.emoji"), text: $emoji)
-            Picker(MoveCopy.text("exercise.category"), selection: $category) { ForEach(ExerciseCategory.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
-            Picker(MoveCopy.text("exercise.difficulty"), selection: $difficulty) {
-                Text(MoveCopy.text("exercise.easy")).tag(1)
-                Text(MoveCopy.text("exercise.intermediate")).tag(2)
-                Text(MoveCopy.text("exercise.hard")).tag(3)
+        VStack(spacing: 0) {
+            ScrollView(.vertical) {
+                Form {
+                    TextField(MoveCopy.text("exercise.name"), text: $name)
+                    TextField(MoveCopy.text("exercise.emoji"), text: $emoji)
+                    Picker(MoveCopy.text("exercise.category"), selection: $category) { ForEach(ExerciseCategory.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
+                    Picker(MoveCopy.text("exercise.difficulty"), selection: $difficulty) {
+                        Text(MoveCopy.text("exercise.easy")).tag(1)
+                        Text(MoveCopy.text("exercise.intermediate")).tag(2)
+                        Text(MoveCopy.text("exercise.hard")).tag(3)
+                    }
+                    Picker(MoveCopy.text("exercise.metric"), selection: $metric) { Text(MoveCopy.text("exercise.repetitions")).tag(ExerciseMetric.repetitions); Text(MoveCopy.text("exercise.seconds")).tag(ExerciseMetric.seconds); Text(MoveCopy.text("exercise.minutes")).tag(ExerciseMetric.minutes); Text(MoveCopy.text("exercise.free")).tag(ExerciseMetric.free) }
+                    Stepper(String(format: MoveCopy.text("exercise.defaultAmount"), amount), value: $amount, in: 1...999)
+                    Section(MoveCopy.text("exercise.equipment")) {
+                        Toggle(MoveCopy.text("equipment.chair"), isOn: setBinding("chair", in: $equipment))
+                        Toggle(MoveCopy.text("equipment.pullupBar"), isOn: setBinding("pullup-bar", in: $equipment))
+                        Toggle(MoveCopy.text("equipment.band"), isOn: setBinding("band", in: $equipment))
+                        Toggle(MoveCopy.text("equipment.dumbbells"), isOn: setBinding("dumbbells", in: $equipment))
+                    }
+                    Section(MoveCopy.text("exercise.constraints")) {
+                        Toggle(MoveCopy.text("constraint.floor"), isOn: setBinding("floor", in: $tags))
+                        Toggle(MoveCopy.text("constraint.jump"), isOn: setBinding("jump", in: $tags))
+                        Toggle(MoveCopy.text("constraint.wrists"), isOn: setBinding("wrists", in: $tags))
+                        Toggle(MoveCopy.text("constraint.noisy"), isOn: setBinding("noisy", in: $tags))
+                        Toggle(MoveCopy.text("constraint.knees"), isOn: setBinding("knees", in: $tags))
+                        Toggle(MoveCopy.text("constraint.back"), isOn: setBinding("back", in: $tags))
+                        Toggle(MoveCopy.text("constraint.space"), isOn: setBinding("space", in: $tags))
+                    }
+                    Section(MoveCopy.text("exercise.muscleZones")) {
+                        Toggle(MoveCopy.text("zone.fullBody"), isOn: setBinding("fullBody", in: $muscleZones))
+                        Toggle(MoveCopy.text("zone.chest"), isOn: setBinding("chest", in: $muscleZones))
+                        Toggle(MoveCopy.text("zone.legs"), isOn: setBinding("legs", in: $muscleZones))
+                        Toggle(MoveCopy.text("zone.glutes"), isOn: setBinding("glutes", in: $muscleZones))
+                        Toggle(MoveCopy.text("zone.back"), isOn: setBinding("back", in: $muscleZones))
+                        Toggle(MoveCopy.text("zone.shoulders"), isOn: setBinding("shoulders", in: $muscleZones))
+                        Toggle(MoveCopy.text("zone.arms"), isOn: setBinding("arms", in: $muscleZones))
+                        Toggle(MoveCopy.text("zone.core"), isOn: setBinding("core", in: $muscleZones))
+                        Toggle(MoveCopy.text("zone.calves"), isOn: setBinding("calves", in: $muscleZones))
+                        Toggle(MoveCopy.text("zone.neck"), isOn: setBinding("neck", in: $muscleZones))
+                        Toggle(MoveCopy.text("zone.wrists"), isOn: setBinding("wrists", in: $muscleZones))
+                        Toggle(MoveCopy.text("zone.hips"), isOn: setBinding("hips", in: $muscleZones))
+                    }
+                    TextField(MoveCopy.text("exercise.instructionsOptional"), text: $instructions, axis: .vertical)
+                    Section(MoveCopy.text("exercise.variants")) {
+                        TextField(MoveCopy.text("exercise.easierVariantID"), text: $easierVariantID)
+                        TextField(MoveCopy.text("exercise.harderVariantID"), text: $harderVariantID)
+                    }
+                }
+                .formStyle(.grouped)
+                .fixedSize(horizontal: false, vertical: true)
             }
-            Picker(MoveCopy.text("exercise.metric"), selection: $metric) { Text(MoveCopy.text("exercise.repetitions")).tag(ExerciseMetric.repetitions); Text(MoveCopy.text("exercise.seconds")).tag(ExerciseMetric.seconds); Text(MoveCopy.text("exercise.minutes")).tag(ExerciseMetric.minutes); Text(MoveCopy.text("exercise.free")).tag(ExerciseMetric.free) }
-            Stepper(String(format: MoveCopy.text("exercise.defaultAmount"), amount), value: $amount, in: 1...999)
-            Section(MoveCopy.text("exercise.equipment")) {
-                Toggle(MoveCopy.text("equipment.chair"), isOn: setBinding("chair", in: $equipment))
-                Toggle(MoveCopy.text("equipment.pullupBar"), isOn: setBinding("pullup-bar", in: $equipment))
-                Toggle(MoveCopy.text("equipment.band"), isOn: setBinding("band", in: $equipment))
-                Toggle(MoveCopy.text("equipment.dumbbells"), isOn: setBinding("dumbbells", in: $equipment))
+            .defaultScrollAnchor(.top)
+            Divider()
+            HStack {
+                Spacer()
+                Button(MoveCopy.text("common.cancel")) { dismiss() }
+                Button(MoveCopy.text("common.create")) { save() }
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .buttonStyle(.borderedProminent)
             }
-            Section(MoveCopy.text("exercise.constraints")) {
-                Toggle(MoveCopy.text("constraint.floor"), isOn: setBinding("floor", in: $tags))
-                Toggle(MoveCopy.text("constraint.jump"), isOn: setBinding("jump", in: $tags))
-                Toggle(MoveCopy.text("constraint.wrists"), isOn: setBinding("wrists", in: $tags))
-                Toggle(MoveCopy.text("constraint.noisy"), isOn: setBinding("noisy", in: $tags))
-                Toggle(MoveCopy.text("constraint.knees"), isOn: setBinding("knees", in: $tags))
-                Toggle(MoveCopy.text("constraint.back"), isOn: setBinding("back", in: $tags))
-                Toggle(MoveCopy.text("constraint.space"), isOn: setBinding("space", in: $tags))
-            }
-            Section(MoveCopy.text("exercise.muscleZones")) {
-                Toggle(MoveCopy.text("zone.fullBody"), isOn: setBinding("fullBody", in: $muscleZones))
-                Toggle(MoveCopy.text("zone.chest"), isOn: setBinding("chest", in: $muscleZones))
-                Toggle(MoveCopy.text("zone.legs"), isOn: setBinding("legs", in: $muscleZones))
-                Toggle(MoveCopy.text("zone.glutes"), isOn: setBinding("glutes", in: $muscleZones))
-                Toggle(MoveCopy.text("zone.back"), isOn: setBinding("back", in: $muscleZones))
-                Toggle(MoveCopy.text("zone.shoulders"), isOn: setBinding("shoulders", in: $muscleZones))
-                Toggle(MoveCopy.text("zone.arms"), isOn: setBinding("arms", in: $muscleZones))
-                Toggle(MoveCopy.text("zone.core"), isOn: setBinding("core", in: $muscleZones))
-                Toggle(MoveCopy.text("zone.calves"), isOn: setBinding("calves", in: $muscleZones))
-                Toggle(MoveCopy.text("zone.neck"), isOn: setBinding("neck", in: $muscleZones))
-                Toggle(MoveCopy.text("zone.wrists"), isOn: setBinding("wrists", in: $muscleZones))
-                Toggle(MoveCopy.text("zone.hips"), isOn: setBinding("hips", in: $muscleZones))
-            }
-            TextField(MoveCopy.text("exercise.instructionsOptional"), text: $instructions, axis: .vertical)
-            Section(MoveCopy.text("exercise.variants")) {
-                TextField(MoveCopy.text("exercise.easierVariantID"), text: $easierVariantID)
-                TextField(MoveCopy.text("exercise.harderVariantID"), text: $harderVariantID)
-            }
-            HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("common.create")) {
-                let variantTags = Set([easierVariantID.isEmpty ? "" : "easier-\(easierVariantID)", harderVariantID.isEmpty ? "" : "harder-\(harderVariantID)"]).filter { !$0.isEmpty }
-                onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags.union(variantTags).union(["difficulty-\(difficulty)"]), muscleZones: muscleZones)); dismiss()
-            }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
-        }.padding().frame(width: 420, height: 700)
+            .padding(16)
+        }
+        .frame(width: 520, height: 620)
+    }
+
+    private func save() {
+        let variantTags = Set([easierVariantID.isEmpty ? "" : "easier-\(easierVariantID)", harderVariantID.isEmpty ? "" : "harder-\(harderVariantID)"]).filter { !$0.isEmpty }
+        onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags.union(variantTags).union(["difficulty-\(difficulty)"]), muscleZones: muscleZones))
+        dismiss()
     }
 
     private func setBinding(_ value: String, in set: Binding<Set<String>>) -> Binding<Bool> {
@@ -197,62 +216,76 @@ private struct EditExerciseView: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable var exercise: CustomExerciseEntity
     var body: some View {
-        Form {
-            TextField(MoveCopy.text("exercise.name"), text: $exercise.name)
-            TextField(MoveCopy.text("exercise.emoji"), text: $exercise.emoji)
-            Picker(MoveCopy.text("exercise.category"), selection: $exercise.categoryRaw) {
-                ForEach(ExerciseCategory.allCases, id: \.rawValue) { category in
-                    Text(category.rawValue.capitalized).tag(category.rawValue)
+        VStack(spacing: 0) {
+            ScrollView(.vertical) {
+                Form {
+                    TextField(MoveCopy.text("exercise.name"), text: $exercise.name)
+                    TextField(MoveCopy.text("exercise.emoji"), text: $exercise.emoji)
+                    Picker(MoveCopy.text("exercise.category"), selection: $exercise.categoryRaw) {
+                        ForEach(ExerciseCategory.allCases, id: \.rawValue) { category in
+                            Text(category.rawValue.capitalized).tag(category.rawValue)
+                        }
+                    }
+                    Picker(MoveCopy.text("exercise.metric"), selection: $exercise.metricRaw) {
+                        Text(MoveCopy.text("exercise.repetitions")).tag(ExerciseMetric.repetitions.rawValue)
+                        Text(MoveCopy.text("exercise.seconds")).tag(ExerciseMetric.seconds.rawValue)
+                        Text(MoveCopy.text("exercise.minutes")).tag(ExerciseMetric.minutes.rawValue)
+                        Text(MoveCopy.text("exercise.free")).tag(ExerciseMetric.free.rawValue)
+                    }
+                    Picker(MoveCopy.text("exercise.difficulty"), selection: difficultyBinding) {
+                        Text(MoveCopy.text("exercise.easy")).tag(1)
+                        Text(MoveCopy.text("exercise.intermediate")).tag(2)
+                        Text(MoveCopy.text("exercise.hard")).tag(3)
+                    }
+                    Stepper(String(format: MoveCopy.text("exercise.defaultAmount"), exercise.defaultAmount), value: $exercise.defaultAmount, in: 1...999)
+                    Section(MoveCopy.text("exercise.equipment")) {
+                        Toggle(MoveCopy.text("equipment.chair"), isOn: equipmentBinding("chair"))
+                        Toggle(MoveCopy.text("equipment.pullupBar"), isOn: equipmentBinding("pullup-bar"))
+                        Toggle(MoveCopy.text("equipment.band"), isOn: equipmentBinding("band"))
+                        Toggle(MoveCopy.text("equipment.dumbbells"), isOn: equipmentBinding("dumbbells"))
+                    }
+                    Section(MoveCopy.text("exercise.constraints")) {
+                        Toggle(MoveCopy.text("constraint.floor"), isOn: tagBinding("floor"))
+                        Toggle(MoveCopy.text("constraint.jump"), isOn: tagBinding("jump"))
+                        Toggle(MoveCopy.text("constraint.wrists"), isOn: tagBinding("wrists"))
+                        Toggle(MoveCopy.text("constraint.noisy"), isOn: tagBinding("noisy"))
+                        Toggle(MoveCopy.text("constraint.knees"), isOn: tagBinding("knees"))
+                        Toggle(MoveCopy.text("constraint.back"), isOn: tagBinding("back"))
+                        Toggle(MoveCopy.text("constraint.space"), isOn: tagBinding("space"))
+                    }
+                    Section(MoveCopy.text("exercise.muscleZones")) {
+                        Toggle(MoveCopy.text("zone.fullBody"), isOn: zoneBinding("fullBody"))
+                        Toggle(MoveCopy.text("zone.chest"), isOn: zoneBinding("chest"))
+                        Toggle(MoveCopy.text("zone.legs"), isOn: zoneBinding("legs"))
+                        Toggle(MoveCopy.text("zone.glutes"), isOn: zoneBinding("glutes"))
+                        Toggle(MoveCopy.text("zone.back"), isOn: zoneBinding("back"))
+                        Toggle(MoveCopy.text("zone.shoulders"), isOn: zoneBinding("shoulders"))
+                        Toggle(MoveCopy.text("zone.arms"), isOn: zoneBinding("arms"))
+                        Toggle(MoveCopy.text("zone.core"), isOn: zoneBinding("core"))
+                        Toggle(MoveCopy.text("zone.calves"), isOn: zoneBinding("calves"))
+                        Toggle(MoveCopy.text("zone.neck"), isOn: zoneBinding("neck"))
+                        Toggle(MoveCopy.text("zone.wrists"), isOn: zoneBinding("wrists"))
+                        Toggle(MoveCopy.text("zone.hips"), isOn: zoneBinding("hips"))
+                    }
+                    TextField(MoveCopy.text("exercise.instructions"), text: $exercise.instructions, axis: .vertical)
+                    Section(MoveCopy.text("exercise.variants")) {
+                        TextField(MoveCopy.text("exercise.easierVariantID"), text: variantBinding(prefix: "easier-"))
+                        TextField(MoveCopy.text("exercise.harderVariantID"), text: variantBinding(prefix: "harder-"))
+                    }
                 }
+                .formStyle(.grouped)
+                .fixedSize(horizontal: false, vertical: true)
             }
-            Picker(MoveCopy.text("exercise.metric"), selection: $exercise.metricRaw) {
-                Text(MoveCopy.text("exercise.repetitions")).tag(ExerciseMetric.repetitions.rawValue)
-                Text(MoveCopy.text("exercise.seconds")).tag(ExerciseMetric.seconds.rawValue)
-                Text(MoveCopy.text("exercise.minutes")).tag(ExerciseMetric.minutes.rawValue)
-                Text(MoveCopy.text("exercise.free")).tag(ExerciseMetric.free.rawValue)
+            .defaultScrollAnchor(.top)
+            Divider()
+            HStack {
+                Spacer()
+                Button(MoveCopy.text("common.done")) { exercise.updatedAt = .now; dismiss() }
+                    .buttonStyle(.borderedProminent)
             }
-            Picker(MoveCopy.text("exercise.difficulty"), selection: difficultyBinding) {
-                Text(MoveCopy.text("exercise.easy")).tag(1)
-                Text(MoveCopy.text("exercise.intermediate")).tag(2)
-                Text(MoveCopy.text("exercise.hard")).tag(3)
-            }
-            Stepper(String(format: MoveCopy.text("exercise.defaultAmount"), exercise.defaultAmount), value: $exercise.defaultAmount, in: 1...999)
-            Section(MoveCopy.text("exercise.equipment")) {
-                Toggle(MoveCopy.text("equipment.chair"), isOn: equipmentBinding("chair"))
-                Toggle(MoveCopy.text("equipment.pullupBar"), isOn: equipmentBinding("pullup-bar"))
-                Toggle(MoveCopy.text("equipment.band"), isOn: equipmentBinding("band"))
-                Toggle(MoveCopy.text("equipment.dumbbells"), isOn: equipmentBinding("dumbbells"))
-            }
-            Section(MoveCopy.text("exercise.constraints")) {
-                Toggle(MoveCopy.text("constraint.floor"), isOn: tagBinding("floor"))
-                Toggle(MoveCopy.text("constraint.jump"), isOn: tagBinding("jump"))
-                Toggle(MoveCopy.text("constraint.wrists"), isOn: tagBinding("wrists"))
-                Toggle(MoveCopy.text("constraint.noisy"), isOn: tagBinding("noisy"))
-                Toggle(MoveCopy.text("constraint.knees"), isOn: tagBinding("knees"))
-                Toggle(MoveCopy.text("constraint.back"), isOn: tagBinding("back"))
-                Toggle(MoveCopy.text("constraint.space"), isOn: tagBinding("space"))
-            }
-            Section(MoveCopy.text("exercise.muscleZones")) {
-                Toggle(MoveCopy.text("zone.fullBody"), isOn: zoneBinding("fullBody"))
-                Toggle(MoveCopy.text("zone.chest"), isOn: zoneBinding("chest"))
-                Toggle(MoveCopy.text("zone.legs"), isOn: zoneBinding("legs"))
-                Toggle(MoveCopy.text("zone.glutes"), isOn: zoneBinding("glutes"))
-                Toggle(MoveCopy.text("zone.back"), isOn: zoneBinding("back"))
-                Toggle(MoveCopy.text("zone.shoulders"), isOn: zoneBinding("shoulders"))
-                Toggle(MoveCopy.text("zone.arms"), isOn: zoneBinding("arms"))
-                Toggle(MoveCopy.text("zone.core"), isOn: zoneBinding("core"))
-                Toggle(MoveCopy.text("zone.calves"), isOn: zoneBinding("calves"))
-                Toggle(MoveCopy.text("zone.neck"), isOn: zoneBinding("neck"))
-                Toggle(MoveCopy.text("zone.wrists"), isOn: zoneBinding("wrists"))
-                Toggle(MoveCopy.text("zone.hips"), isOn: zoneBinding("hips"))
-            }
-            TextField(MoveCopy.text("exercise.instructions"), text: $exercise.instructions, axis: .vertical)
-            Section(MoveCopy.text("exercise.variants")) {
-                TextField(MoveCopy.text("exercise.easierVariantID"), text: variantBinding(prefix: "easier-"))
-                TextField(MoveCopy.text("exercise.harderVariantID"), text: variantBinding(prefix: "harder-"))
-            }
-            Button(MoveCopy.text("common.done")) { exercise.updatedAt = .now; dismiss() }.buttonStyle(.borderedProminent)
-        }.padding().frame(width: 380, height: 740)
+            .padding(16)
+        }
+        .frame(width: 520, height: 620)
     }
 
     private func tagBinding(_ tag: String) -> Binding<Bool> {

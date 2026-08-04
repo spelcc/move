@@ -55,9 +55,12 @@ import MoveCore
             Button(MoveCopy.text("menu.moveNow")) { showNotch() }
             Button(MoveCopy.text("menu.history")) {
                 store.selectedTab = "Historique"
-                openWindow(id: "dashboard")
+                openDashboard()
             }
-            Button(MoveCopy.text("menu.workout10")) { store.start(ExerciseLibrary.quickWorkouts[1]) }
+            Button(MoveCopy.text("menu.workout10")) {
+                store.selectedTab = "Séances"
+                openDashboard()
+            }
             Button(MoveCopy.text("menu.pauseHour")) { store.pauseReminders(until: .now.addingTimeInterval(3600)) }
             Button(MoveCopy.text("menu.pauseTomorrow")) {
                 let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: .now)) ?? .now.addingTimeInterval(86400)
@@ -67,7 +70,10 @@ import MoveCore
                 try? LaunchAtLoginService.setEnabled(!LaunchAtLoginService.isEnabled)
             }
             Divider()
-            SettingsLink { Text(MoveCopy.text("menu.settings")) }
+            Button(MoveCopy.text("menu.settings")) {
+                store.selectedTab = "Réglages"
+                openDashboard()
+            }
             Button(MoveCopy.text("menu.quit")) { NSApplication.shared.terminate(nil) }
         }
         Window("Move", id: "dashboard") { DashboardView(store: store).modelContainer(container) }
@@ -88,5 +94,13 @@ import MoveCore
         controller = NotchPanelController(rootView: rootView)
         panel = controller
         controller?.show(target: store.appearance.screenTarget)
+    }
+
+    private func openDashboard() {
+        openWindow(id: "dashboard")
+        DispatchQueue.main.async {
+            NSApp.activate(ignoringOtherApps: true)
+            NSApp.windows.first(where: { $0.title == "Move" })?.makeKeyAndOrderFront(nil)
+        }
     }
 }

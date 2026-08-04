@@ -11,6 +11,8 @@
 "notch.action.done" = "Done";
 "notch.action.skip" = "Not now";
 "notch.action.snooze" = "Snooze";
+"notch.action.other" = "Other";
+"notch.actions" = "Reminder actions";
 "notch.action.change" = "Change";
 "nav.today" = "Today";
 "nav.history" = "History";

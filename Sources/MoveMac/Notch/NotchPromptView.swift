@@ -40,29 +40,26 @@ struct NotchPromptView: View {
                 Text(reaction.title).font(.headline).foregroundStyle(.white).multilineTextAlignment(.center)
                 Text(MoveCopy.text("notch.reaction.untilNext")).font(.caption).foregroundStyle(.white.opacity(0.65))
             } else {
-                HStack(spacing: 10) {
+                VStack(spacing: 6) {
                     if store.appearance.emojisEnabled {
                         Text(store.currentExercise.emoji).font(.system(size: 28)).accessibilityHidden(true)
                     }
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(prompt).font(.headline).foregroundStyle(.white).accessibilityAddTraits(.isHeader)
-                        Text(subMessage).font(.caption).foregroundStyle(.white.opacity(0.65))
-                    }
-                    Spacer()
+                    Text(prompt).font(.headline).foregroundStyle(.white).multilineTextAlignment(.center).accessibilityAddTraits(.isHeader)
+                    Text(subMessage).font(.caption).foregroundStyle(.white.opacity(0.65)).multilineTextAlignment(.center)
                 }
                 HStack(spacing: 8) {
-                    Button(MoveCopy.text("notch.action.done")) { complete() }.buttonStyle(.borderedProminent).tint(.white).foregroundStyle(.black)
-                    Button(MoveCopy.text("notch.action.skip")) { skip() }.buttonStyle(.bordered).tint(.white)
+                    Button(MoveCopy.text("notch.action.snooze")) { snooze(for: store.reminder.snoozeMinutes) }
+                    Button(MoveCopy.text("notch.action.done")) { complete() }
+                        .buttonStyle(.borderedProminent).tint(.white).foregroundStyle(.black)
+                    Button(MoveCopy.text("notch.action.other")) { store.chooseNext(); onResize(460, 300) }
+                        .keyboardShortcut("c", modifiers: [.command])
                 }
-                HStack(spacing: 18) {
-                    Menu(MoveCopy.text("notch.action.snooze")) {
-                        Button("15 minutes") { snooze(for: 15) }
-                        Button("30 minutes") { snooze(for: 30) }
-                    }
-                    .menuStyle(.borderlessButton)
-                    .foregroundStyle(.white.opacity(0.75))
-                    Button(MoveCopy.text("notch.action.change")) { store.chooseNext(); onResize(460, 300) }.keyboardShortcut("c", modifiers: [.command]).buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
-                }
+                .buttonStyle(.bordered)
+                .tint(.white)
+                .frame(maxWidth: .infinity)
+                .controlSize(.large)
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(MoveCopy.text("notch.actions"))
             }
         }
         // Leave the notch depth clear: text starts below the physical cutout,

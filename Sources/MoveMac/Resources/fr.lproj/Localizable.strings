@@ -11,6 +11,8 @@
 "notch.action.done" = "C’est fait";
 "notch.action.skip" = "La flemme";
 "notch.action.snooze" = "Reporter";
+"notch.action.other" = "Autre";
+"notch.actions" = "Actions du rappel";
 "notch.action.change" = "Changer";
 "nav.today" = "Aujourd’hui";
 "nav.history" = "Historique";

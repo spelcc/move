@@ -9,6 +9,7 @@ struct MovementSettingsView: View {
     @Query private var customExercises: [CustomExerciseEntity]
     @State private var search = ""
     @State private var categoryFilter: ExerciseCategory?
+    @State private var equipmentFilter: String?
     @State private var showingNewExercise = false
     @State private var editingExercise: CustomExerciseEntity?
     var body: some View {
@@ -48,6 +49,12 @@ struct MovementSettingsView: View {
                     Text(category.rawValue.capitalized).tag(category as ExerciseCategory?)
                 }
             }
+            Picker(MoveCopy.text("exercise.equipment"), selection: $equipmentFilter) {
+                Text(MoveCopy.text("exercise.allEquipment")).tag(nil as String?)
+                ForEach(allEquipment, id: \.self) { equipment in
+                    Text(equipmentLabel(equipment)).tag(equipment as String?)
+                }
+            }
             Button(MoveCopy.text("exercise.new"), systemImage: "plus") { showingNewExercise = true }
         }
         .sheet(isPresented: $showingNewExercise) { NewExerciseView { exercise in
@@ -61,14 +68,28 @@ struct MovementSettingsView: View {
     private var filteredBuiltInExercises: [Exercise] {
         ExerciseLibrary.all.filter {
             (categoryFilter == nil || $0.category == categoryFilter)
+                && (equipmentFilter == nil || $0.equipment.contains(equipmentFilter!))
                 && (search.isEmpty || $0.name.localizedStandardContains(search))
         }
     }
     private var visibleCustomExercises: [CustomExerciseEntity] {
         customExercises.filter {
-            !$0.archived
+                !$0.archived
                 && (categoryFilter == nil || $0.categoryRaw == categoryFilter?.rawValue)
+                && (equipmentFilter == nil || $0.equipment.contains(equipmentFilter!))
                 && (search.isEmpty || $0.name.localizedStandardContains(search))
+        }
+    }
+    private var allEquipment: [String] {
+        Set((ExerciseLibrary.all.flatMap(\.equipment) + customExercises.flatMap(\.equipment))).sorted()
+    }
+    private func equipmentLabel(_ value: String) -> String {
+        switch value {
+        case "chair": MoveCopy.text("equipment.chair")
+        case "pullup-bar": MoveCopy.text("equipment.pullupBar")
+        case "band": MoveCopy.text("equipment.band")
+        case "dumbbells": MoveCopy.text("equipment.dumbbells")
+        default: value
         }
     }
     private func customEnabledBinding(_ exercise: CustomExerciseEntity) -> Binding<Bool> {

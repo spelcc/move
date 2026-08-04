@@ -3,6 +3,7 @@ import MoveCore
 
 struct NotchPromptView: View {
     @Bindable var store: MoveStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let onClose: () -> Void
     let onResize: (CGFloat, CGFloat) -> Void
     @State private var bumped = false
@@ -77,7 +78,7 @@ struct NotchPromptView: View {
         .offset(y: bumped ? 0 : -18)
         .opacity(bumped ? 1 : 0)
         .onAppear {
-            if store.appearance.animations == .disabled { bumped = true }
+            if reduceMotion || store.appearance.animations == .disabled { bumped = true }
             else {
                 let response = store.appearance.animations == .reduced ? 0.28 : 0.42
                 withAnimation(.spring(response: response, dampingFraction: 0.68)) { bumped = true }

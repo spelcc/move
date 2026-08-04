@@ -23,6 +23,15 @@ jobs:
           swift --version
       - name: Install XcodeGen
         run: brew install xcodegen
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            .build
+            ~/Library/Developer/Xcode/DerivedData
+          key: swiftpm-${{ runner.os }}-${{ hashFiles('Package.swift', 'Package.resolved') }}
+          restore-keys: |
+            swiftpm-${{ runner.os }}-
       - name: Generate Xcode project
         run: xcodegen generate
       - name: Test core
@@ -37,6 +46,8 @@ jobs:
           APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -path '*/Build/Products/Release/Move.app' -print -quit)
           test -n "$APP_PATH"
           ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" Move-unsigned.zip
+          test -s Move-unsigned.zip
+          test "$(stat -f%z Move-unsigned.zip)" -lt 104857600
       - name: Upload unsigned artifact
         uses: actions/upload-artifact@v4
         with:

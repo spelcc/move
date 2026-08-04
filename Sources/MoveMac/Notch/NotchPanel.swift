@@ -17,7 +17,7 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
     private(set) var state: NotchPanelState = .hidden
 
     func show(width: CGFloat = 420, height: CGFloat = 150) {
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) }) ?? NSScreen.main else { return }
+        guard let screen = targetScreen() else { return }
         state = .bumping
         let notch = screen.auxiliaryTopLeftArea.map { left in
             NSRect(x: left.maxX, y: screen.frame.maxY - 2, width: (screen.auxiliaryTopRightArea?.minX ?? left.maxX) - left.maxX, height: 2)
@@ -28,6 +28,11 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         panel.setFrame(NSRect(x: x, y: y, width: width, height: height), display: true)
         panel.orderFrontRegardless()
         withAnimation(.spring(response: 0.42, dampingFraction: 0.68)) { state = .expanded }
+    }
+
+    private func targetScreen() -> NSScreen? {
+        if let main = NSScreen.main { return main }
+        return NSScreen.screens.first
     }
     func hide() { state = .closing; panel.orderOut(nil); state = .hidden }
 }

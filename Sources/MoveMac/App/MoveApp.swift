@@ -56,8 +56,10 @@ import MoveCore
             }
     }
     private func showNotch() {
-        let controller = NotchPanelController(rootView: NotchPromptView(store: store).modelContainer(container))
+        var controller: NotchPanelController?
+        let rootView = NotchPromptView(store: store, onClose: { controller?.hide() }).modelContainer(container)
+        controller = NotchPanelController(rootView: rootView)
         panel = controller
-        controller.show()
+        controller?.show()
     }
 }

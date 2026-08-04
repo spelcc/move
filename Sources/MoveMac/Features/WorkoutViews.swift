@@ -240,7 +240,7 @@ private struct WorkoutRunnerView: View {
                 .frame(maxWidth: 360)
             Text(store.workoutState == .resting ? "Repos" : exerciseName).font(.largeTitle.bold())
             Text(store.workoutState == .resting ? "Prochain : \(nextExerciseName)" : "Suivant : \(nextExerciseName)").foregroundStyle(.secondary)
-            Text(store.workout.mode == .repetitions ? "\(store.secondsRemaining) reps" : "\(store.secondsRemaining)")
+            Text(workout.mode == .repetitions ? "\(store.secondsRemaining) reps" : "\(store.secondsRemaining)")
                 .font(.system(size: 80, weight: .black, design: .rounded)).contentTransition(.numericText())
             HStack {
                 Button(store.workoutState == .paused ? "Reprendre" : "Pause") { store.togglePause() }

@@ -8,6 +8,8 @@ struct OnboardingView: View {
     @State private var step = 0
     @State private var interval = 60
     @State private var notificationsEnabled = false
+    @State private var launchAtLogin = LaunchAtLoginService.isEnabled
+    @State private var launchError: String?
     let onTestNotch: () -> Void
 
     init(store: MoveStore, onTestNotch: @escaping () -> Void = {}) { self.store = store; self.onTestNotch = onTestNotch }
@@ -35,6 +37,9 @@ struct OnboardingView: View {
                     Text("Réduites").tag(AnimationMode.reduced)
                     Text("Désactivées").tag(AnimationMode.disabled)
                 }
+            } else if step == 3 {
+                Toggle("Lancer Move à la connexion", isOn: Binding(get: { launchAtLogin }, set: setLaunchAtLogin))
+                if let launchError { Text(launchError).font(.caption).foregroundStyle(.red) }
             }
             Spacer()
             HStack {
@@ -44,7 +49,12 @@ struct OnboardingView: View {
                     if step < pages.count - 1 { step += 1 } else { finish() }
                 }.buttonStyle(.borderedProminent)
             }
-        }.padding(36).frame(width: 460, height: 340)
+        }.padding(36).frame(width: 460, height: 380)
+    }
+
+    private func setLaunchAtLogin(_ enabled: Bool) {
+        do { try LaunchAtLoginService.setEnabled(enabled); launchAtLogin = enabled }
+        catch { launchError = "Lancement automatique indisponible pour le moment." }
     }
 
     private func finish() {

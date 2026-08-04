@@ -40,35 +40,35 @@ import MoveCore
     var body: some Scene {
         MenuBarExtra("Move", systemImage: "figure.run") {
             if persistenceError != nil {
-                Label("Stockage local indisponible", systemImage: "exclamationmark.triangle")
+                Label(MoveCopy.text("menu.storageUnavailable"), systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.orange)
-                Text("Les données de cette session ne survivront pas au redémarrage.")
+                Text(MoveCopy.text("menu.storageSessionOnly"))
                     .font(.caption)
                 Divider()
             }
             if let pausedUntil = store.reminderState.pausedUntil, pausedUntil > .now {
-                Label("Rappels en pause jusqu’à \(pausedUntil, style: .time)", systemImage: "pause.circle")
+                Label(String(format: MoveCopy.text("menu.pausedUntil"), pausedUntil.formatted(date: .omitted, time: .short)), systemImage: "pause.circle")
                     .foregroundStyle(.orange)
             } else if let next = store.reminderState.nextReminderAt {
-                Text("Prochain rappel : \(next, style: .time)")
+                Text(String(format: MoveCopy.text("menu.nextReminder"), next.formatted(date: .omitted, time: .short)))
             }
-            Button("Bouger maintenant") { showNotch() }
-            Button("Ouvrir l’historique") {
+            Button(MoveCopy.text("menu.moveNow")) { showNotch() }
+            Button(MoveCopy.text("menu.history")) {
                 store.selectedTab = "Historique"
                 openWindow(id: "dashboard")
             }
-            Button("Séance 10 min") { store.start(ExerciseLibrary.quickWorkouts[1]) }
-            Button("Pause 1 heure") { store.pauseReminders(until: .now.addingTimeInterval(3600)) }
-            Button("Pause jusqu’à demain") {
+            Button(MoveCopy.text("menu.workout10")) { store.start(ExerciseLibrary.quickWorkouts[1]) }
+            Button(MoveCopy.text("menu.pauseHour")) { store.pauseReminders(until: .now.addingTimeInterval(3600)) }
+            Button(MoveCopy.text("menu.pauseTomorrow")) {
                 let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: .now)) ?? .now.addingTimeInterval(86400)
                 store.pauseReminders(until: tomorrow)
             }
-            Button(LaunchAtLoginService.isEnabled ? "Désactiver le lancement automatique" : "Lancer Move à la connexion") {
+            Button(LaunchAtLoginService.isEnabled ? MoveCopy.text("menu.disableLaunch") : MoveCopy.text("menu.enableLaunch")) {
                 try? LaunchAtLoginService.setEnabled(!LaunchAtLoginService.isEnabled)
             }
             Divider()
-            SettingsLink { Text("Ouvrir Move") }
-            Button("Quitter") { NSApplication.shared.terminate(nil) }
+            SettingsLink { Text(MoveCopy.text("menu.settings")) }
+            Button(MoveCopy.text("menu.quit")) { NSApplication.shared.terminate(nil) }
         }
         Window("Move", id: "dashboard") { DashboardView(store: store).modelContainer(container) }
         Window("Bienvenue dans Move", id: "onboarding") { OnboardingView(store: store) { showNotch() } }

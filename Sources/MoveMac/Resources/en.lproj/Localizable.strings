@@ -160,3 +160,16 @@
 "runner.skipExercise" = "Skip this exercise";
 "runner.resumeWorkout" = "Resume workout";
 "runner.pauseWorkout" = "Pause workout";
+"menu.storageUnavailable" = "Local storage unavailable";
+"menu.storageSessionOnly" = "This session's data will not survive a restart.";
+"menu.pausedUntil" = "Reminders paused until %@";
+"menu.nextReminder" = "Next reminder: %@";
+"menu.moveNow" = "Move now";
+"menu.history" = "Open history";
+"menu.workout10" = "10-minute workout";
+"menu.pauseHour" = "Pause for 1 hour";
+"menu.pauseTomorrow" = "Pause until tomorrow";
+"menu.disableLaunch" = "Disable launch at login";
+"menu.enableLaunch" = "Launch Move at login";
+"menu.settings" = "Open Move";
+"menu.quit" = "Quit";

@@ -37,3 +37,12 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move.uitests
+schemes:
+  Move:
+    build:
+      targets:
+        Move: all
+        MoveUITests: [test]
+    test:
+      targets:
+        - MoveUITests

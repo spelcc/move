@@ -10,6 +10,7 @@ struct MovementSettingsView: View {
     @State private var search = ""
     @State private var categoryFilter: ExerciseCategory?
     @State private var equipmentFilter: String?
+    @State private var difficultyFilter: Int?
     @State private var showingNewExercise = false
     @State private var editingExercise: CustomExerciseEntity?
     var body: some View {
@@ -55,6 +56,12 @@ struct MovementSettingsView: View {
                     Text(equipmentLabel(equipment)).tag(equipment as String?)
                 }
             }
+            Picker(MoveCopy.text("exercise.difficulty"), selection: $difficultyFilter) {
+                Text(MoveCopy.text("exercise.allDifficulties")).tag(nil as Int?)
+                Text(MoveCopy.text("exercise.easy")).tag(1 as Int?)
+                Text(MoveCopy.text("exercise.intermediate")).tag(2 as Int?)
+                Text(MoveCopy.text("exercise.hard")).tag(3 as Int?)
+            }
             Button(MoveCopy.text("exercise.new"), systemImage: "plus") { showingNewExercise = true }
         }
         .sheet(isPresented: $showingNewExercise) { NewExerciseView { exercise in
@@ -69,6 +76,7 @@ struct MovementSettingsView: View {
         ExerciseLibrary.all.filter {
             (categoryFilter == nil || $0.category == categoryFilter)
                 && (equipmentFilter == nil || $0.equipment.contains(equipmentFilter!))
+                && (difficultyFilter == nil || $0.difficulty == difficultyFilter)
                 && (search.isEmpty || $0.name.localizedStandardContains(search))
         }
     }
@@ -77,6 +85,7 @@ struct MovementSettingsView: View {
                 !$0.archived
                 && (categoryFilter == nil || $0.categoryRaw == categoryFilter?.rawValue)
                 && (equipmentFilter == nil || $0.equipment.contains(equipmentFilter!))
+                && (difficultyFilter == nil || $0.exercise?.difficulty == difficultyFilter)
                 && (search.isEmpty || $0.name.localizedStandardContains(search))
         }
     }

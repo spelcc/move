@@ -203,6 +203,11 @@
 "exercise.equipment" = "Equipment";
 "exercise.allCategories" = "All categories";
 "exercise.allEquipment" = "All equipment";
+"exercise.difficulty" = "Difficulty";
+"exercise.allDifficulties" = "All levels";
+"exercise.easy" = "Easy";
+"exercise.intermediate" = "Intermediate";
+"exercise.hard" = "Hard";
 "settings.interval" = "Every %d minutes";
 "settings.snoozeDefault" = "Default snooze: %d min";
 "settings.startHour" = "Start at %d h";

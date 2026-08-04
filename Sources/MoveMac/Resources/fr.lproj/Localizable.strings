@@ -24,6 +24,14 @@
 "stats.acceptedReminders" = "rappels acceptés";
 "stats.ignoredReminders" = "rappels ignorés";
 "stats.workouts" = "séances";
+"progress.thisWeek" = "Cette semaine";
+"progress.activeDays" = "jours actifs";
+"progress.currentStreak" = "série actuelle";
+"progress.bestStreak" = "meilleure série";
+"progress.bestDay" = "record du jour";
+"progress.byExercise" = "Par exercice";
+"progress.record" = "record";
+"progress.byCategory" = "Par catégorie";
 "empty.activity.title" = "Rien pour le moment";
 "empty.activity.message" = "Ton premier mouvement attend patiemment.";
 "settings.general" = "Général";

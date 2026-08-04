@@ -9,28 +9,28 @@ struct MoveProgressView: View {
         let stats = StatisticsService.currentWeek(activities.map(\.record))
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                Text("Progression").font(.largeTitle.bold())
-                Text("Cette semaine").font(.title2.bold())
+                Text(MoveCopy.text("nav.progress")).font(.largeTitle.bold())
+                Text(MoveCopy.text("progress.thisWeek")).font(.title2.bold())
                 HStack {
-                    ProgressCard(value: "\(stats.activeDays)", label: "jours actifs")
-                    ProgressCard(value: "\(stats.completedCount)", label: "mouvements")
-                    ProgressCard(value: "\(stats.totalRepetitions)", label: "répétitions")
-                    ProgressCard(value: "\(stats.activeSeconds / 60) min", label: "actives")
+                    ProgressCard(value: "\(stats.activeDays)", label: MoveCopy.text("progress.activeDays"))
+                    ProgressCard(value: "\(stats.completedCount)", label: MoveCopy.text("stats.movements"))
+                    ProgressCard(value: "\(stats.totalRepetitions)", label: MoveCopy.text("stats.repetitions"))
+                    ProgressCard(value: "\(stats.activeSeconds / 60) min", label: MoveCopy.text("stats.activeMinutes"))
                 }
                 HStack {
-                    ProgressCard(value: "\(stats.currentStreak) j", label: "série actuelle")
-                    ProgressCard(value: "\(stats.longestStreak) j", label: "meilleure série")
-                    ProgressCard(value: "\(stats.bestDayCompletedCount)", label: "record du jour")
+                    ProgressCard(value: "\(stats.currentStreak) j", label: MoveCopy.text("progress.currentStreak"))
+                    ProgressCard(value: "\(stats.longestStreak) j", label: MoveCopy.text("progress.bestStreak"))
+                    ProgressCard(value: "\(stats.bestDayCompletedCount)", label: MoveCopy.text("progress.bestDay"))
                 }
-                Text("Par exercice").font(.title2.bold())
+                Text(MoveCopy.text("progress.byExercise")).font(.title2.bold())
                 ForEach(exerciseRows) { row in
                     HStack {
                         Text(exerciseName(for: row.id))
                         Spacer()
-                        Text("\(row.totalAmount) • record \(row.bestDayAmount)").foregroundStyle(.secondary).monospacedDigit()
+                        Text("\(row.totalAmount) • \(MoveCopy.text("progress.record")) \(row.bestDayAmount)").foregroundStyle(.secondary).monospacedDigit()
                     }
                 }
-                Text("Par catégorie").font(.title2.bold())
+                Text(MoveCopy.text("progress.byCategory")).font(.title2.bold())
                 ForEach(categoryRows) { row in
                     HStack {
                         Text(row.category.rawValue.capitalized)

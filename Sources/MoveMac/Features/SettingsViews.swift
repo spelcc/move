@@ -71,7 +71,7 @@ struct MovementSettingsView: View {
             try? modelContext.save()
         } }
         .sheet(item: $editingExercise) { exercise in EditExerciseView(exercise: exercise) }
-        .searchable(text: $search, prompt: "Rechercher un mouvement").navigationTitle("Mouvements")
+        .searchable(text: $search, prompt: MoveCopy.text("exercise.searchPrompt")).navigationTitle(MoveCopy.text("nav.movements"))
     }
 
     private var filteredBuiltInExercises: [Exercise] {
@@ -113,7 +113,7 @@ struct MovementSettingsView: View {
     }
     private func archive(_ exercise: CustomExerciseEntity) { exercise.archived = true; exercise.updatedAt = .now; try? modelContext.save() }
     private func duplicate(_ exercise: CustomExerciseEntity) {
-        modelContext.insert(CustomExerciseEntity(name: "\(exercise.name) (copie)", emoji: exercise.emoji, category: ExerciseCategory(rawValue: exercise.categoryRaw) ?? .strength, metric: ExerciseMetric(rawValue: exercise.metricRaw) ?? .repetitions, defaultAmount: exercise.defaultAmount, instructions: exercise.instructions, equipment: exercise.equipment, tags: exercise.tags.subtracting(["personnalisé"]), muscleZones: exercise.muscleZones))
+        modelContext.insert(CustomExerciseEntity(name: String(format: MoveCopy.text("workout.copyName"), exercise.name), emoji: exercise.emoji, category: ExerciseCategory(rawValue: exercise.categoryRaw) ?? .strength, metric: ExerciseMetric(rawValue: exercise.metricRaw) ?? .repetitions, defaultAmount: exercise.defaultAmount, instructions: exercise.instructions, equipment: exercise.equipment, tags: exercise.tags.subtracting(["personnalisé"]), muscleZones: exercise.muscleZones))
         try? modelContext.save()
     }
 }

@@ -221,6 +221,8 @@
 "workout.copyName" = "%@ (copy)";
 "runner.stopWorkout" = "Stop workout";
 "exercise.defaultName" = "Movement";
+"exercise.customName" = "Custom movement";
+"exercise.searchPrompt" = "Search movements";
 "exercise.variants" = "Variants";
 "exercise.easierVariantID" = "Easier variant ID";
 "exercise.harderVariantID" = "Harder variant ID";

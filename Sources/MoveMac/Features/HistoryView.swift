@@ -7,7 +7,7 @@ struct HistoryView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ActivityEntity.performedAt, order: .reverse) private var activities: [ActivityEntity]
     @Query private var customExercises: [CustomExerciseEntity]
-    @Query(sort: \.updatedAt, order: .reverse) private var workoutSessions: [WorkoutSessionEntity]
+    @Query private var workoutSessions: [WorkoutSessionEntity]
     @State private var editing: ActivityEntity?
     @State private var adding = false
     @State private var exportingJSON = false

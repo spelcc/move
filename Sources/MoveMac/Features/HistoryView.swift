@@ -217,7 +217,7 @@ private struct WorkoutSessionDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(session.workoutName).font(.title.bold())
-            Text(String(format: MoveCopy.text("history.completedAt"), session.updatedAt.formatted(date: .long, time: .short)))
+            Text(String(format: MoveCopy.text("history.completedAt"), session.updatedAt.formatted(date: .long, time: .shortened)))
                 .foregroundStyle(.secondary)
             HStack {
                 Label(String(format: MoveCopy.text("history.plannedMinutes"), session.plannedDurationSeconds / 60), systemImage: "calendar")

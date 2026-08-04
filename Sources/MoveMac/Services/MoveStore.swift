@@ -7,7 +7,7 @@ import MoveCore
 
 @MainActor @Observable final class MoveStore {
     var currentExercise: Exercise = ExerciseLibrary.all.first!
-    var isExpanded = false
+    var panelState: NotchPanelState = .hidden
     var selectedTab = "Aujourd’hui"
     var reminder = ReminderPreferences()
     var reminderState = ReminderState()
@@ -53,7 +53,7 @@ import MoveCore
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in
                 try? await Task.sleep(for: .seconds(60))
-                self?.scheduleNextReminder()
+                self?.scheduleNextReminderAfterWake()
             }
         }
         NotificationCenter.default.addObserver(forName: NSNotification.Name.NSSystemClockDidChange, object: nil, queue: .main) { [weak self] _ in
@@ -87,6 +87,28 @@ import MoveCore
         }
     }
 
+    func scheduleNextReminderAfterWake(from now: Date = .now) {
+        guard let next = scheduler.nextDateAfterWake(now: now, preferences: reminder, state: reminderState) else {
+            MoveLogger.scheduler.warning("No compatible reminder date after wake")
+            return
+        }
+        reminderState.nextReminderAt = next
+        persistReminderState()
+        ReminderNotificationService.cancelPending()
+        Task { try? await ReminderNotificationService.schedule(exercise: currentExercise, at: next, sound: appearance.sounds) }
+    }
+
+    private func persistReminderState() {
+        let entity = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first ?? ReminderStateEntity(state: reminderState)
+        entity.nextReminderAt = reminderState.nextReminderAt
+        entity.lastReminderAt = reminderState.lastReminderAt
+        entity.lastUserInteractionAt = reminderState.lastUserInteractionAt
+        entity.pausedUntil = reminderState.pausedUntil
+        entity.updatedAt = .now
+        if entity.modelContext == nil { context.insert(entity) }
+        try? context.save()
+    }
+
     func pauseReminders(until date: Date) {
         reminderState.pausedUntil = date; reminderState.nextReminderAt = date
         let entity = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first ?? ReminderStateEntity(state: reminderState)
@@ -110,17 +132,17 @@ import MoveCore
     }
     func completeCurrent(source: ActivitySource = .hourly) {
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .completed, source: source)))
-        markReminderInteraction(); try? context.save(); isExpanded = false; chooseNext(); scheduleNextReminder()
+        markReminderInteraction(); try? context.save(); panelState = .success; chooseNext(); scheduleNextReminder()
     }
     func skipCurrent() {
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .skipped, source: .hourly)))
-        markReminderInteraction(); try? context.save(); isExpanded = false; chooseNext(); scheduleNextReminder()
+        markReminderInteraction(); try? context.save(); panelState = .skipped; chooseNext(); scheduleNextReminder()
     }
 
     func snoozeCurrent(for minutes: Int = 15) {
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .snoozed, source: .hourly)))
         markReminderInteraction(); reminderState.pausedUntil = .now.addingTimeInterval(TimeInterval(minutes * 60))
-        try? context.save(); isExpanded = false; chooseNext(); ReminderNotificationService.cancelPending(); scheduleNextReminder()
+        try? context.save(); panelState = .snooze; chooseNext(); ReminderNotificationService.cancelPending(); scheduleNextReminder()
     }
 
     private func markReminderInteraction() {

@@ -48,6 +48,17 @@ public struct ReminderScheduler: Sendable {
         if let pausedUntil = state.pausedUntil, pausedUntil > now { return pausedUntil }
         return nextDate(after: max(now, state.lastReminderAt ?? now), preferences: preferences, calendar: calendar)
     }
+
+    /// Recomputes one normal reminder after wake, never replaying all reminders
+    /// that would have elapsed while the Mac was asleep.
+    public func nextDateAfterWake(now: Date, preferences: ReminderPreferences, state: ReminderState,
+                                  wakeDelay: TimeInterval = 60, calendar: Calendar = .current) -> Date? {
+        let eligibleAt = now.addingTimeInterval(max(30, min(wakeDelay, 90)))
+        var refreshed = state
+        refreshed.lastReminderAt = max(state.lastReminderAt ?? .distantPast, eligibleAt)
+        refreshed.pausedUntil = nil
+        return nextDate(now: eligibleAt, preferences: preferences, state: refreshed, calendar: calendar)
+    }
 }
 
 public struct Statistics: Equatable, Sendable {

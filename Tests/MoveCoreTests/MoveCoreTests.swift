@@ -118,3 +118,17 @@ import Testing
     let state = ReminderState(pausedUntil: pause)
     #expect(ReminderScheduler().nextDate(now: now, preferences: .init(), state: state) == pause)
 }
+
+@Test func wakeSchedulerSchedulesOnlyOneFutureReminder() {
+    let calendar = Calendar(identifier: .gregorian)
+    let now = calendar.date(from: DateComponents(year: 2026, month: 8, day: 3, hour: 11, minute: 0))!
+    var preferences = ReminderPreferences()
+    preferences.intervalMinutes = 60
+    preferences.activeStartHour = 9
+    preferences.activeEndHour = 19
+    preferences.enabledWeekdays = [2, 3, 4, 5, 6]
+    let next = ReminderScheduler().nextDateAfterWake(now: now, preferences: preferences, state: .init(), wakeDelay: 60, calendar: calendar)
+    #expect(next != nil)
+    #expect(next! > now.addingTimeInterval(60))
+    #expect(next! < now.addingTimeInterval(2 * 60 * 60))
+}

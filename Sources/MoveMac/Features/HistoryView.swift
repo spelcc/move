@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 import MoveCore
 
 struct HistoryView: View {
@@ -7,6 +8,8 @@ struct HistoryView: View {
     @Query(sort: \ActivityEntity.performedAt, order: .reverse) private var activities: [ActivityEntity]
     @State private var editing: ActivityEntity?
     @State private var adding = false
+    @State private var exportingJSON = false
+    @State private var exportingCSV = false
     @State private var search = ""
 
     var body: some View {
@@ -27,11 +30,30 @@ struct HistoryView: View {
         }
         .searchable(text: $search, prompt: "Rechercher dans l’historique")
         .navigationTitle("Historique")
-        .toolbar { Button("Ajouter", systemImage: "plus") { adding = true } }
+        .toolbar {
+            Button("Ajouter", systemImage: "plus") { adding = true }
+            Menu("Exporter", systemImage: "square.and.arrow.up") {
+                Button("JSON") { exportingJSON = true }
+                Button("CSV") { exportingCSV = true }
+            }
+        }
         .overlay { if activities.isEmpty { ContentUnavailableView("Rien pour le moment", systemImage: "clock") } }
         .sheet(item: $editing) { ActivityEditView(activity: $0) }
         .sheet(isPresented: $adding) { AddActivityView() }
+        .fileExporter(isPresented: $exportingJSON, document: ActivityExportDocument(data: jsonData), contentType: .json, defaultFilename: "move-activities.json")
+        .fileExporter(isPresented: $exportingCSV, document: ActivityExportDocument(data: csvData), contentType: .commaSeparatedText, defaultFilename: "move-activities.csv")
     }
+
+    private var jsonData: Data { (try? DataTransferService.exportJSON(activities.map(\.record))) ?? Data() }
+    private var csvData: Data { Data(DataTransferService.exportCSV(activities.map(\.record)).utf8) }
+}
+
+struct ActivityExportDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.json, .commaSeparatedText] }
+    var data: Data
+    init(data: Data = Data()) { self.data = data }
+    init(configuration: ReadConfiguration) throws { data = configuration.file.regularFileContents ?? Data() }
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper { FileWrapper(regularFileWithContents: data) }
 }
 
 private struct AddActivityView: View {

@@ -67,6 +67,17 @@ import Testing
     #expect(try DataTransferService.importJSON(data, existing: [record]).isEmpty)
 }
 
+@Test func importPreviewSummarizesExistingAndRepeatedRecords() throws {
+    let existing = ActivityRecord(exerciseID: "squats", amount: 10, metric: .repetitions, status: .completed, source: .hourly)
+    let fresh = ActivityRecord(exerciseID: "plank", amount: 30, metric: .seconds, status: .completed, source: .manual)
+    let data = try DataTransferService.exportJSON([existing, fresh, fresh])
+    let preview = try DataTransferService.previewImport(data, existing: [existing])
+    #expect(preview.summary.total == 3)
+    #expect(preview.summary.newRecords == 1)
+    #expect(preview.summary.duplicateRecords == 2)
+    #expect(preview.records.first?.id == fresh.id)
+}
+
 @Test func selectorUsesAvailableEquipment() {
     var preferences = MovementPreferences()
     preferences.availableEquipment = ["pullup-bar"]

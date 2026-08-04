@@ -1,6 +1,15 @@
 import Foundation
 
-public enum DataTransferError: Error, Equatable { case invalidJSON }
+public enum DataTransferError: Error, Equatable { case invalidJSON, duplicateIDs }
+
+public struct ImportSummary: Equatable, Sendable {
+    public let total: Int
+    public let newRecords: Int
+    public let duplicateRecords: Int
+    public init(total: Int, newRecords: Int, duplicateRecords: Int) {
+        self.total = total; self.newRecords = newRecords; self.duplicateRecords = duplicateRecords
+    }
+}
 
 public enum DataTransferService {
     public static func exportJSON(_ records: [ActivityRecord]) throws -> Data {
@@ -22,10 +31,24 @@ public enum DataTransferService {
     }
 
     public static func importJSON(_ data: Data, existing: [ActivityRecord] = []) throws -> [ActivityRecord] {
+        let imported = try decodeJSON(data)
+        let existingIDs = Set(existing.map(\.id))
+        var seen = existingIDs
+        return imported.filter { seen.insert($0.id).inserted }
+    }
+
+    public static func previewImport(_ data: Data, existing: [ActivityRecord] = []) throws -> (records: [ActivityRecord], summary: ImportSummary) {
+        let imported = try decodeJSON(data)
+        let existingIDs = Set(existing.map(\.id))
+        var seen = existingIDs
+        let records = imported.filter { seen.insert($0.id).inserted }
+        return (records, ImportSummary(total: imported.count, newRecords: records.count, duplicateRecords: imported.count - records.count))
+    }
+
+    private static func decodeJSON(_ data: Data) throws -> [ActivityRecord] {
         let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
         guard let imported = try? decoder.decode([ActivityRecord].self, from: data) else { throw DataTransferError.invalidJSON }
-        let existingIDs = Set(existing.map(\.id))
-        return imported.filter { !existingIDs.contains($0.id) }
+        return imported
     }
 
     private static func csvEscape(_ value: String) -> String {

@@ -47,10 +47,10 @@ import MoveCore
                 Divider()
             }
             if let pausedUntil = store.reminderState.pausedUntil, pausedUntil > .now {
-                Label(String(format: MoveCopy.text("menu.pausedUntil"), pausedUntil.formatted(date: .omitted, time: .short)), systemImage: "pause.circle")
+                Label(String(format: MoveCopy.text("menu.pausedUntil"), pausedUntil.formatted(date: .omitted, time: .shortened)), systemImage: "pause.circle")
                     .foregroundStyle(.orange)
             } else if let next = store.reminderState.nextReminderAt {
-                Text(String(format: MoveCopy.text("menu.nextReminder"), next.formatted(date: .omitted, time: .short)))
+                Text(String(format: MoveCopy.text("menu.nextReminder"), next.formatted(date: .omitted, time: .shortened)))
             }
             Button(MoveCopy.text("menu.moveNow")) { showNotch() }
             Button(MoveCopy.text("menu.history")) {

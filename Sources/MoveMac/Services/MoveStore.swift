@@ -18,6 +18,7 @@ import MoveCore
     var completedWorkout: WorkoutTemplate?
     private var recentExerciseIDs: [String] = []
     private var refusalCounts: [String: Int] = [:]
+    private var easyCompletionCounts: [String: Int] = [:]
     var workoutStepIndex = 0
     var workoutRound = 1
     var secondsRemaining = 0
@@ -46,6 +47,10 @@ import MoveCore
         if let data = UserDefaults.standard.data(forKey: "move.refusalCounts"),
            let saved = try? JSONDecoder().decode([String: Int].self, from: data) {
             refusalCounts = saved
+        }
+        if let data = UserDefaults.standard.data(forKey: "move.easyCompletionCounts"),
+           let saved = try? JSONDecoder().decode([String: Int].self, from: data) {
+            easyCompletionCounts = saved
         }
         if let saved = try? context.fetch(FetchDescriptor<AppSettingsEntity>()), let settings = saved.first {
             let values = settings.values(); reminder = values.0; movement = values.1; appearance = values.2
@@ -180,14 +185,25 @@ import MoveCore
     }
     func completeCurrent(source: ActivitySource = .hourly) {
         refusalCounts[currentExercise.id] = 0
-        persistRefusalCounts()
+        easyCompletionCounts[currentExercise.id, default: 0] += 1
+        persistAdaptationCounts()
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .completed, source: source)))
-        markReminderInteraction(); try? context.save(); panelState = .success; chooseNext(); scheduleNextReminder()
+        markReminderInteraction(); try? context.save(); panelState = .success
+        let completed = easyCompletionCounts[currentExercise.id] ?? 0
+        let adapted = selector.adapted(currentExercise, from: availableExercises, refusals: 0, easyCompletions: completed)
+        if adapted.id != currentExercise.id {
+            currentExercise = adapted
+            recentExerciseIDs.append(adapted.id)
+            recentExerciseIDs = Array(recentExerciseIDs.suffix(6))
+        } else {
+            chooseNext()
+        }
+        scheduleNextReminder()
     }
     func skipCurrent() {
         let refused = currentExercise
         refusalCounts[refused.id, default: 0] += 1
-        persistRefusalCounts()
+        persistAdaptationCounts()
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .skipped, source: .hourly)))
         markReminderInteraction(); try? context.save(); panelState = .skipped
         let adapted = selector.adapted(refused, from: availableExercises, refusals: refusalCounts[refused.id] ?? 0, easyCompletions: 0)
@@ -201,9 +217,13 @@ import MoveCore
         scheduleNextReminder()
     }
 
-    private func persistRefusalCounts() {
-        guard let data = try? JSONEncoder().encode(refusalCounts) else { return }
-        UserDefaults.standard.set(data, forKey: "move.refusalCounts")
+    private func persistAdaptationCounts() {
+        if let data = try? JSONEncoder().encode(refusalCounts) {
+            UserDefaults.standard.set(data, forKey: "move.refusalCounts")
+        }
+        if let data = try? JSONEncoder().encode(easyCompletionCounts) {
+            UserDefaults.standard.set(data, forKey: "move.easyCompletionCounts")
+        }
     }
 
     func snoozeCurrent(for minutes: Int = 15) {

@@ -204,3 +204,13 @@
 "settings.snoozeDefault" = "Default snooze: %d min";
 "settings.startHour" = "Start at %d h";
 "settings.endHour" = "End at %d h";
+"onboarding.page1Title" = "Move a little, often.";
+"onboarding.page1Message" = "Move reminds you to move.\nNo account. No rankings. No shouting coach.";
+"onboarding.page2Title" = "Choose your rhythm.";
+"onboarding.page2Message" = "A reminder every 15 to 180 minutes, during the hours that suit you.";
+"onboarding.page3Title" = "Adapt your movements.";
+"onboarding.page3Message" = "Tell us what equipment is available to receive compatible challenges.";
+"onboarding.page4Title" = "Set the mood.";
+"onboarding.page4Message" = "Choose the emojis and animations that suit you.";
+"onboarding.page5Title" = "Test the notch.";
+"onboarding.page5Message" = "A small black capsule appears at the right moment without interrupting your work.";

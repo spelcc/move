@@ -16,11 +16,11 @@ struct OnboardingView: View {
     init(store: MoveStore, onTestNotch: @escaping () -> Void = {}) { self.store = store; self.onTestNotch = onTestNotch }
 
     private let pages = [
-        ("Bouge un peu, souvent.", "Move te rappelle de bouger.\nPas de compte. Pas de classement. Pas de coach qui crie."),
-        ("Choisis ton rythme.", "Un rappel toutes les 15 à 180 minutes, dans la plage horaire qui te convient."),
-        ("Adapte tes mouvements.", "Indique le matériel disponible pour recevoir des défis compatibles."),
-        ("Règle l’ambiance.", "Choisis les emojis et les animations qui te ressemblent."),
-        ("Teste l’encoche.", "Une petite capsule noire apparaît au bon moment, sans interrompre ton travail.")
+        (MoveCopy.text("onboarding.page1Title"), MoveCopy.text("onboarding.page1Message")),
+        (MoveCopy.text("onboarding.page2Title"), MoveCopy.text("onboarding.page2Message")),
+        (MoveCopy.text("onboarding.page3Title"), MoveCopy.text("onboarding.page3Message")),
+        (MoveCopy.text("onboarding.page4Title"), MoveCopy.text("onboarding.page4Message")),
+        (MoveCopy.text("onboarding.page5Title"), MoveCopy.text("onboarding.page5Message"))
     ]
 
     var body: some View {

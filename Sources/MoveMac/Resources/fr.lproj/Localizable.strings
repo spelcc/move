@@ -204,3 +204,13 @@
 "settings.snoozeDefault" = "Snooze par défaut : %d min";
 "settings.startHour" = "Début à %d h";
 "settings.endHour" = "Fin à %d h";
+"onboarding.page1Title" = "Bouge un peu, souvent.";
+"onboarding.page1Message" = "Move te rappelle de bouger.\nPas de compte. Pas de classement. Pas de coach qui crie.";
+"onboarding.page2Title" = "Choisis ton rythme.";
+"onboarding.page2Message" = "Un rappel toutes les 15 à 180 minutes, dans la plage horaire qui te convient.";
+"onboarding.page3Title" = "Adapte tes mouvements.";
+"onboarding.page3Message" = "Indique le matériel disponible pour recevoir des défis compatibles.";
+"onboarding.page4Title" = "Règle l’ambiance.";
+"onboarding.page4Message" = "Choisis les emojis et les animations qui te ressemblent.";
+"onboarding.page5Title" = "Teste l’encoche.";
+"onboarding.page5Message" = "Une petite capsule noire apparaît au bon moment, sans interrompre ton travail.";

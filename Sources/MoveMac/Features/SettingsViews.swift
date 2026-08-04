@@ -81,7 +81,7 @@ struct MovementSettingsView: View {
                 && (difficultyFilter == nil || $0.difficulty == difficultyFilter)
                 && (!activeOnly || !store.movement.disabledExerciseIDs.contains($0.id))
                 && (search.isEmpty || $0.name.localizedStandardContains(search))
-        }
+        }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
     private var visibleCustomExercises: [CustomExerciseEntity] {
         customExercises.filter {
@@ -91,7 +91,7 @@ struct MovementSettingsView: View {
                 && (difficultyFilter == nil || $0.exercise?.difficulty == difficultyFilter)
                 && (!activeOnly || !store.movement.disabledExerciseIDs.contains($0.id))
                 && (search.isEmpty || $0.name.localizedStandardContains(search))
-        }
+        }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
     private var allEquipment: [String] {
         Set((ExerciseLibrary.all.flatMap(\.equipment) + customExercises.flatMap(\.equipment))).sorted()

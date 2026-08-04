@@ -163,12 +163,21 @@ private struct WorkoutRunnerView: View {
             Text("\(store.secondsRemaining)").font(.system(size: 80, weight: .black, design: .rounded)).contentTransition(.numericText())
             HStack {
                 Button(store.workoutState == .paused ? "Reprendre" : "Pause") { store.togglePause() }
+                    .keyboardShortcut(.space, modifiers: [])
+                    .accessibilityLabel(store.workoutState == .paused ? "Reprendre la séance" : "Mettre la séance en pause")
                 Button("−10 s") { store.subtractTenSeconds() }
+                    .accessibilityLabel("Retirer dix secondes")
                 Button("+10 s") { store.addTenSeconds() }
+                    .accessibilityLabel("Ajouter dix secondes")
                 Button("Précédent") { store.previousWorkoutStep() }
+                    .keyboardShortcut(.leftArrow, modifiers: [])
                 Button("Suivant") { store.advanceWorkout() }
+                    .keyboardShortcut(.rightArrow, modifiers: [])
                 Button("Passer") { store.skipWorkoutStep() }
+                    .accessibilityLabel("Passer cet exercice")
                 Button("Arrêter") { store.cancelWorkout() }
+                    .keyboardShortcut(.escape, modifiers: [])
+                    .accessibilityLabel("Arrêter la séance")
             }
         }.foregroundStyle(.white) }
     }

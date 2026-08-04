@@ -66,7 +66,7 @@ struct NotchPromptView: View {
         }
         // Leave the notch depth clear: text starts below the physical cutout,
         // while the sticky shell remains attached to the top edge.
-        .padding(.top, 44)
+        .padding(.top, 58)
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
         .background(.black, in: StickyPanelShape(radius: 30))
@@ -118,16 +118,16 @@ private struct StickyPanelShape: Shape {
     func path(in rect: CGRect) -> Path {
         let r = min(radius, min(rect.width / 3, rect.height / 2))
         var path = Path()
-        path.move(to: CGPoint(x: r, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX - r, y: rect.minY))
-        // Concave top corners make the capsule feel attached to the screen edge.
-        path.addCurve(to: CGPoint(x: rect.maxX, y: rect.minY + r), control1: CGPoint(x: rect.maxX - r * 0.18, y: rect.minY), control2: CGPoint(x: rect.maxX, y: rect.minY + r * 0.42))
+        let topBlob = min(34, rect.width / 8)
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addCurve(to: CGPoint(x: topBlob, y: rect.minY + r), control1: CGPoint(x: rect.minX, y: rect.minY + r * 0.16), control2: CGPoint(x: topBlob * 0.12, y: rect.minY + r))
+        path.addCurve(to: CGPoint(x: rect.maxX - topBlob, y: rect.minY + r), control1: CGPoint(x: rect.width * 0.28, y: rect.minY + r * 0.04), control2: CGPoint(x: rect.width * 0.72, y: rect.minY + r * 0.04))
+        path.addCurve(to: CGPoint(x: rect.maxX, y: rect.minY), control1: CGPoint(x: rect.maxX - topBlob * 0.12, y: rect.minY + r), control2: CGPoint(x: rect.maxX, y: rect.minY + r * 0.16))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - r))
         path.addQuadCurve(to: CGPoint(x: rect.maxX - r, y: rect.maxY), control: CGPoint(x: rect.maxX - r, y: rect.maxY - r))
         path.addLine(to: CGPoint(x: rect.minX + r, y: rect.maxY))
         path.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.maxY - r), control: CGPoint(x: rect.minX + r, y: rect.maxY - r))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + r))
-        path.addCurve(to: CGPoint(x: r, y: rect.minY), control1: CGPoint(x: rect.minX, y: rect.minY + r * 0.42), control2: CGPoint(x: rect.minX + r * 0.18, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
         path.closeSubpath()
         return path
     }

@@ -68,8 +68,8 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         let frame = NSRect(x: x, y: screen.frame.maxY - height, width: width, height: height)
         if animated {
             NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.42
-                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                context.duration = 0.52
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
                 panel.animator().setFrame(frame, display: true)
             } completionHandler: { completion?() }
         } else { panel.setFrame(frame, display: true); completion?() }

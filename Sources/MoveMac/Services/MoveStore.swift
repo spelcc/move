@@ -268,6 +268,14 @@ import MoveCore
     }
     func skipWorkoutStep() { finishWorkoutStep(status: .skipped) }
     func advanceWorkout() {
+        if let workout = activeWorkout,
+           workoutState == .working,
+           workout.steps[workoutStepIndex].restSeconds > 0 {
+            workoutState = .resting
+            secondsRemaining = workout.steps[workoutStepIndex].restSeconds
+            saveWorkoutProgress()
+            return
+        }
         finishWorkoutStep(status: .completed)
     }
 

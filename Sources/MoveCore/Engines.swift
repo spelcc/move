@@ -1,5 +1,16 @@
 import Foundation
 
+public enum ReminderDeliveryPolicy {
+    /// Returns whether a reminder may be presented in the current context.
+    /// The two preferences are independent: either disabled context suppresses delivery.
+    public static func shouldDeliver(isFullScreen: Bool, isMeeting: Bool,
+                                     preferences: ReminderPreferences) -> Bool {
+        if isFullScreen && !preferences.notificationsDuringFullScreen { return false }
+        if isMeeting && !preferences.notificationsDuringMeetings { return false }
+        return true
+    }
+}
+
 public struct ExerciseSelector: Sendable {
     public init() {}
     public func candidates(from exercises: [Exercise], preferences: MovementPreferences) -> [Exercise] {

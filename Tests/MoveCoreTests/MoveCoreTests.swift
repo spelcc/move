@@ -178,3 +178,17 @@ import Testing
     #expect(next != nil)
     #expect(next! >= now.addingTimeInterval(90 + 15 * 60))
 }
+
+@Test func reminderDeliveryPolicySuppressesDisabledContexts() {
+    let preferences = ReminderPreferences()
+    #expect(!ReminderDeliveryPolicy.shouldDeliver(isFullScreen: true, isMeeting: false, preferences: preferences))
+    #expect(!ReminderDeliveryPolicy.shouldDeliver(isFullScreen: false, isMeeting: true, preferences: preferences))
+    #expect(ReminderDeliveryPolicy.shouldDeliver(isFullScreen: false, isMeeting: false, preferences: preferences))
+}
+
+@Test func reminderDeliveryPolicyAllowsExplicitOptIn() {
+    var preferences = ReminderPreferences()
+    preferences.notificationsDuringFullScreen = true
+    preferences.notificationsDuringMeetings = true
+    #expect(ReminderDeliveryPolicy.shouldDeliver(isFullScreen: true, isMeeting: true, preferences: preferences))
+}

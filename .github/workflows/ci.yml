@@ -1,0 +1,30 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  macos-26:
+    runs-on: macos-26
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select newest stable Xcode 26
+        shell: bash
+        run: |
+          XCODE_APP=$(find /Applications -maxdepth 1 -type d -name 'Xcode_26*.app' ! -name '*beta*' | sort -V | tail -1)
+          test -n "$XCODE_APP"
+          sudo xcode-select -s "$XCODE_APP/Contents/Developer"
+          xcodebuild -version
+          swift --version
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        run: xcodegen generate
+      - name: Test core
+        run: swift test --parallel
+      - name: Build macOS 26 app
+        run: xcodebuild -project Move.xcodeproj -scheme Move -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO clean build

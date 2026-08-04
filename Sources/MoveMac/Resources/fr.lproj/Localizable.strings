@@ -208,6 +208,7 @@
 "exercise.easy" = "Facile";
 "exercise.intermediate" = "Intermédiaire";
 "exercise.hard" = "Difficile";
+"exercise.activeOnly" = "Mouvements actifs uniquement";
 "settings.interval" = "Toutes les %d minutes";
 "settings.snoozeDefault" = "Snooze par défaut : %d min";
 "settings.startHour" = "Début à %d h";

@@ -208,6 +208,7 @@
 "exercise.easy" = "Easy";
 "exercise.intermediate" = "Intermediate";
 "exercise.hard" = "Hard";
+"exercise.activeOnly" = "Active movements only";
 "settings.interval" = "Every %d minutes";
 "settings.snoozeDefault" = "Default snooze: %d min";
 "settings.startHour" = "Start at %d h";

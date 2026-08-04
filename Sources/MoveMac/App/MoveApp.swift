@@ -5,13 +5,11 @@ import UserNotifications
 import MoveCore
 
 @main struct MoveApp: App {
-    @Environment(\.openWindow) private var openWindow
     private let container: ModelContainer
     private let notificationDelegate = MoveNotificationDelegate()
     @State private var store: MoveStore
     @State private var panel: NotchPanelController?
     @State private var persistenceError: String?
-    @AppStorage("move.onboardingCompleted") private var onboardingCompleted = false
     init() {
         _persistenceError = State(initialValue: nil)
         ReminderNotificationService.configure()
@@ -57,10 +55,6 @@ import MoveCore
             Divider()
             SettingsLink { Text("Ouvrir Move") }
             Button("Quitter") { NSApplication.shared.terminate(nil) }
-        }
-        .onAppear {
-            guard !onboardingCompleted else { return }
-            openWindow(id: "onboarding")
         }
         Window("Move", id: "dashboard") { DashboardView(store: store).modelContainer(container) }
         Window("Bienvenue dans Move", id: "onboarding") { OnboardingView(store: store) { showNotch() } }

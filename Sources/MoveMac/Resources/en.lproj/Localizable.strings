@@ -200,6 +200,7 @@
 "exercise.enableAll" = "Re-enable all movements";
 "exercise.defaultAmount" = "Default amount: %d";
 "exercise.instructions" = "Instructions";
+"exercise.equipment" = "Equipment";
 "settings.interval" = "Every %d minutes";
 "settings.snoozeDefault" = "Default snooze: %d min";
 "settings.startHour" = "Start at %d h";

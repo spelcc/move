@@ -133,6 +133,12 @@ private struct EditExerciseView: View {
                 Text(MoveCopy.text("exercise.free")).tag(ExerciseMetric.free.rawValue)
             }
             Stepper(String(format: MoveCopy.text("exercise.defaultAmount"), exercise.defaultAmount), value: $exercise.defaultAmount, in: 1...999)
+            Section(MoveCopy.text("exercise.equipment")) {
+                Toggle(MoveCopy.text("equipment.chair"), isOn: equipmentBinding("chair"))
+                Toggle(MoveCopy.text("equipment.pullupBar"), isOn: equipmentBinding("pullup-bar"))
+                Toggle(MoveCopy.text("equipment.band"), isOn: equipmentBinding("band"))
+                Toggle(MoveCopy.text("equipment.dumbbells"), isOn: equipmentBinding("dumbbells"))
+            }
             Section("Contraintes") {
                 Toggle("Au sol", isOn: tagBinding("floor"))
                 Toggle("Avec sauts", isOn: tagBinding("jump"))
@@ -149,7 +155,7 @@ private struct EditExerciseView: View {
             }
             TextField(MoveCopy.text("exercise.instructions"), text: $exercise.instructions, axis: .vertical)
             Button(MoveCopy.text("common.done")) { exercise.updatedAt = .now; dismiss() }.buttonStyle(.borderedProminent)
-        }.padding().frame(width: 380, height: 500)
+        }.padding().frame(width: 380, height: 600)
     }
 
     private func tagBinding(_ tag: String) -> Binding<Bool> {
@@ -157,6 +163,15 @@ private struct EditExerciseView: View {
             var tags = exercise.tags
             if enabled { tags.insert(tag) } else { tags.remove(tag) }
             exercise.tagsRaw = tags.sorted().joined(separator: ",")
+            exercise.updatedAt = .now
+        })
+    }
+
+    private func equipmentBinding(_ equipment: String) -> Binding<Bool> {
+        Binding(get: { exercise.equipment.contains(equipment) }, set: { enabled in
+            var values = exercise.equipment
+            if enabled { values.insert(equipment) } else { values.remove(equipment) }
+            exercise.equipmentRaw = values.sorted().joined(separator: ",")
             exercise.updatedAt = .now
         })
     }

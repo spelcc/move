@@ -7,10 +7,11 @@ struct WorkoutLibraryView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var customWorkouts: [WorkoutTemplateEntity]
     @State private var showingEditor = false
+    @State private var previewing: WorkoutTemplate?
     var body: some View {
         ScrollView { VStack(alignment: .leading, spacing: 16) {
             HStack { Text("Séances").font(.title.bold()); Spacer(); Button("Créer", systemImage: "plus") { showingEditor = true } }
-            if let saved = store.resumableWorkout, let workout = ExerciseLibrary.quickWorkouts.first(where: { $0.id == saved.workoutID }) {
+            if let saved = store.resumableWorkout, let workout = resumableWorkout(saved) {
                 Button("Reprendre \(workout.name)") { store.resume(workout) }
                     .buttonStyle(.borderedProminent)
             }
@@ -22,7 +23,7 @@ struct WorkoutLibraryView: View {
                 }
             }
             ForEach(ExerciseLibrary.quickWorkouts) { workout in
-                Button { store.start(workout) } label: {
+                Button { previewing = workout } label: {
                     VStack(alignment: .leading, spacing: 8) { Text(workout.name).font(.title3.bold()); Text("\(workout.estimatedDuration / 60) min • \(workout.rounds) tours").foregroundStyle(.secondary); Text("Démarrer").font(.callout.bold()) }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.quaternary, in: RoundedRectangle(cornerRadius: 20))
                 }.buttonStyle(.plain)
             }
@@ -32,13 +33,40 @@ struct WorkoutLibraryView: View {
         .sheet(isPresented: $showingEditor) { WorkoutEditorView { template in
             modelContext.insert(WorkoutTemplateEntity(template: template)); try? modelContext.save()
         } }
+        .sheet(item: $previewing) { workout in
+            WorkoutSummaryView(workout: workout) { store.start(workout); previewing = nil }
+        }
     }
 
     private func workoutCard(_ workout: WorkoutTemplate) -> some View {
-        Button { store.start(workout) } label: {
+        Button { previewing = workout } label: {
             VStack(alignment: .leading, spacing: 8) { Text(workout.name).font(.title3.bold()); Text("\(workout.estimatedDuration / 60) min • \(workout.rounds) tours").foregroundStyle(.secondary); Text("Démarrer").font(.callout.bold()) }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.quaternary, in: RoundedRectangle(cornerRadius: 20))
         }.buttonStyle(.plain)
     }
+
+    private func resumableWorkout(_ session: WorkoutSessionEntity) -> WorkoutTemplate? {
+        if let builtIn = ExerciseLibrary.quickWorkouts.first(where: { $0.id == session.workoutID }) { return builtIn }
+        return customWorkouts.first(where: { $0.id == session.workoutID && !$0.archived })?.template
+    }
+}
+
+private struct WorkoutSummaryView: View {
+    @Environment(\.dismiss) private var dismiss
+    let workout: WorkoutTemplate
+    let onStart: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text(workout.name).font(.title.bold())
+            Text("Résumé").font(.headline)
+            HStack { Label("\(workout.estimatedDuration / 60) min", systemImage: "clock"); Spacer(); Label("\(workout.rounds) tours", systemImage: "repeat") }
+            Text("\(workout.steps.count) mouvements").foregroundStyle(.secondary)
+            List(workout.steps) { step in Text(stepName(step.exerciseID)) }
+            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Démarrer") { onStart(); dismiss() }.buttonStyle(.borderedProminent) }
+        }.padding().frame(width: 420, height: 460)
+    }
+
+    private func stepName(_ id: String) -> String { ExerciseLibrary.all.first { $0.id == id }?.name ?? "Mouvement personnalisé" }
 }
 
 private struct WorkoutEditorView: View {

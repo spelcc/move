@@ -89,7 +89,12 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
     func hide() {
         state = .closing
         resize(width: 184, height: 52) { [weak self] in
-            self?.panel.orderOut(nil); self?.state = .hidden
+            guard let self else { return }
+            if let screenChangeObserver {
+                NotificationCenter.default.removeObserver(screenChangeObserver)
+                self.screenChangeObserver = nil
+            }
+            panel.orderOut(nil); state = .hidden
         }
     }
 }

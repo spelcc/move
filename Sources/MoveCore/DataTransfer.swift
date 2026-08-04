@@ -5,7 +5,7 @@ public enum DataTransferError: Error, Equatable { case invalidJSON }
 public enum DataTransferService {
     public static func exportJSON(_ records: [ActivityRecord]) throws -> Data {
         let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
+        encoder.dateEncodingStrategy = .secondsSince1970
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         return try encoder.encode(records)
     }
@@ -22,7 +22,7 @@ public enum DataTransferService {
     }
 
     public static func importJSON(_ data: Data, existing: [ActivityRecord] = []) throws -> [ActivityRecord] {
-        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
         guard let imported = try? decoder.decode([ActivityRecord].self, from: data) else { throw DataTransferError.invalidJSON }
         let existingIDs = Set(existing.map(\.id))
         return imported.filter { !existingIDs.contains($0.id) }

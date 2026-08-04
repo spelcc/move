@@ -30,7 +30,7 @@ import Testing
 @Test func exportJSONIsDecodable() throws {
     let record = ActivityRecord(exerciseID: "plank", amount: 30, metric: .seconds, status: .completed, source: .freeMovement)
     let data = try DataTransferService.exportJSON([record])
-    let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+    let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .secondsSince1970
     let decoded = try decoder.decode([ActivityRecord].self, from: data)
     #expect(decoded == [record])
 }

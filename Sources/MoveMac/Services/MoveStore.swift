@@ -39,10 +39,6 @@ import MoveCore
         }
     }
 
-    deinit {
-        if let notificationObserver { NotificationCenter.default.removeObserver(notificationObserver) }
-    }
-
     func persistSettings() {
         let existing = (try? context.fetch(FetchDescriptor<AppSettingsEntity>()))?.first
         let settings = existing ?? AppSettingsEntity()

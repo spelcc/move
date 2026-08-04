@@ -8,6 +8,7 @@ struct WorkoutLibraryView: View {
     @Query private var customWorkouts: [WorkoutTemplateEntity]
     @State private var showingEditor = false
     @State private var previewing: WorkoutTemplate?
+    @State private var renaming: WorkoutTemplateEntity?
     var body: some View {
         ScrollView { VStack(alignment: .leading, spacing: 16) {
             HStack { Text("Séances").font(.title.bold()); Spacer(); Button("Créer", systemImage: "plus") { showingEditor = true } }
@@ -21,6 +22,7 @@ struct WorkoutLibraryView: View {
                     workoutCard(workout)
                         .contextMenu {
                             Button("Dupliquer") { duplicate(entity) }
+                            Button("Renommer") { renaming = entity }
                             Button("Archiver") { archive(entity) }
                             Button("Supprimer", role: .destructive) { delete(entity) }
                         }
@@ -39,6 +41,9 @@ struct WorkoutLibraryView: View {
         } }
         .sheet(item: $previewing) { workout in
             WorkoutSummaryView(workout: workout) { store.start(workout); previewing = nil }
+        }
+        .sheet(item: $renaming) { entity in
+            WorkoutRenameView(entity: entity)
         }
     }
 
@@ -69,6 +74,32 @@ struct WorkoutLibraryView: View {
         let copy = WorkoutTemplate(id: UUID(), name: "\(template.name) (copie)", rounds: template.rounds, steps: template.steps, mode: template.mode)
         modelContext.insert(WorkoutTemplateEntity(template: copy))
         try? modelContext.save()
+    }
+}
+
+private struct WorkoutRenameView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Bindable var entity: WorkoutTemplateEntity
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Renommer la séance").font(.title2.bold())
+            TextField("Nom", text: $entity.name)
+            HStack {
+                Spacer()
+                Button("Annuler") { dismiss() }
+                Button("Enregistrer") {
+                    entity.name = entity.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                    entity.updatedAt = .now
+                    try? modelContext.save()
+                    dismiss()
+                }.buttonStyle(.borderedProminent)
+                    .disabled(entity.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
+        .padding()
+        .frame(width: 360)
     }
 }
 

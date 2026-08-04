@@ -42,9 +42,13 @@ private struct TodayView: View {
             if todaysActivities.isEmpty {
                 ContentUnavailableView("Rien pour le moment", systemImage: "figure.walk", description: Text("Ton premier mouvement attend patiemment."))
             } else {
-                ForEach(activities.prefix(20)) { item in HStack { Text(item.statusRaw == "completed" ? "✓" : "–"); Text(item.exerciseID); Spacer(); Text(item.performedAt, style: .time).foregroundStyle(.secondary) }.padding(.vertical, 4) }
+                ForEach(todaysActivities.prefix(20)) { item in HStack { Text(item.statusRaw == "completed" ? "✓" : "–"); Text(exerciseName(for: item.exerciseID)); Spacer(); Text(item.performedAt, style: .time).foregroundStyle(.secondary) }.padding(.vertical, 4) }
             }
         }.padding(28) }
+    }
+
+    private func exerciseName(for id: String) -> String {
+        ExerciseLibrary.all.first(where: { $0.id == id })?.name ?? id
     }
 }
 private struct StatCard: View { let value: String; let label: String; var body: some View { VStack(alignment: .leading) { Text(value).font(.title.bold()); Text(label).foregroundStyle(.secondary) }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.quaternary, in: RoundedRectangle(cornerRadius: 18)) } }

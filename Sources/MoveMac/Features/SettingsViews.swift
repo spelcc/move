@@ -8,6 +8,7 @@ struct MovementSettingsView: View {
     @Query private var customExercises: [CustomExerciseEntity]
     @State private var search = ""
     @State private var showingNewExercise = false
+    @State private var editingExercise: CustomExerciseEntity?
     var body: some View {
         List {
             Section("Intégrés") {
@@ -18,18 +19,39 @@ struct MovementSettingsView: View {
                 }
             }
             Section("Personnalisés") {
-                ForEach(customExercises.filter { !$0.archived && (search.isEmpty || $0.name.localizedStandardContains(search)) }) { exercise in
-                    HStack { Text(exercise.emoji); Text(exercise.name); Spacer(); Text("\(exercise.defaultAmount)").foregroundStyle(.secondary) }
+                ForEach(visibleCustomExercises) { exercise in
+                    Toggle(isOn: customEnabledBinding(exercise)) {
+                        HStack { Text(exercise.emoji); VStack(alignment: .leading) { Text(exercise.name); Text("\(exercise.categoryRaw) • \(exercise.metricRaw)").font(.caption).foregroundStyle(.secondary) }; Spacer(); Text("\(exercise.defaultAmount)").foregroundStyle(.secondary) }
+                    }
+                    .contextMenu {
+                        Button("Modifier") { editingExercise = exercise }
+                        Button("Dupliquer") { duplicate(exercise) }
+                        Button("Archiver", role: .destructive) { archive(exercise) }
+                    }
                 }.onDelete { offsets in
-                    for index in offsets { customExercises[index].archived = true; customExercises[index].updatedAt = .now }
+                    for index in offsets { archive(visibleCustomExercises[index]) }
                 }
             }
         }.toolbar { Button("Nouveau mouvement", systemImage: "plus") { showingNewExercise = true } }
-        .sheet(isPresented: $showingNewExercise) { NewExerciseView { name, emoji, amount in
-            modelContext.insert(CustomExerciseEntity(name: name, emoji: emoji, defaultAmount: amount))
+        .sheet(isPresented: $showingNewExercise) { NewExerciseView { exercise in
+            modelContext.insert(exercise)
             try? modelContext.save()
         } }
+        .sheet(item: $editingExercise) { exercise in EditExerciseView(exercise: exercise) }
         .searchable(text: $search, prompt: "Rechercher un mouvement").navigationTitle("Mouvements")
+    }
+
+    private var visibleCustomExercises: [CustomExerciseEntity] { customExercises.filter { !$0.archived && (search.isEmpty || $0.name.localizedStandardContains(search)) } }
+    private func customEnabledBinding(_ exercise: CustomExerciseEntity) -> Binding<Bool> {
+        .init(get: { !store.movement.disabledExerciseIDs.contains(exercise.id) }, set: { enabled in
+            if enabled { store.movement.disabledExerciseIDs.remove(exercise.id) } else { store.movement.disabledExerciseIDs.insert(exercise.id) }
+            store.persistSettings(); store.chooseNext()
+        })
+    }
+    private func archive(_ exercise: CustomExerciseEntity) { exercise.archived = true; exercise.updatedAt = .now; try? modelContext.save() }
+    private func duplicate(_ exercise: CustomExerciseEntity) {
+        modelContext.insert(CustomExerciseEntity(name: "\(exercise.name) (copie)", emoji: exercise.emoji, category: ExerciseCategory(rawValue: exercise.categoryRaw) ?? .strength, metric: ExerciseMetric(rawValue: exercise.metricRaw) ?? .repetitions, defaultAmount: exercise.defaultAmount, instructions: exercise.instructions))
+        try? modelContext.save()
     }
 }
 
@@ -38,14 +60,34 @@ private struct NewExerciseView: View {
     @State private var name = ""
     @State private var emoji = "💪"
     @State private var amount = 10
-    let onSave: (String, String, Int) -> Void
+    @State private var category = ExerciseCategory.strength
+    @State private var metric = ExerciseMetric.repetitions
+    @State private var instructions = ""
+    let onSave: (CustomExerciseEntity) -> Void
     var body: some View {
         Form {
             TextField("Nom", text: $name)
             TextField("Emoji", text: $emoji)
+            Picker("Catégorie", selection: $category) { ForEach(ExerciseCategory.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
+            Picker("Mesure", selection: $metric) { Text("Répétitions").tag(ExerciseMetric.repetitions); Text("Secondes").tag(ExerciseMetric.seconds); Text("Minutes").tag(ExerciseMetric.minutes); Text("Libre").tag(ExerciseMetric.free) }
             Stepper("Quantité par défaut : \(amount)", value: $amount, in: 1...999)
-            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Créer") { onSave(name, emoji, amount); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
-        }.padding().frame(width: 360)
+            TextField("Consigne (optionnel)", text: $instructions, axis: .vertical)
+            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Créer") { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
+        }.padding().frame(width: 400, height: 380)
+    }
+}
+
+private struct EditExerciseView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Bindable var exercise: CustomExerciseEntity
+    var body: some View {
+        Form {
+            TextField("Nom", text: $exercise.name)
+            TextField("Emoji", text: $exercise.emoji)
+            Stepper("Quantité par défaut : \(exercise.defaultAmount)", value: $exercise.defaultAmount, in: 1...999)
+            TextField("Consigne", text: $exercise.instructions, axis: .vertical)
+            Button("Terminer") { exercise.updatedAt = .now; dismiss() }.buttonStyle(.borderedProminent)
+        }.padding().frame(width: 380, height: 300)
     }
 }
 

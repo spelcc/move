@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import Observation
 import SwiftData
 import UserNotifications
@@ -37,6 +38,15 @@ import MoveCore
             let exerciseID = note.userInfo?["exerciseID"] as? String
             Task { @MainActor in self?.handleNotificationAction(action, exerciseID: exerciseID) }
         }
+        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(60))
+                self?.scheduleNextReminder()
+            }
+        }
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSSystemClockDidChange, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.scheduleNextReminder() }
+        }
     }
 
     func persistSettings() {
@@ -57,6 +67,7 @@ import MoveCore
         if entity.modelContext == nil { context.insert(entity) }
         reminderState = entity.state
         try? context.save()
+        ReminderNotificationService.cancelPending()
         Task {
             do { try await ReminderNotificationService.schedule(exercise: currentExercise, at: next); MoveLogger.notifications.debug("Reminder scheduled") }
             catch { MoveLogger.notifications.error("Reminder scheduling failed: \(String(describing: error), privacy: .public)") }

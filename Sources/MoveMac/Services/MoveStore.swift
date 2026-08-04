@@ -72,6 +72,37 @@ import MoveCore
         try? context.save()
     }
 
+    func resetSettings() {
+        reminder = ReminderPreferences()
+        movement = MovementPreferences()
+        appearance = AppearancePreferences()
+        reminderState = ReminderState()
+        persistSettings()
+        chooseNext()
+        scheduleNextReminder()
+    }
+
+    func deleteAllData() {
+        (try? context.fetch(FetchDescriptor<ActivityEntity>()))?.forEach(context.delete)
+        (try? context.fetch(FetchDescriptor<WorkoutSessionEntity>()))?.forEach(context.delete)
+        (try? context.fetch(FetchDescriptor<WorkoutStepResultEntity>()))?.forEach(context.delete)
+        (try? context.fetch(FetchDescriptor<WorkoutTemplateEntity>()))?.forEach(context.delete)
+        (try? context.fetch(FetchDescriptor<CustomExerciseEntity>()))?.forEach(context.delete)
+        (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.forEach(context.delete)
+        (try? context.fetch(FetchDescriptor<AppSettingsEntity>()))?.forEach(context.delete)
+        try? context.save()
+        reminder = ReminderPreferences()
+        movement = MovementPreferences()
+        appearance = AppearancePreferences()
+        reminderState = ReminderState()
+        resumableWorkout = nil
+        activeWorkout = nil
+        timer?.invalidate()
+        timer = nil
+        chooseNext()
+        scheduleNextReminder()
+    }
+
     func scheduleNextReminder(from now: Date = .now) {
         guard let next = scheduler.nextDate(now: now, preferences: reminder, state: reminderState) else { MoveLogger.scheduler.warning("No compatible reminder date") ; return }
         reminderState.nextReminderAt = next

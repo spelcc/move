@@ -93,6 +93,22 @@ private struct EditExerciseView: View {
 
 struct SettingsView: View {
     @Bindable var store: MoveStore
+    @State private var pendingDataAction: DataAction?
+
+    private enum DataAction: Identifiable {
+        case resetSettings, deleteAll
+        var id: String { String(describing: self) }
+        var title: String {
+            switch self { case .resetSettings: "Réinitialiser les réglages ?"; case .deleteAll: "Supprimer toutes les données ?" }
+        }
+        var message: String {
+            switch self {
+            case .resetSettings: "Les préférences de rappels, mouvements et apparence seront restaurées par défaut."
+            case .deleteAll: "L’historique, les séances et les mouvements personnalisés seront supprimés définitivement."
+            }
+        }
+    }
+
     var body: some View {
         Form {
             Section("Jours actifs") {
@@ -131,10 +147,20 @@ struct SettingsView: View {
                     Text("Normaux").tag(SoundMode.normal)
                 }
             }
+            Section("Données") {
+                Button("Réinitialiser les réglages") { pendingDataAction = .resetSettings }
+                Button("Supprimer toutes les données", role: .destructive) { pendingDataAction = .deleteAll }
+            }
         }.formStyle(.grouped).padding().navigationTitle("Réglages")
         .onChange(of: store.reminder) { _, _ in store.persistSettings() }
         .onChange(of: store.movement) { _, _ in store.persistSettings(); store.chooseNext() }
         .onChange(of: store.appearance) { _, _ in store.persistSettings() }
+        .alert(item: $pendingDataAction) { action in
+            Alert(title: Text(action.title), message: Text(action.message),
+                  primaryButton: .destructive(Text("Confirmer")) {
+                      switch action { case .resetSettings: store.resetSettings(); case .deleteAll: store.deleteAllData() }
+                  }, secondaryButton: .cancel(Text("Annuler")))
+        }
     }
     private func weekdayBinding(_ weekday: Int) -> Binding<Bool> {
         Binding(get: { store.reminder.enabledWeekdays.contains(weekday) }, set: { enabled in

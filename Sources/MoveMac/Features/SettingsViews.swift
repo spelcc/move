@@ -51,14 +51,25 @@ private struct NewExerciseView: View {
 
 struct SettingsView: View {
     @Bindable var store: MoveStore
+    @State private var launchAtLogin = LaunchAtLoginService.isEnabled
+    @State private var launchError: String?
     var body: some View {
         Form {
+            Section("Général") {
+                Toggle("Lancer Move à la connexion", isOn: Binding(get: { launchAtLogin }, set: updateLaunchAtLogin))
+                if let launchError { Text(launchError).font(.caption).foregroundStyle(.red) }
+            }
             Section("Rappels") { Stepper("Toutes les \(store.reminder.intervalMinutes) minutes", value: $store.reminder.intervalMinutes, in: 15...180, step: 15); Stepper("Début à \(store.reminder.activeStartHour) h", value: $store.reminder.activeStartHour, in: 0...23); Stepper("Fin à \(store.reminder.activeEndHour) h", value: $store.reminder.activeEndHour, in: 1...24) }
             Section("Contraintes") { Toggle("Sans sauts", isOn: tagBinding("jump")); Toggle("Silencieux", isOn: tagBinding("noisy")); Toggle("Éviter le sol", isOn: tagBinding("floor")); Toggle("Éviter les poignets", isOn: tagBinding("wrists")); Toggle("Barre de traction disponible", isOn: equipmentBinding("pullup-bar")) }
         }.formStyle(.grouped).padding().navigationTitle("Réglages")
         .onChange(of: store.reminder) { _, _ in store.persistSettings() }
         .onChange(of: store.movement) { _, _ in store.persistSettings(); store.chooseNext() }
     }
+    private func updateLaunchAtLogin(_ enabled: Bool) {
+        do { try LaunchAtLoginService.setEnabled(enabled); launchAtLogin = LaunchAtLoginService.isEnabled; launchError = nil }
+        catch { launchError = "Impossible de modifier le lancement : \(error.localizedDescription)"; launchAtLogin = LaunchAtLoginService.isEnabled }
+    }
+
     private func tagBinding(_ tag: String) -> Binding<Bool> {
         .init(get: { store.movement.excludedTags.contains(tag) }, set: { enabled in
             if enabled { store.movement.excludedTags.insert(tag) } else { store.movement.excludedTags.remove(tag) }

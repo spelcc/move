@@ -166,6 +166,18 @@ import Testing
     #expect(stats.bestDayAmount == 22)
 }
 
+@Test func statisticsCountUniqueCompletedWorkouts() {
+    let firstWorkout = UUID()
+    let secondWorkout = UUID()
+    let records = [
+        ActivityRecord(exerciseID: "squats", amount: 10, metric: .repetitions, status: .completed, source: .quickWorkout, workoutID: firstWorkout),
+        ActivityRecord(exerciseID: "pushups", amount: 8, metric: .repetitions, status: .completed, source: .quickWorkout, workoutID: firstWorkout),
+        ActivityRecord(exerciseID: "plank", amount: 30, metric: .seconds, status: .completed, source: .customWorkout, workoutID: secondWorkout),
+        ActivityRecord(exerciseID: "lunges", amount: 10, metric: .repetitions, status: .skipped, source: .quickWorkout, workoutID: UUID())
+    ]
+    #expect(StatisticsService.calculate(records).completedWorkoutCount == 2)
+}
+
 @Test func schedulerRejectsUnsafeIntervals() {
     var preferences = ReminderPreferences()
     preferences.intervalMinutes = 5

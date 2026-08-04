@@ -96,6 +96,10 @@
 "runner.rest" = "Rest";
 "runner.finalRecovery" = "Final recovery";
 "runner.roundRest" = "Rest between rounds";
+"notification.title" = "Move";
+"notification.done" = "Done";
+"notification.snooze" = "Snooze";
+"notification.skip" = "Skip";
 "workouts.export" = "Export";
 "workouts.create" = "Create";
 "workouts.resume" = "Resume";

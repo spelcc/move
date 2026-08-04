@@ -25,9 +25,9 @@ enum ReminderNotificationService {
     static let category = "MOVE_REMINDER"
 
     static func configure() {
-        let done = UNNotificationAction(identifier: "DONE", title: "Fait")
-        let snooze = UNNotificationAction(identifier: "SNOOZE", title: "Reporter")
-        let skip = UNNotificationAction(identifier: "SKIP", title: "Passer", options: [.destructive])
+        let done = UNNotificationAction(identifier: "DONE", title: MoveCopy.text("notification.done"))
+        let snooze = UNNotificationAction(identifier: "SNOOZE", title: MoveCopy.text("notification.snooze"))
+        let skip = UNNotificationAction(identifier: "SKIP", title: MoveCopy.text("notification.skip"), options: [.destructive])
         UNUserNotificationCenter.current().setNotificationCategories([
             UNNotificationCategory(identifier: category, actions: [done, snooze, skip], intentIdentifiers: [])
         ])
@@ -35,7 +35,7 @@ enum ReminderNotificationService {
 
     static func schedule(exercise: Exercise, at date: Date, sound: SoundMode = .normal) async throws {
         let content = UNMutableNotificationContent()
-        content.title = "Move"
+        content.title = MoveCopy.text("notification.title")
         content.body = "\(exercise.emoji) \(exercise.name) — \(exercise.defaultAmount)"
         content.categoryIdentifier = category
         content.userInfo = ["exerciseID": exercise.id, "soundEnabled": sound != .off]

@@ -143,30 +143,30 @@ private struct NewExerciseView: View {
             }
             Picker(MoveCopy.text("exercise.metric"), selection: $metric) { Text(MoveCopy.text("exercise.repetitions")).tag(ExerciseMetric.repetitions); Text(MoveCopy.text("exercise.seconds")).tag(ExerciseMetric.seconds); Text(MoveCopy.text("exercise.minutes")).tag(ExerciseMetric.minutes); Text(MoveCopy.text("exercise.free")).tag(ExerciseMetric.free) }
             Stepper(String(format: MoveCopy.text("exercise.defaultAmount"), amount), value: $amount, in: 1...999)
-            Section("Matériel") {
-                Toggle("Chaise", isOn: setBinding("chair", in: $equipment))
-                Toggle("Barre de traction", isOn: setBinding("pullup-bar", in: $equipment))
-                Toggle("Élastique", isOn: setBinding("band", in: $equipment))
-                Toggle("Haltères", isOn: setBinding("dumbbells", in: $equipment))
+            Section(MoveCopy.text("exercise.equipment")) {
+                Toggle(MoveCopy.text("equipment.chair"), isOn: setBinding("chair", in: $equipment))
+                Toggle(MoveCopy.text("equipment.pullupBar"), isOn: setBinding("pullup-bar", in: $equipment))
+                Toggle(MoveCopy.text("equipment.band"), isOn: setBinding("band", in: $equipment))
+                Toggle(MoveCopy.text("equipment.dumbbells"), isOn: setBinding("dumbbells", in: $equipment))
             }
-            Section("Contraintes") {
-                Toggle("Au sol", isOn: setBinding("floor", in: $tags))
-                Toggle("Avec sauts", isOn: setBinding("jump", in: $tags))
-                Toggle("Sollicite les poignets", isOn: setBinding("wrists", in: $tags))
-                Toggle("Bruyant", isOn: setBinding("noisy", in: $tags))
+            Section(MoveCopy.text("exercise.constraints")) {
+                Toggle(MoveCopy.text("constraint.floor"), isOn: setBinding("floor", in: $tags))
+                Toggle(MoveCopy.text("constraint.jump"), isOn: setBinding("jump", in: $tags))
+                Toggle(MoveCopy.text("constraint.wrists"), isOn: setBinding("wrists", in: $tags))
+                Toggle(MoveCopy.text("constraint.noisy"), isOn: setBinding("noisy", in: $tags))
                 Toggle(MoveCopy.text("constraint.knees"), isOn: setBinding("knees", in: $tags))
                 Toggle(MoveCopy.text("constraint.back"), isOn: setBinding("back", in: $tags))
                 Toggle(MoveCopy.text("constraint.space"), isOn: setBinding("space", in: $tags))
             }
-            Section("Zones musculaires") {
+            Section(MoveCopy.text("exercise.muscleZones")) {
                 Toggle(MoveCopy.text("zone.fullBody"), isOn: setBinding("fullBody", in: $muscleZones))
                 Toggle(MoveCopy.text("zone.chest"), isOn: setBinding("chest", in: $muscleZones))
-                Toggle("Jambes", isOn: setBinding("legs", in: $muscleZones))
-                Toggle("Fessiers", isOn: setBinding("glutes", in: $muscleZones))
-                Toggle("Dos", isOn: setBinding("back", in: $muscleZones))
-                Toggle("Épaules", isOn: setBinding("shoulders", in: $muscleZones))
-                Toggle("Bras", isOn: setBinding("arms", in: $muscleZones))
-                Toggle("Centre du corps", isOn: setBinding("core", in: $muscleZones))
+                Toggle(MoveCopy.text("zone.legs"), isOn: setBinding("legs", in: $muscleZones))
+                Toggle(MoveCopy.text("zone.glutes"), isOn: setBinding("glutes", in: $muscleZones))
+                Toggle(MoveCopy.text("zone.back"), isOn: setBinding("back", in: $muscleZones))
+                Toggle(MoveCopy.text("zone.shoulders"), isOn: setBinding("shoulders", in: $muscleZones))
+                Toggle(MoveCopy.text("zone.arms"), isOn: setBinding("arms", in: $muscleZones))
+                Toggle(MoveCopy.text("zone.core"), isOn: setBinding("core", in: $muscleZones))
                 Toggle(MoveCopy.text("zone.calves"), isOn: setBinding("calves", in: $muscleZones))
                 Toggle(MoveCopy.text("zone.neck"), isOn: setBinding("neck", in: $muscleZones))
                 Toggle(MoveCopy.text("zone.wrists"), isOn: setBinding("wrists", in: $muscleZones))
@@ -214,24 +214,24 @@ private struct EditExerciseView: View {
                 Toggle(MoveCopy.text("equipment.band"), isOn: equipmentBinding("band"))
                 Toggle(MoveCopy.text("equipment.dumbbells"), isOn: equipmentBinding("dumbbells"))
             }
-            Section("Contraintes") {
-                Toggle("Au sol", isOn: tagBinding("floor"))
-                Toggle("Avec sauts", isOn: tagBinding("jump"))
-                Toggle("Sollicite les poignets", isOn: tagBinding("wrists"))
-                Toggle("Bruyant", isOn: tagBinding("noisy"))
+            Section(MoveCopy.text("exercise.constraints")) {
+                Toggle(MoveCopy.text("constraint.floor"), isOn: tagBinding("floor"))
+                Toggle(MoveCopy.text("constraint.jump"), isOn: tagBinding("jump"))
+                Toggle(MoveCopy.text("constraint.wrists"), isOn: tagBinding("wrists"))
+                Toggle(MoveCopy.text("constraint.noisy"), isOn: tagBinding("noisy"))
                 Toggle(MoveCopy.text("constraint.knees"), isOn: tagBinding("knees"))
                 Toggle(MoveCopy.text("constraint.back"), isOn: tagBinding("back"))
                 Toggle(MoveCopy.text("constraint.space"), isOn: tagBinding("space"))
             }
-            Section("Zones musculaires") {
+            Section(MoveCopy.text("exercise.muscleZones")) {
                 Toggle(MoveCopy.text("zone.fullBody"), isOn: zoneBinding("fullBody"))
                 Toggle(MoveCopy.text("zone.chest"), isOn: zoneBinding("chest"))
-                Toggle("Jambes", isOn: zoneBinding("legs"))
-                Toggle("Fessiers", isOn: zoneBinding("glutes"))
-                Toggle("Dos", isOn: zoneBinding("back"))
-                Toggle("Épaules", isOn: zoneBinding("shoulders"))
-                Toggle("Bras", isOn: zoneBinding("arms"))
-                Toggle("Centre du corps", isOn: zoneBinding("core"))
+                Toggle(MoveCopy.text("zone.legs"), isOn: zoneBinding("legs"))
+                Toggle(MoveCopy.text("zone.glutes"), isOn: zoneBinding("glutes"))
+                Toggle(MoveCopy.text("zone.back"), isOn: zoneBinding("back"))
+                Toggle(MoveCopy.text("zone.shoulders"), isOn: zoneBinding("shoulders"))
+                Toggle(MoveCopy.text("zone.arms"), isOn: zoneBinding("arms"))
+                Toggle(MoveCopy.text("zone.core"), isOn: zoneBinding("core"))
                 Toggle(MoveCopy.text("zone.calves"), isOn: zoneBinding("calves"))
                 Toggle(MoveCopy.text("zone.neck"), isOn: zoneBinding("neck"))
                 Toggle(MoveCopy.text("zone.wrists"), isOn: zoneBinding("wrists"))

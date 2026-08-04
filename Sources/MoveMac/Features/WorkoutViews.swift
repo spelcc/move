@@ -232,7 +232,7 @@ private struct WorkoutEditorView: View {
             TextField("Nom", text: $name)
             HStack {
                 TextField("Emoji", text: $emoji).frame(width: 80)
-                TextField("Description (optionnel)", text: $description)
+                TextField(MoveCopy.text("workout.descriptionOptional"), text: $description)
             }
             Stepper("Tours : \(rounds)", value: $rounds, in: 1...20)
             Section("Temps globaux") {

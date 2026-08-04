@@ -53,7 +53,8 @@ public enum ExerciseLibrary {
         .init(id: "shadow-boxing", name: "Boxe dans le vide", category: .cardio, metric: .seconds, defaultAmount: 45, tags: ["noisy"], emoji: "🥊"),
         .init(id: "march-in-place", name: "Marche sur place", category: .cardio, metric: .seconds, defaultAmount: 60, emoji: "🚶"),
         .init(id: "butt-kicks", name: "Talons-fesses", category: .cardio, metric: .seconds, defaultAmount: 30, tags: ["noisy"], emoji: "🏃"),
-        .init(id: "wall-pushups", name: "Pompes au mur", category: .strength, metric: .repetitions, defaultAmount: 15, difficulty: 1, tags: ["wrists"], emoji: "🧱")
+        .init(id: "wall-pushups", name: "Pompes au mur", category: .strength, metric: .repetitions, defaultAmount: 15, difficulty: 1, tags: ["wrists"], emoji: "🧱"),
+        .init(id: "scapular-pushups", name: "Pompes scapulaires", category: .strength, metric: .repetitions, defaultAmount: 12, difficulty: 2, tags: ["floor", "wrists"], emoji: "💪")
     ]
 
     public static let all: [Exercise] = builtIn + additional

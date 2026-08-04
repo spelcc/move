@@ -21,6 +21,7 @@ import MoveCore
     private let selector = ExerciseSelector()
     private let scheduler = ReminderScheduler()
     private let context: ModelContext
+    private var notificationObserver: NSObjectProtocol?
 
     init(context: ModelContext) {
         self.context = context
@@ -31,6 +32,15 @@ import MoveCore
         if let savedReminder = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first { reminderState = savedReminder.state }
         chooseNext()
         scheduleNextReminder()
+        notificationObserver = NotificationCenter.default.addObserver(forName: .moveNotificationAction, object: nil, queue: .main) { [weak self] note in
+            guard let action = note.object as? String else { return }
+            let exerciseID = note.userInfo?["exerciseID"] as? String
+            Task { @MainActor in self?.handleNotificationAction(action, exerciseID: exerciseID) }
+        }
+    }
+
+    deinit {
+        if let notificationObserver { NotificationCenter.default.removeObserver(notificationObserver) }
     }
 
     func persistSettings() {
@@ -65,16 +75,36 @@ import MoveCore
     func chooseNext() { currentExercise = selector.next(from: ExerciseLibrary.builtIn, preferences: movement, recentExerciseIDs: []) ?? ExerciseLibrary.builtIn[0]; persistSettings() }
     func completeCurrent(source: ActivitySource = .hourly) {
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .completed, source: source)))
-        try? context.save(); isExpanded = false; chooseNext()
+        markReminderInteraction(); try? context.save(); isExpanded = false; chooseNext(); scheduleNextReminder()
     }
     func skipCurrent() {
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .skipped, source: .hourly)))
-        try? context.save(); isExpanded = false; chooseNext()
+        markReminderInteraction(); try? context.save(); isExpanded = false; chooseNext(); scheduleNextReminder()
     }
 
     func snoozeCurrent(for minutes: Int = 15) {
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .snoozed, source: .hourly)))
-        try? context.save(); isExpanded = false; chooseNext()
+        markReminderInteraction(); reminderState.pausedUntil = .now.addingTimeInterval(TimeInterval(minutes * 60))
+        try? context.save(); isExpanded = false; chooseNext(); ReminderNotificationService.cancelPending(); scheduleNextReminder()
+    }
+
+    private func markReminderInteraction() {
+        reminderState.lastUserInteractionAt = .now
+        reminderState.lastReminderAt = reminderState.nextReminderAt
+        reminderState.pausedUntil = nil
+        let entity = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first ?? ReminderStateEntity(state: reminderState)
+        entity.lastUserInteractionAt = reminderState.lastUserInteractionAt; entity.lastReminderAt = reminderState.lastReminderAt; entity.pausedUntil = nil; entity.updatedAt = .now
+        if entity.modelContext == nil { context.insert(entity) }
+    }
+
+    private func handleNotificationAction(_ action: String, exerciseID: String?) {
+        if let exerciseID, let exercise = ExerciseLibrary.builtIn.first(where: { $0.id == exerciseID }) { currentExercise = exercise }
+        switch action {
+        case "DONE": completeCurrent()
+        case "SKIP": skipCurrent()
+        case "SNOOZE": snoozeCurrent(for: reminder.snoozeMinutes)
+        default: break
+        }
     }
     func start(_ workout: WorkoutTemplate) {
         guard workout.validationError == nil else { return }

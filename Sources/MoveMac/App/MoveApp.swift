@@ -46,7 +46,7 @@ import MoveCore
             Button("Quitter") { NSApplication.shared.terminate(nil) }
         }
         Window("Move", id: "dashboard") { DashboardView(store: store).modelContainer(container) }
-        Window("Bienvenue dans Move", id: "onboarding") { OnboardingView { showNotch() } }
+        Window("Bienvenue dans Move", id: "onboarding") { OnboardingView(store: store) { showNotch() } }
         Settings { SettingsView(store: store).frame(width: 520, height: 420) }
             .commands {
                 CommandMenu("Move") {

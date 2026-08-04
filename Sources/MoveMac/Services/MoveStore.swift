@@ -12,6 +12,7 @@ import MoveCore
     var reminder = ReminderPreferences()
     var reminderState = ReminderState()
     var movement = MovementPreferences()
+    var appearance = AppearancePreferences()
     var activeWorkout: WorkoutTemplate?
     private var recentExerciseIDs: [String] = []
     var workoutStepIndex = 0
@@ -37,7 +38,7 @@ import MoveCore
     init(context: ModelContext) {
         self.context = context
         if let saved = try? context.fetch(FetchDescriptor<AppSettingsEntity>()), let settings = saved.first {
-            let values = settings.values(); reminder = values.0; movement = values.1
+            let values = settings.values(); reminder = values.0; movement = values.1; appearance = values.2
         }
         resumableWorkout = (try? context.fetch(FetchDescriptor<WorkoutSessionEntity>()))?.first
         if let savedReminder = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first { reminderState = savedReminder.state }
@@ -64,6 +65,7 @@ import MoveCore
         let settings = existing ?? AppSettingsEntity()
         settings.reminderData = (try? JSONEncoder().encode(reminder)) ?? Data()
         settings.movementData = (try? JSONEncoder().encode(movement)) ?? Data()
+        settings.appearanceData = (try? JSONEncoder().encode(appearance)) ?? Data()
         settings.updatedAt = .now
         if existing == nil { context.insert(settings) }
         try? context.save()

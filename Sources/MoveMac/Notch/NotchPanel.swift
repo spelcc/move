@@ -16,7 +16,7 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
     }
     private(set) var state: NotchPanelState = .hidden
 
-    func show(width: CGFloat = 420, height: CGFloat = 150) {
+    func show(width: CGFloat = 460, height: CGFloat = 214) {
         guard let screen = targetScreen() else { return }
         state = .bumping
         let notch = screen.auxiliaryTopLeftArea.map { left in
@@ -24,7 +24,9 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         }
         let anchor = notch?.midX ?? screen.frame.midX
         let x = min(max(anchor - width / 2, screen.visibleFrame.minX + 8), screen.visibleFrame.maxX - width - 8)
-        let y = screen.frame.maxY - height - 4
+        // The panel is attached to the physical top edge. The content shape
+        // supplies the soft, inverted corner instead of leaving a sharp gap.
+        let y = screen.frame.maxY - height
         panel.setFrame(NSRect(x: x, y: y, width: width, height: height), display: true)
         panel.orderFrontRegardless()
         withAnimation(.spring(response: 0.42, dampingFraction: 0.68)) { state = .expanded }

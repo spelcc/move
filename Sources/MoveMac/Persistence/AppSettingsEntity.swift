@@ -6,18 +6,21 @@ import MoveCore
     @Attribute(.unique) var id: String
     var reminderData: Data
     var movementData: Data
+    var appearanceData: Data
     var updatedAt: Date
 
-    init(reminder: ReminderPreferences = .init(), movement: MovementPreferences = .init()) {
+    init(reminder: ReminderPreferences = .init(), movement: MovementPreferences = .init(), appearance: AppearancePreferences = .init()) {
         id = "settings"
         reminderData = (try? JSONEncoder().encode(reminder)) ?? Data()
         movementData = (try? JSONEncoder().encode(movement)) ?? Data()
+        appearanceData = (try? JSONEncoder().encode(appearance)) ?? Data()
         updatedAt = .now
     }
 
-    func values() -> (ReminderPreferences, MovementPreferences) {
+    func values() -> (ReminderPreferences, MovementPreferences, AppearancePreferences) {
         let reminder = (try? JSONDecoder().decode(ReminderPreferences.self, from: reminderData)) ?? .init()
         let movement = (try? JSONDecoder().decode(MovementPreferences.self, from: movementData)) ?? .init()
-        return (reminder, movement)
+        let appearance = (try? JSONDecoder().decode(AppearancePreferences.self, from: appearanceData)) ?? .init()
+        return (reminder, movement, appearance)
     }
 }

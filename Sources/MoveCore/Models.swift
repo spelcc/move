@@ -6,6 +6,9 @@ public enum WorkoutMode: String, Codable, CaseIterable, Sendable { case interval
 public enum WorkoutRunnerState: String, Codable, Sendable { case preparing, working, resting, roundRest, paused, completed, cancelled }
 public enum ActivityStatus: String, Codable, CaseIterable, Sendable { case proposed, completed, skipped, snoozed, replaced }
 public enum ActivitySource: String, Codable, Sendable { case hourly, quickWorkout, customWorkout, freeMovement, manual }
+public enum HumorMode: String, Codable, CaseIterable, Sendable { case normal, discreet, disabled }
+public enum AnimationMode: String, Codable, CaseIterable, Sendable { case full, reduced, disabled }
+public enum SoundMode: String, Codable, CaseIterable, Sendable { case off, discreet, normal }
 
 public struct Exercise: Identifiable, Codable, Hashable, Sendable {
     public let id: String
@@ -52,6 +55,14 @@ public struct ReminderPreferences: Codable, Equatable, Sendable {
     public var activeEndHour = 19
     public var enabledWeekdays: Set<Int> = [2, 3, 4, 5, 6]
     public var snoozeMinutes = 15
+    public init() {}
+}
+
+public struct AppearancePreferences: Codable, Equatable, Sendable {
+    public var humor: HumorMode = .normal
+    public var emojisEnabled = true
+    public var animations: AnimationMode = .full
+    public var sounds: SoundMode = .off
     public init() {}
 }
 

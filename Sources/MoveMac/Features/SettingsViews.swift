@@ -60,9 +60,28 @@ struct SettingsView: View {
             }
             Section("Rappels") { Stepper("Toutes les \(store.reminder.intervalMinutes) minutes", value: $store.reminder.intervalMinutes, in: 15...180, step: 15); Stepper("Début à \(store.reminder.activeStartHour) h", value: $store.reminder.activeStartHour, in: 0...23); Stepper("Fin à \(store.reminder.activeEndHour) h", value: $store.reminder.activeEndHour, in: 1...24) }
             Section("Contraintes") { Toggle("Sans sauts", isOn: tagBinding("jump")); Toggle("Silencieux", isOn: tagBinding("noisy")); Toggle("Éviter le sol", isOn: tagBinding("floor")); Toggle("Éviter les poignets", isOn: tagBinding("wrists")); Toggle("Barre de traction disponible", isOn: equipmentBinding("pullup-bar")) }
+            Section("Apparence et ambiance") {
+                Picker("Humour", selection: $store.appearance.humor) {
+                    Text("Normal").tag(HumorMode.normal)
+                    Text("Discret").tag(HumorMode.discreet)
+                    Text("Désactivé").tag(HumorMode.disabled)
+                }
+                Toggle("Emojis", isOn: $store.appearance.emojisEnabled)
+                Picker("Animations", selection: $store.appearance.animations) {
+                    Text("Complètes").tag(AnimationMode.full)
+                    Text("Réduites").tag(AnimationMode.reduced)
+                    Text("Désactivées").tag(AnimationMode.disabled)
+                }
+                Picker("Sons", selection: $store.appearance.sounds) {
+                    Text("Aucun").tag(SoundMode.off)
+                    Text("Discrets").tag(SoundMode.discreet)
+                    Text("Normaux").tag(SoundMode.normal)
+                }
+            }
         }.formStyle(.grouped).padding().navigationTitle("Réglages")
         .onChange(of: store.reminder) { _, _ in store.persistSettings() }
         .onChange(of: store.movement) { _, _ in store.persistSettings(); store.chooseNext() }
+        .onChange(of: store.appearance) { _, _ in store.persistSettings() }
     }
     private func weekdayBinding(_ weekday: Int) -> Binding<Bool> {
         Binding(get: { store.reminder.enabledWeekdays.contains(weekday) }, set: { enabled in

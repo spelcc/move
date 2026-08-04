@@ -61,6 +61,16 @@ import Testing
     #expect(workout.validationError != nil)
 }
 
+@Test func workoutValidationRejectsNegativeTiming() {
+    let workout = WorkoutTemplate(name: "Test", rounds: 1, steps: [.init(exerciseID: "squats", workSeconds: -1)])
+    #expect(workout.validationError != nil)
+}
+
+@Test func workoutValidationRejectsUnboundedDuration() {
+    let workout = WorkoutTemplate(name: "Test", rounds: 1, steps: [.init(exerciseID: "squats", workSeconds: 7_201)])
+    #expect(workout.validationError != nil)
+}
+
 @Test func exportCSVContainsHeaderAndRecord() {
     let record = ActivityRecord(exerciseID: "squats", amount: 10, metric: .repetitions, status: .completed, source: .hourly)
     let csv = DataTransferService.exportCSV([record])
@@ -101,6 +111,15 @@ import Testing
     preferences.availableEquipment = ["pullup-bar"]
     let candidates = ExerciseSelector().candidates(from: ExerciseLibrary.builtIn, preferences: preferences)
     #expect(candidates.contains { $0.id == "pullups" })
+}
+
+@Test func selectorAvoidsRecentlyShownExercisesWhenAlternativesExist() {
+    let exercises = [
+        Exercise(id: "one", name: "Un", category: .mobility, metric: .repetitions, defaultAmount: 1),
+        Exercise(id: "two", name: "Deux", category: .mobility, metric: .repetitions, defaultAmount: 1)
+    ]
+    let next = ExerciseSelector().next(from: exercises, preferences: .init(), recentExerciseIDs: ["one"], seed: 0)
+    #expect(next?.id == "two")
 }
 
 @Test func workoutDurationIsComputed() {

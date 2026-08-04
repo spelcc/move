@@ -61,7 +61,7 @@ struct NotchPromptView: View {
                     }
                     .menuStyle(.borderlessButton)
                     .foregroundStyle(.white.opacity(0.75))
-                    Button(MoveCopy.text("notch.action.change")) { store.chooseNext(); onResize(460, 230) }.keyboardShortcut("c", modifiers: [.command]).buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
+                    Button(MoveCopy.text("notch.action.change")) { store.chooseNext(); onResize(460, 300) }.keyboardShortcut("c", modifiers: [.command]).buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
                 }
             }
         }
@@ -69,7 +69,7 @@ struct NotchPromptView: View {
         // while the sticky shell remains attached to the top edge.
         // Keep every text baseline below the physical notch, including when
         // the panel is hosted on a display whose safe-area metadata is absent.
-        .padding(.top, 72)
+        .padding(.top, 92)
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
         .background(.black, in: StickyPanelShape(radius: 30))
@@ -121,7 +121,9 @@ private struct StickyPanelShape: Shape {
     func path(in rect: CGRect) -> Path {
         let r = min(radius, min(rect.width / 3, rect.height / 2))
         var path = Path()
-        let shoulder = min(r * 1.18, rect.width / 4)
+        // Broad, soft shoulders make the top edge feel attached to the notch,
+        // like a Dynamic Island expansion rather than a rounded rectangle.
+        let shoulder = min(r * 1.55, rect.width / 3.2)
         path.move(to: CGPoint(x: rect.minX + shoulder, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.maxX - shoulder, y: rect.minY))
         path.addCurve(to: CGPoint(x: rect.maxX, y: rect.minY + shoulder),

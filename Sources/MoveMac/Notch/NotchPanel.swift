@@ -38,7 +38,7 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         panel.setFrame(NSRect(x: x, y: y, width: width, height: height), display: true)
         panel.orderFrontRegardless()
         state = .compact
-        resize(width: 460, height: 230, on: screen, anchor: anchor, animated: true) { [weak self] in self?.state = .expanded }
+        resizeWithBounce(width: 460, height: 300, on: screen, anchor: anchor) { [weak self] in self?.state = .expanded }
     }
 
     private func repositionOnScreenChange() {
@@ -75,6 +75,14 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         } else { panel.setFrame(frame, display: true); completion?() }
     }
 
+    private func resizeWithBounce(width: CGFloat, height: CGFloat, on screen: NSScreen, anchor: CGFloat, completion: (() -> Void)? = nil) {
+        let overshoot = (width: width + 18, height: height + 10)
+        resize(width: overshoot.width, height: overshoot.height, on: screen, anchor: anchor, animated: true) { [weak self] in
+            guard let self else { return }
+            self.resize(width: width, height: height, on: screen, anchor: anchor, animated: true, completion: completion)
+        }
+    }
+
     private func targetScreen(_ target: ReminderScreenTarget) -> NSScreen? {
         let screens = NSScreen.screens
         switch target {
@@ -88,13 +96,20 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
     }
     func hide() {
         state = .closing
-        resize(width: 180, height: 40) { [weak self] in
+        guard let screen = panel.screen ?? NSScreen.main else { return }
+        let anchor = screen.auxiliaryTopLeftArea.map { left in
+            (left.maxX + (screen.auxiliaryTopRightArea?.minX ?? left.maxX)) / 2
+        } ?? screen.frame.midX
+        resize(width: 200, height: 50, on: screen, anchor: anchor, animated: true) { [weak self] in
+            guard let self else { return }
+            self.resize(width: 180, height: 40, on: screen, anchor: anchor, animated: true) { [weak self] in
             guard let self else { return }
             if let screenChangeObserver {
                 NotificationCenter.default.removeObserver(screenChangeObserver)
                 self.screenChangeObserver = nil
             }
             panel.orderOut(nil); state = .hidden
+            }
         }
     }
 }

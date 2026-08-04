@@ -25,6 +25,15 @@ import MoveCore
     private let context: ModelContext
     private var notificationObserver: NSObjectProtocol?
 
+    private var availableExercises: [Exercise] {
+        let custom = (try? context.fetch(FetchDescriptor<CustomExerciseEntity>())) ?? []
+        return ExerciseLibrary.all + custom.filter { !$0.archived }.compactMap(\.exercise)
+    }
+
+    func exercise(withID id: String) -> Exercise? {
+        availableExercises.first { $0.id == id }
+    }
+
     init(context: ModelContext) {
         self.context = context
         if let saved = try? context.fetch(FetchDescriptor<AppSettingsEntity>()), let settings = saved.first {
@@ -84,7 +93,7 @@ import MoveCore
     }
 
     func chooseNext() {
-        let next = selector.next(from: ExerciseLibrary.all, preferences: movement, recentExerciseIDs: recentExerciseIDs)
+        let next = selector.next(from: availableExercises, preferences: movement, recentExerciseIDs: recentExerciseIDs)
         if let next { currentExercise = next; recentExerciseIDs.append(next.id); recentExerciseIDs = Array(recentExerciseIDs.suffix(6)) }
         persistSettings()
     }
@@ -113,7 +122,7 @@ import MoveCore
     }
 
     private func handleNotificationAction(_ action: String, exerciseID: String?) {
-        if let exerciseID, let exercise = ExerciseLibrary.all.first(where: { $0.id == exerciseID }) { currentExercise = exercise }
+        if let exerciseID, let exercise = availableExercises.first(where: { $0.id == exerciseID }) { currentExercise = exercise }
         switch action {
         case "DONE": completeCurrent()
         case "SKIP": skipCurrent()

@@ -20,4 +20,12 @@ import MoveCore
         categoryRaw = category.rawValue; metricRaw = metric.rawValue; self.defaultAmount = defaultAmount
         archived = false; self.instructions = instructions; createdAt = .now; updatedAt = .now
     }
+
+    var exercise: Exercise? {
+        guard let category = ExerciseCategory(rawValue: categoryRaw),
+              let metric = ExerciseMetric(rawValue: metricRaw) else { return nil }
+        return Exercise(id: id, name: name, category: category, metric: metric,
+                        defaultAmount: max(0, defaultAmount), emoji: emoji,
+                        tags: ["personnalisé"])
+    }
 }

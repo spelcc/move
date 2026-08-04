@@ -76,21 +76,26 @@ struct ActivityExportDocument: FileDocument {
 private struct AddActivityView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Query private var customExercises: [CustomExerciseEntity]
     @State private var exerciseID = ExerciseLibrary.all.first?.id ?? ""
     @State private var amount = 10
     @State private var status = ActivityStatus.completed
     var body: some View {
         Form {
-            Picker("Mouvement", selection: $exerciseID) { ForEach(ExerciseLibrary.all) { Text($0.name).tag($0.id) } }
+            Picker("Mouvement", selection: $exerciseID) { ForEach(allExercises) { Text($0.name).tag($0.id) } }
             Stepper("Quantité : \(amount)", value: $amount, in: 0...9999)
             Picker("Statut", selection: $status) { ForEach(ActivityStatus.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
             HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Ajouter") { save() }.buttonStyle(.borderedProminent) }
         }.padding().frame(width: 400)
     }
     private func save() {
-        let exercise = ExerciseLibrary.all.first { $0.id == exerciseID } ?? ExerciseLibrary.all[0]
+        let exercise = allExercises.first { $0.id == exerciseID } ?? ExerciseLibrary.all[0]
         modelContext.insert(ActivityEntity(record: .init(exerciseID: exercise.id, amount: amount, metric: exercise.metric, status: status, source: .manual)))
         try? modelContext.save(); dismiss()
+    }
+
+    private var allExercises: [Exercise] {
+        ExerciseLibrary.all + customExercises.filter { !$0.archived }.compactMap(\.exercise)
     }
 }
 

@@ -43,9 +43,11 @@ struct WorkoutLibraryView: View {
 
 private struct WorkoutEditorView: View {
     @Environment(\.dismiss) private var dismiss
+    @Query private var customExercises: [CustomExerciseEntity]
     @State private var name = "Ma séance"
     @State private var rounds = 2
     @State private var selected = Set<String>()
+    @State private var search = ""
     let onSave: (WorkoutTemplate) -> Void
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -53,15 +55,25 @@ private struct WorkoutEditorView: View {
             TextField("Nom", text: $name)
             Stepper("Tours : \(rounds)", value: $rounds, in: 1...20)
             Text("Mouvements").font(.headline)
-            List(ExerciseLibrary.builtIn.prefix(12)) { exercise in
+            TextField("Rechercher", text: $search)
+            List(filteredExercises) { exercise in
                 Toggle(isOn: Binding(get: { selected.contains(exercise.id) }, set: { if $0 { selected.insert(exercise.id) } else { selected.remove(exercise.id) } })) { Text("\(exercise.emoji) \(exercise.name)") }
             }
             HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Sauvegarder") { save() }.buttonStyle(.borderedProminent).disabled(selected.isEmpty) }
         }.padding().frame(width: 420, height: 560)
     }
     private func save() {
-        let steps = ExerciseLibrary.builtIn.filter { selected.contains($0.id) }.map { WorkoutStep(exerciseID: $0.id) }
+        let steps = allExercises.filter { selected.contains($0.id) }.map { WorkoutStep(exerciseID: $0.id) }
         onSave(WorkoutTemplate(name: name, rounds: rounds, steps: steps)); dismiss()
+    }
+
+    private var allExercises: [Exercise] {
+        let custom = customExercises.filter { !$0.archived }.compactMap(\.exercise)
+        return ExerciseLibrary.all + custom
+    }
+
+    private var filteredExercises: [Exercise] {
+        allExercises.filter { search.isEmpty || $0.name.localizedStandardContains(search) }
     }
 }
 
@@ -81,5 +93,7 @@ private struct WorkoutRunnerView: View {
             }
         }.foregroundStyle(.white) }
     }
-    private var exerciseName: String { ExerciseLibrary.builtIn.first(where: { $0.id == workout.steps[store.workoutStepIndex].exerciseID })?.name ?? "Mouvement" }
+    private var exerciseName: String {
+        store.exercise(withID: workout.steps[store.workoutStepIndex].exerciseID)?.name ?? "Mouvement"
+    }
 }

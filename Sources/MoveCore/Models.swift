@@ -128,6 +128,7 @@ public struct WorkoutTemplate: Identifiable, Codable, Hashable, Sendable {
         if steps.isEmpty { return "Ajoute au moins un mouvement." }
         if steps.contains(where: { $0.workSeconds < 0 || $0.restSeconds < 0 }) || preparationSeconds < 0 || roundRestSeconds < 0 || finalRecoverySeconds < 0 { return "Les durées ne peuvent pas être négatives." }
         if mode == .interval && steps.allSatisfy({ $0.workSeconds == 0 }) { return "Le temps de travail doit être supérieur à zéro." }
+        if mode == .repetitions && steps.contains(where: { $0.workSeconds <= 0 }) { return "Chaque étape doit contenir au moins une répétition." }
         if estimatedDuration > 2 * 60 * 60 { return "La séance est trop longue." }
         return nil
     }

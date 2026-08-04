@@ -56,6 +56,11 @@ import Testing
     #expect(workout.validationError == nil)
 }
 
+@Test func repetitionsWorkoutRejectsZeroRepetitions() {
+    let workout = WorkoutTemplate(name: "Test", rounds: 1, steps: [.init(exerciseID: "squats", workSeconds: 0)], mode: .repetitions)
+    #expect(workout.validationError != nil)
+}
+
 @Test func exportCSVContainsHeaderAndRecord() {
     let record = ActivityRecord(exerciseID: "squats", amount: 10, metric: .repetitions, status: .completed, source: .hourly)
     let csv = DataTransferService.exportCSV([record])

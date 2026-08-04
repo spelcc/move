@@ -15,8 +15,11 @@ struct WorkoutLibraryView: View {
                     .buttonStyle(.borderedProminent)
             }
             LazyVGrid(columns: [.init(.adaptive(minimum: 230))], spacing: 16) {
-            ForEach(customWorkouts.filter { !$0.archived }.compactMap(\.template).filter { !$0.name.isEmpty }) { workout in
-                workoutCard(workout)
+            ForEach(customWorkouts.filter { !$0.archived }) { entity in
+                if let workout = entity.template {
+                    workoutCard(workout)
+                        .contextMenu { Button("Archiver") { entity.archived = true; entity.updatedAt = .now; try? modelContext.save() } }
+                }
             }
             ForEach(ExerciseLibrary.quickWorkouts) { workout in
                 Button { store.start(workout) } label: {

@@ -217,6 +217,7 @@ import MoveCore
         guard let workout = activeWorkout else { return }
         workoutState = .working
         secondsRemaining = workout.steps[workoutStepIndex].workSeconds
+        WorkoutSoundService.play(.start, mode: appearance.sounds)
         timer?.invalidate(); timer = .scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in Task { @MainActor in self?.tick() } }
         saveWorkoutProgress()
     }
@@ -226,6 +227,7 @@ import MoveCore
         case .working:
             if workout.mode == .repetitions { return }
             if secondsRemaining > 0 {
+                if secondsRemaining <= 3 { WorkoutSoundService.play(.countdown, mode: appearance.sounds) }
                 secondsRemaining -= 1
                 saveWorkoutProgress()
             } else {
@@ -233,6 +235,7 @@ import MoveCore
                 if rest > 0 {
                     workoutState = .resting
                     secondsRemaining = rest
+                    WorkoutSoundService.play(.change, mode: appearance.sounds)
                     saveWorkoutProgress()
                 } else {
                     advanceWorkout()
@@ -304,6 +307,7 @@ import MoveCore
         if workoutRound > workout.rounds {
             timer?.invalidate()
             workoutState = .completed
+            WorkoutSoundService.play(.end, mode: appearance.sounds)
             completedWorkout = workout
             activeWorkout = nil
             clearWorkoutProgress()

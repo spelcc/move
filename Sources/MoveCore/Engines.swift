@@ -11,6 +11,18 @@ public enum ReminderDeliveryPolicy {
     }
 }
 
+public enum WorkoutSoundCue: Sendable { case start, countdown, change, end }
+
+public enum WorkoutSoundPolicy {
+    public static func shouldPlay(_ cue: WorkoutSoundCue, mode: SoundMode) -> Bool {
+        switch mode {
+        case .off: return false
+        case .discreet: return cue == .start || cue == .change || cue == .end
+        case .normal: return true
+        }
+    }
+}
+
 public struct ExerciseSelector: Sendable {
     public init() {}
     public func candidates(from exercises: [Exercise], preferences: MovementPreferences) -> [Exercise] {

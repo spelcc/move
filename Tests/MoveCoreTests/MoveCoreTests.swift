@@ -10,6 +10,13 @@ import Testing
     #expect(!candidates.contains { !$0.equipment.isEmpty })
 }
 
+@Test func workoutSoundPolicyHonorsSoundModes() {
+    #expect(!WorkoutSoundPolicy.shouldPlay(.start, mode: .off))
+    #expect(!WorkoutSoundPolicy.shouldPlay(.countdown, mode: .discreet))
+    #expect(WorkoutSoundPolicy.shouldPlay(.change, mode: .discreet))
+    #expect(WorkoutSoundPolicy.shouldPlay(.countdown, mode: .normal))
+}
+
 @Test func exerciseLibraryHasV1Coverage() {
     #expect(ExerciseLibrary.all.count >= 50)
     #expect(Set(ExerciseLibrary.all.map(\.category)).count >= 5)

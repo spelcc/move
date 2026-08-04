@@ -46,8 +46,7 @@ final class OnboardingWindowController {
         var controller: NotchPanelController?
         let root = NotchPromptView(
             store: store,
-            onClose: { controller?.hide() },
-            onResize: { width, height in controller?.resize(width: width, height: height) }
+            onClose: { controller?.hide() }
         ).modelContainer(container)
         controller = NotchPanelController(rootView: root)
         panel = controller

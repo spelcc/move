@@ -3,32 +3,30 @@ import MoveCore
 
 struct NotchPromptView: View {
     @Bindable var store: MoveStore
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let onClose: () -> Void
-    let onResize: (CGFloat, CGFloat) -> Void
-    @State private var bumped = false
-    @State private var reaction: Reaction?
-    @State private var closing = false
 
-    init(store: MoveStore, onClose: @escaping () -> Void = {}, onResize: @escaping (CGFloat, CGFloat) -> Void = { _, _ in }) {
+    init(store: MoveStore, onClose: @escaping () -> Void = {}) {
         self.store = store
         self.onClose = onClose
-        self.onResize = onResize
-    }
-
-    private enum Reaction {
-        case success, skipped, snoozed
-
-        var title: String {
-            switch self {
-            case .success: MoveCopy.text("notch.reaction.success")
-            case .skipped: MoveCopy.text("notch.reaction.skipped")
-            case .snoozed: MoveCopy.text("notch.reaction.snoozed")
-            }
-        }
     }
 
     var body: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .top) {
+                NotchShellShape(topCornerRadius: 30, bottomCornerRadius: 30)
+                    .fill(.black)
+
+                promptContent
+                    .padding(.top, NotchLayout.contentTopInset(on: NotchLayout.screen(for: store.appearance.screenTarget)))
+                    .padding(.horizontal, 44)
+                    .padding(.bottom, 16)
+                    .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
+            }
+            .contentShape(NotchShellShape(topCornerRadius: 30, bottomCornerRadius: 30))
+        }
+    }
+
+    @ViewBuilder private var promptContent: some View {
         VStack(spacing: 12) {
             if store.noCompatibleExercises {
                 Text(MoveCopy.text("notch.noCompatible.title"))
@@ -37,9 +35,6 @@ struct NotchPromptView: View {
                     .font(.caption).foregroundStyle(.white.opacity(0.65))
                 Button(MoveCopy.text("notch.noCompatible.reset")) { store.enableAllExercises() }
                     .buttonStyle(.borderedProminent).tint(.white).foregroundStyle(.black)
-            } else if let reaction {
-                Text(reaction.title).font(.headline).foregroundStyle(.white).multilineTextAlignment(.center)
-                Text(MoveCopy.text("notch.reaction.untilNext")).font(.caption).foregroundStyle(.white.opacity(0.65))
             } else {
                 VStack(spacing: 6) {
                     if store.appearance.emojisEnabled {
@@ -56,7 +51,7 @@ struct NotchPromptView: View {
                         complete()
                     }
                     NotchActionButton(title: MoveCopy.text("notch.action.other"), color: Color.white.opacity(0.16), textColor: .white.opacity(0.82)) {
-                        store.chooseNext(); onResize(460, 300)
+                        store.chooseNext()
                     }
                     .keyboardShortcut("c", modifiers: [.command])
                 }
@@ -65,41 +60,17 @@ struct NotchPromptView: View {
                 .accessibilityLabel(MoveCopy.text("notch.actions"))
             }
         }
-        // Leave the notch depth clear: text starts below the physical cutout,
-        // while the sticky shell remains attached to the top edge.
-        // Keep every text baseline below the physical notch, including when
-        // the panel is hosted on a display whose safe-area metadata is absent.
-        .padding(.top, 92)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 16)
-        .background(.black, in: StickyPanelShape(radius: 30))
-        .frame(maxWidth: 460)
-        .scaleEffect(bumped ? 1 : 0.92, anchor: .top)
-        .offset(y: bumped ? 0 : -18)
-        .opacity(bumped ? 1 : 0)
-        .opacity(closing ? 0 : 1)
-        .onAppear {
-            if reduceMotion || store.appearance.animations == .disabled { bumped = true }
-            else {
-                let response = store.appearance.animations == .reduced ? 0.28 : 0.42
-                withAnimation(.spring(response: response, dampingFraction: 0.68)) { bumped = true }
-            }
-        }
     }
 
-    private func complete() { store.completeCurrent(); show(.success) }
-    private func skip() { store.skipCurrent(); show(.skipped) }
-    private func snooze(for minutes: Int) { store.snoozeCurrent(for: minutes); show(.snoozed) }
-
-    private func show(_ value: Reaction) {
-        reaction = value
-        Task {
-            try? await Task.sleep(for: .seconds(1.45))
-            withAnimation(.easeOut(duration: 0.22)) { closing = true }
-            try? await Task.sleep(for: .seconds(0.24))
-            onClose()
-        }
+    private func complete() {
+        store.completeCurrent()
+        onClose()
     }
+    private func snooze(for minutes: Int) {
+        store.snoozeCurrent(for: minutes)
+        onClose()
+    }
+
     private var prompt: String {
         switch store.currentExercise.metric {
         case .repetitions: "Fais \(store.currentExercise.defaultAmount) \(store.currentExercise.name.lowercased())"
@@ -115,38 +86,6 @@ struct NotchPromptView: View {
         case .discreet: MoveCopy.text("notch.humor.discreet")
         case .disabled: MoveCopy.text("notch.humor.disabled")
         }
-    }
-}
-
-private struct StickyPanelShape: Shape {
-    var radius: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        let r = min(radius, min(rect.width / 3, rect.height / 2))
-        var path = Path()
-        // The top edge must be painted from edge to edge. Inset shoulders leave
-        // transparent pixels at the screen boundary and make the panel appear
-        // detached instead of physically docked to the notch.
-        let topDrop = min(24, rect.height / 8)
-        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
-        path.addCurve(to: CGPoint(x: rect.maxX, y: rect.minY + topDrop),
-                      control1: CGPoint(x: rect.maxX, y: rect.minY),
-                      control2: CGPoint(x: rect.maxX, y: rect.minY + topDrop * 0.55))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - r))
-        path.addCurve(to: CGPoint(x: rect.maxX - r, y: rect.maxY),
-                      control1: CGPoint(x: rect.maxX, y: rect.maxY - r * 0.28),
-                      control2: CGPoint(x: rect.maxX - r * 0.28, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.minX + r, y: rect.maxY))
-        path.addCurve(to: CGPoint(x: rect.minX, y: rect.maxY - r),
-                      control1: CGPoint(x: rect.minX + r * 0.28, y: rect.maxY),
-                      control2: CGPoint(x: rect.minX, y: rect.maxY - r * 0.28))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + topDrop))
-        path.addCurve(to: CGPoint(x: rect.minX, y: rect.minY),
-                      control1: CGPoint(x: rect.minX, y: rect.minY + topDrop * 0.55),
-                      control2: CGPoint(x: rect.minX, y: rect.minY))
-        path.closeSubpath()
-        return path
     }
 }
 

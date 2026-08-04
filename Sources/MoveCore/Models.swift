@@ -17,8 +17,10 @@ public struct Exercise: Identifiable, Codable, Hashable, Sendable {
     public var equipment: Set<String>
     public var tags: Set<String>
     public var emoji: String
-    public init(id: String, name: String, category: ExerciseCategory, metric: ExerciseMetric, defaultAmount: Int, difficulty: Int = 1, equipment: Set<String> = [], tags: Set<String> = [], emoji: String) {
-        self.id = id; self.name = name; self.category = category; self.metric = metric; self.defaultAmount = defaultAmount; self.difficulty = difficulty; self.equipment = equipment; self.tags = tags; self.emoji = emoji
+    public var easierVariantID: String?
+    public var harderVariantID: String?
+    public init(id: String, name: String, category: ExerciseCategory, metric: ExerciseMetric, defaultAmount: Int, difficulty: Int = 1, equipment: Set<String> = [], tags: Set<String> = [], emoji: String, easierVariantID: String? = nil, harderVariantID: String? = nil) {
+        self.id = id; self.name = name; self.category = category; self.metric = metric; self.defaultAmount = defaultAmount; self.difficulty = difficulty; self.equipment = equipment; self.tags = tags; self.emoji = emoji; self.easierVariantID = easierVariantID; self.harderVariantID = harderVariantID
     }
 }
 

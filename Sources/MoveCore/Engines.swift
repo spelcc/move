@@ -17,6 +17,14 @@ public struct ExerciseSelector: Sendable {
         guard !pool.isEmpty else { return nil }
         return pool[abs(seed) % pool.count]
     }
+
+    public func adapted(_ exercise: Exercise, from exercises: [Exercise], refusals: Int, easyCompletions: Int) -> Exercise {
+        let targetID = refusals >= 2 ? exercise.easierVariantID : (easyCompletions >= 3 ? exercise.harderVariantID : nil)
+        guard let targetID, var variant = exercises.first(where: { $0.id == targetID }) else { return exercise }
+        if refusals >= 2 { variant.defaultAmount = max(1, variant.defaultAmount - 2) }
+        if easyCompletions >= 3 { variant.defaultAmount += 2 }
+        return variant
+    }
 }
 
 public struct ReminderScheduler: Sendable {

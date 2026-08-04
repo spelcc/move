@@ -15,6 +15,15 @@ import Testing
     #expect(Set(ExerciseLibrary.all.map(\.category)).count >= 5)
 }
 
+@Test func selectorAdaptsToRepeatedRefusals() {
+    let easy = Exercise(id: "easy", name: "Facile", category: .strength, metric: .repetitions, defaultAmount: 8, emoji: "🙂")
+    let hard = Exercise(id: "hard", name: "Difficile", category: .strength, metric: .repetitions, defaultAmount: 10, difficulty: 2, emoji: "💪")
+    var source = easy; source.easierVariantID = "hard"
+    let adapted = ExerciseSelector().adapted(source, from: [source, hard], refusals: 2, easyCompletions: 0)
+    #expect(adapted.id == "hard")
+    #expect(adapted.defaultAmount == 8)
+}
+
 @Test func workoutValidationRejectsEmptyWorkout() {
     let workout = WorkoutTemplate(name: "", rounds: 0, steps: [])
     #expect(workout.validationError != nil)

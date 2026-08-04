@@ -38,7 +38,8 @@ struct OnboardingView: View {
                     Text("Désactivées").tag(AnimationMode.disabled)
                 }
             } else if step == 3 {
-                Toggle("Lancer Move à la connexion", isOn: Binding(get: { launchAtLogin }, set: setLaunchAtLogin))
+                Toggle("Lancer Move à la connexion", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
                 if let launchError { Text(launchError).font(.caption).foregroundStyle(.red) }
             }
             Spacer()

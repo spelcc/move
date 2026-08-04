@@ -179,7 +179,10 @@ private struct NewExerciseView: View {
                 TextField(MoveCopy.text("exercise.easierVariantID"), text: $easierVariantID)
                 TextField(MoveCopy.text("exercise.harderVariantID"), text: $harderVariantID)
             }
-            HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("common.create")) { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags.union(["difficulty-\(difficulty)", easierVariantID.isEmpty ? "" : "easier-\(easierVariantID)", harderVariantID.isEmpty ? "" : "harder-\(harderVariantID)"]), muscleZones: muscleZones)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
+            HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("common.create")) {
+                let variantTags = Set([easierVariantID.isEmpty ? "" : "easier-\(easierVariantID)", harderVariantID.isEmpty ? "" : "harder-\(harderVariantID)"]).filter { !$0.isEmpty }
+                onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags.union(variantTags).union(["difficulty-\(difficulty)"]), muscleZones: muscleZones)); dismiss()
+            }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
         }.padding().frame(width: 420, height: 700)
     }
 

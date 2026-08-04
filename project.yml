@@ -28,3 +28,12 @@ targets:
         PRODUCT_NAME: Move
         INFOPLIST_FILE: Sources/MoveMac/Info.plist
         CODE_SIGN_ENTITLEMENTS: Sources/MoveMac/Move.entitlements
+  MoveUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - Tests/MoveUITests
+    testTarget: Move
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move.uitests

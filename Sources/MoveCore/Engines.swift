@@ -22,6 +22,8 @@ public struct ExerciseSelector: Sendable {
 public struct ReminderScheduler: Sendable {
     public init() {}
     public func nextDate(after date: Date, preferences: ReminderPreferences, calendar: Calendar = .current) -> Date? {
+        guard preferences.intervalMinutes >= 15, preferences.intervalMinutes <= 180,
+              preferences.activeStartHour < preferences.activeEndHour else { return nil }
         for offset in 1...(8 * 24 * 60) {
             guard let candidate = calendar.date(byAdding: .minute, value: offset, to: date) else { continue }
             let weekday = calendar.component(.weekday, from: candidate)
@@ -32,6 +34,12 @@ public struct ReminderScheduler: Sendable {
         }
         return nil
     }
+
+    public func nextDate(now: Date, preferences: ReminderPreferences, state: ReminderState,
+                         calendar: Calendar = .current) -> Date? {
+        if let pausedUntil = state.pausedUntil, pausedUntil > now { return pausedUntil }
+        return nextDate(after: max(now, state.lastReminderAt ?? now), preferences: preferences, calendar: calendar)
+    }
 }
 
 public struct Statistics: Equatable, Sendable {
@@ -39,6 +47,8 @@ public struct Statistics: Equatable, Sendable {
     public var totalRepetitions: Int
     public var activeSeconds: Int
     public var byExercise: [String: Int]
+    public var activeDays: Int
+    public var currentStreak: Int
 }
 
 public enum StatisticsService {
@@ -54,6 +64,14 @@ public enum StatisticsService {
             case .free: break
             }
         }
-        return .init(completedCount: done.count, totalRepetitions: reps, activeSeconds: seconds, byExercise: byExercise)
+        let days = Set(done.map { Calendar.current.startOfDay(for: $0.performedAt) })
+        var streak = 0
+        var day = Calendar.current.startOfDay(for: .now)
+        while days.contains(day) {
+            streak += 1
+            guard let previous = Calendar.current.date(byAdding: .day, value: -1, to: day) else { break }
+            day = previous
+        }
+        return .init(completedCount: done.count, totalRepetitions: reps, activeSeconds: seconds, byExercise: byExercise, activeDays: days.count, currentStreak: streak)
     }
 }

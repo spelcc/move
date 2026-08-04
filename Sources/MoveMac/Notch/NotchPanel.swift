@@ -1,6 +1,8 @@
 import AppKit
 import SwiftUI
 
+enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped, snooze, workoutSuggestion, closing }
+
 @MainActor final class NotchPanelController {
     private let panel: NSPanel
     init<Content: View>(rootView: Content) {
@@ -12,12 +14,20 @@ import SwiftUI
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.contentView = NSHostingView(rootView: rootView)
     }
+    private(set) var state: NotchPanelState = .hidden
+
     func show(width: CGFloat = 420, height: CGFloat = 150) {
         guard let screen = NSScreen.screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) }) ?? NSScreen.main else { return }
-        let x = screen.frame.midX - width / 2
+        state = .bumping
+        let notch = screen.auxiliaryTopLeftArea.map { left in
+            NSRect(x: left.maxX, y: screen.frame.maxY - 2, width: (screen.auxiliaryTopRightArea?.minX ?? left.maxX) - left.maxX, height: 2)
+        }
+        let anchor = notch?.midX ?? screen.frame.midX
+        let x = min(max(anchor - width / 2, screen.visibleFrame.minX + 8), screen.visibleFrame.maxX - width - 8)
         let y = screen.frame.maxY - height - 4
         panel.setFrame(NSRect(x: x, y: y, width: width, height: height), display: true)
         panel.orderFrontRegardless()
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.68)) { state = .expanded }
     }
-    func hide() { panel.orderOut(nil) }
+    func hide() { state = .closing; panel.orderOut(nil); state = .hidden }
 }

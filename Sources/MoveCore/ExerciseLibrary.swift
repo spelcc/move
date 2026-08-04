@@ -38,5 +38,15 @@ public enum ExerciseLibrary {
         .init(name: "Réveil 5 min", rounds: 1, steps: ["shoulder-rolls", "squats", "incline-pushups", "bird-dog", "forward-fold"].map { .init(exerciseID: $0, workSeconds: 40, restSeconds: 20) }),
         .init(name: "Corps complet 10 min", rounds: 2, steps: ["squats", "pushups", "lunges", "plank", "jumping-jacks"].map { .init(exerciseID: $0, workSeconds: 40, restSeconds: 20) }),
         .init(name: "Silencieuse 10 min", rounds: 2, steps: ["reverse-lunges", "incline-pushups", "glute-bridge", "dead-bug", "chest-stretch"].map { .init(exerciseID: $0, workSeconds: 40, restSeconds: 20) })
+        , .init(name: "Pause bureau 5 min", rounds: 1, steps: ["shoulder-rolls", "squats", "forward-fold"].map { .init(exerciseID: $0, workSeconds: 40, restSeconds: 20) })
+        , .init(name: "Mobilité 5 min", rounds: 1, steps: ["neck-mobility", "shoulder-rolls", "hip-circles", "cat-cow"].map { .init(exerciseID: $0, workSeconds: 35, restSeconds: 10) })
+        , .init(name: "Haut du corps 10 min", rounds: 2, steps: ["pushups", "pullups", "plank", "chair-dips"].map { .init(exerciseID: $0, workSeconds: 40, restSeconds: 20) })
+        , .init(name: "Jambes 10 min", rounds: 2, steps: ["squats", "lunges", "reverse-lunges", "calf-raises"].map { .init(exerciseID: $0, workSeconds: 40, restSeconds: 20) })
+        , .init(name: "Gainage 10 min", rounds: 2, steps: ["plank", "side-plank", "dead-bug", "bird-dog"].map { .init(exerciseID: $0, workSeconds: 40, restSeconds: 20) })
+        , .init(name: "Sans matériel 10 min", rounds: 2, steps: ["squats", "incline-pushups", "reverse-lunges", "glute-bridge", "forward-fold"].map { .init(exerciseID: $0, workSeconds: 40, restSeconds: 20) })
+        , .init(name: "Barre de traction 10 min", rounds: 3, steps: ["pullups", "dead-hang", "squats"].map { .init(exerciseID: $0, workSeconds: 30, restSeconds: 30) })
+        , .init(name: "Étirements 10 min", rounds: 1, steps: ["forward-fold", "chest-stretch", "neck-mobility", "hip-circles"].map { .init(exerciseID: $0, workSeconds: 90, restSeconds: 15) })
+        , .init(name: "Mouvement libre 10 min", rounds: 1, steps: [.init(exerciseID: "free-movement", workSeconds: 600, restSeconds: 0)])
+        , .init(name: "Corps complet 15 min", rounds: 3, steps: ["squats", "pushups", "lunges", "plank", "shoulder-rolls"].map { .init(exerciseID: $0, workSeconds: 45, restSeconds: 15) })
     ]
 }

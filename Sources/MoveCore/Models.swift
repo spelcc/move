@@ -2,6 +2,8 @@ import Foundation
 
 public enum ExerciseCategory: String, Codable, CaseIterable, Sendable { case strength, cardio, mobility, stretch, recovery, free }
 public enum ExerciseMetric: String, Codable, Sendable { case repetitions, seconds, minutes, free }
+public enum WorkoutMode: String, Codable, CaseIterable, Sendable { case interval, repetitions, circuit, emom, free }
+public enum WorkoutRunnerState: String, Codable, Sendable { case preparing, working, resting, roundRest, paused, completed, cancelled }
 public enum ActivityStatus: String, Codable, Sendable { case proposed, completed, skipped, snoozed, replaced }
 public enum ActivitySource: String, Codable, Sendable { case hourly, quickWorkout, customWorkout, freeMovement }
 
@@ -34,7 +36,7 @@ public struct ActivityRecord: Identifiable, Codable, Hashable, Sendable {
     }
 }
 
-public struct MovementPreferences: Codable, Sendable {
+public struct MovementPreferences: Codable, Equatable, Sendable {
     public var disabledExerciseIDs: Set<String> = []
     public var availableEquipment: Set<String> = []
     public var excludedTags: Set<String> = []
@@ -42,13 +44,24 @@ public struct MovementPreferences: Codable, Sendable {
     public init() {}
 }
 
-public struct ReminderPreferences: Codable, Sendable {
+public struct ReminderPreferences: Codable, Equatable, Sendable {
     public var intervalMinutes = 60
     public var activeStartHour = 9
     public var activeEndHour = 19
     public var enabledWeekdays: Set<Int> = [2, 3, 4, 5, 6]
     public var snoozeMinutes = 15
     public init() {}
+}
+
+public struct ReminderState: Codable, Equatable, Sendable {
+    public var nextReminderAt: Date?
+    public var lastReminderAt: Date?
+    public var lastUserInteractionAt: Date?
+    public var pausedUntil: Date?
+    public init(nextReminderAt: Date? = nil, lastReminderAt: Date? = nil, lastUserInteractionAt: Date? = nil, pausedUntil: Date? = nil) {
+        self.nextReminderAt = nextReminderAt; self.lastReminderAt = lastReminderAt
+        self.lastUserInteractionAt = lastUserInteractionAt; self.pausedUntil = pausedUntil
+    }
 }
 
 public struct WorkoutStep: Identifiable, Codable, Hashable, Sendable {
@@ -64,6 +77,16 @@ public struct WorkoutTemplate: Identifiable, Codable, Hashable, Sendable {
     public var name: String
     public var rounds: Int
     public var steps: [WorkoutStep]
-    public init(id: UUID = UUID(), name: String, rounds: Int, steps: [WorkoutStep]) { self.id = id; self.name = name; self.rounds = rounds; self.steps = steps }
+    public var mode: WorkoutMode
+    public init(id: UUID = UUID(), name: String, rounds: Int, steps: [WorkoutStep], mode: WorkoutMode = .interval) { self.id = id; self.name = name; self.rounds = rounds; self.steps = steps; self.mode = mode }
     public var estimatedDuration: Int { rounds * steps.reduce(0) { $0 + $1.workSeconds + $1.restSeconds } }
+    public var validationError: String? {
+        if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return "Le nom est requis." }
+        if rounds < 1 { return "La séance doit contenir au moins un tour." }
+        if steps.isEmpty { return "Ajoute au moins un mouvement." }
+        if steps.contains(where: { $0.workSeconds < 0 || $0.restSeconds < 0 }) { return "Les durées ne peuvent pas être négatives." }
+        if mode == .interval && steps.allSatisfy({ $0.workSeconds == 0 }) { return "Le temps de travail doit être supérieur à zéro." }
+        if estimatedDuration > 2 * 60 * 60 { return "La séance est trop longue." }
+        return nil
+    }
 }

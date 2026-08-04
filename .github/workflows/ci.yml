@@ -27,4 +27,15 @@ jobs:
       - name: Test core
         run: swift test --parallel
       - name: Build macOS 26 app
-        run: xcodebuild -project Move.xcodeproj -scheme Move -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO clean build
+        run: xcodebuild -project Move.xcodeproj -scheme Move -configuration Release -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO clean build
+      - name: Package unsigned app
+        shell: bash
+        run: |
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -path '*/Build/Products/Release/Move.app' -print -quit)
+          test -n "$APP_PATH"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" Move-unsigned.zip
+      - name: Upload unsigned artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Move-unsigned
+          path: Move-unsigned.zip

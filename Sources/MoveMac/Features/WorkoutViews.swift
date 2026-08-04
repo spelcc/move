@@ -23,7 +23,12 @@ private struct WorkoutRunnerView: View {
             Text("Tour \(store.workoutRound)/\(workout.rounds)").foregroundStyle(.secondary)
             Text(exerciseName).font(.largeTitle.bold())
             Text("\(store.secondsRemaining)").font(.system(size: 80, weight: .black, design: .rounded)).contentTransition(.numericText())
-            HStack { Button("Suivant") { store.advanceWorkout() }; Button("Arrêter") { store.activeWorkout = nil } }
+            HStack {
+                Button(store.workoutState == .paused ? "Reprendre" : "Pause") { store.togglePause() }
+                Button("+10 s") { store.addTenSeconds() }
+                Button("Suivant") { store.advanceWorkout() }
+                Button("Arrêter") { store.workoutState = .cancelled; store.activeWorkout = nil }
+            }
         }.foregroundStyle(.white) }
     }
     private var exerciseName: String { ExerciseLibrary.builtIn.first(where: { $0.id == workout.steps[store.workoutStepIndex].exerciseID })?.name ?? "Mouvement" }

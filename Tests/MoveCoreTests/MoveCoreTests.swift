@@ -10,6 +10,37 @@ import Testing
     #expect(!candidates.contains { !$0.equipment.isEmpty })
 }
 
+@Test func workoutValidationRejectsEmptyWorkout() {
+    let workout = WorkoutTemplate(name: "", rounds: 0, steps: [])
+    #expect(workout.validationError != nil)
+}
+
+@Test func workoutValidationAcceptsNormalWorkout() {
+    let workout = WorkoutTemplate(name: "Pause bureau", rounds: 2, steps: [.init(exerciseID: "squats")])
+    #expect(workout.validationError == nil)
+}
+
+@Test func exportCSVContainsHeaderAndRecord() {
+    let record = ActivityRecord(exerciseID: "squats", amount: 10, metric: .repetitions, status: .completed, source: .hourly)
+    let csv = DataTransferService.exportCSV([record])
+    #expect(csv.hasPrefix("id,exercise_id,performed_at,amount"))
+    #expect(csv.contains("squats"))
+}
+
+@Test func exportJSONIsDecodable() throws {
+    let record = ActivityRecord(exerciseID: "plank", amount: 30, metric: .seconds, status: .completed, source: .freeMovement)
+    let data = try DataTransferService.exportJSON([record])
+    let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+    let decoded = try decoder.decode([ActivityRecord].self, from: data)
+    #expect(decoded == [record])
+}
+
+@Test func importJSONSkipsExistingRecords() throws {
+    let record = ActivityRecord(exerciseID: "squats", amount: 10, metric: .repetitions, status: .completed, source: .hourly)
+    let data = try DataTransferService.exportJSON([record])
+    #expect(try DataTransferService.importJSON(data, existing: [record]).isEmpty)
+}
+
 @Test func selectorUsesAvailableEquipment() {
     var preferences = MovementPreferences()
     preferences.availableEquipment = ["pullup-bar"]
@@ -32,4 +63,17 @@ import Testing
     #expect(stats.completedCount == 2)
     #expect(stats.totalRepetitions == 10)
     #expect(stats.activeSeconds == 60)
+}
+
+@Test func schedulerRejectsUnsafeIntervals() {
+    var preferences = ReminderPreferences()
+    preferences.intervalMinutes = 5
+    #expect(ReminderScheduler().nextDate(after: .now, preferences: preferences) == nil)
+}
+
+@Test func pausedSchedulerReturnsPauseBoundary() {
+    let now = Date(timeIntervalSince1970: 1000)
+    let pause = now.addingTimeInterval(3600)
+    let state = ReminderState(pausedUntil: pause)
+    #expect(ReminderScheduler().nextDate(now: now, preferences: .init(), state: state) == pause)
 }

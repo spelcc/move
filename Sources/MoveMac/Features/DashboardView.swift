@@ -28,7 +28,9 @@ struct DashboardView: View {
 private struct TodayView: View {
     let activities: [ActivityEntity]
     var body: some View {
-        let stats = StatisticsService.calculate(activities.map(\.record))
+        let today = Calendar.current.startOfDay(for: .now)
+        let todaysActivities = activities.filter { $0.performedAt >= today }
+        let stats = StatisticsService.calculate(todaysActivities.map(\.record))
         ScrollView { VStack(alignment: .leading, spacing: 20) {
             Text("Aujourd’hui").font(.largeTitle.bold())
             HStack { StatCard(value: "\(stats.completedCount)", label: "mouvements"); StatCard(value: "\(stats.totalRepetitions)", label: "répétitions"); StatCard(value: "\(stats.activeSeconds / 60) min", label: "actives") }

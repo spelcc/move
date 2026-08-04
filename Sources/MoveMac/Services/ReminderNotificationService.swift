@@ -1,6 +1,25 @@
 import Foundation
+import AppKit
 import UserNotifications
 import MoveCore
+
+enum ReminderContextDetector {
+    private static let meetingBundleIDs: Set<String> = [
+        "us.zoom.xos", "com.microsoft.teams2", "com.microsoft.teams", "com.cisco.webexmeetingsapp",
+        "com.apple.FaceTime"
+    ]
+
+    static var isMeeting: Bool {
+        guard let bundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier else { return false }
+        return meetingBundleIDs.contains(bundleID)
+    }
+
+    static var isFullScreen: Bool {
+        guard let frontmost = NSWorkspace.shared.frontmostApplication,
+              frontmost.bundleIdentifier != Bundle.main.bundleIdentifier else { return false }
+        return NSScreen.screens.contains { $0.frame.equalTo($0.visibleFrame) }
+    }
+}
 
 enum ReminderNotificationService {
     static let category = "MOVE_REMINDER"
@@ -34,6 +53,12 @@ enum ReminderNotificationService {
 
 final class MoveNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+        let preferences = (try? JSONDecoder().decode(ReminderPreferences.self, from: UserDefaults.standard.data(forKey: "move.reminderPreferences") ?? Data())) ?? ReminderPreferences()
+        guard ReminderDeliveryPolicy.shouldDeliver(
+            isFullScreen: ReminderContextDetector.isFullScreen,
+            isMeeting: ReminderContextDetector.isMeeting,
+            preferences: preferences
+        ) else { return [] }
         notification.request.content.userInfo["soundEnabled"] as? Bool == true ? [.banner, .sound] : [.banner]
     }
 

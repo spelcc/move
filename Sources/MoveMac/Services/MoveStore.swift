@@ -66,6 +66,7 @@ import MoveCore
         let existing = (try? context.fetch(FetchDescriptor<AppSettingsEntity>()))?.first
         let settings = existing ?? AppSettingsEntity()
         settings.reminderData = (try? JSONEncoder().encode(reminder)) ?? Data()
+        UserDefaults.standard.set(settings.reminderData, forKey: "move.reminderPreferences")
         settings.movementData = (try? JSONEncoder().encode(movement)) ?? Data()
         settings.appearanceData = (try? JSONEncoder().encode(appearance)) ?? Data()
         settings.updatedAt = .now

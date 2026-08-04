@@ -34,7 +34,7 @@ struct OnboardingView: View {
 
     private func finish() {
         Task {
-            notificationsEnabled = await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
+            notificationsEnabled = (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
             completed = true
         }
     }

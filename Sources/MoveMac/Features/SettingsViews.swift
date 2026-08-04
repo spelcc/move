@@ -8,6 +8,7 @@ struct MovementSettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var customExercises: [CustomExerciseEntity]
     @State private var search = ""
+    @State private var categoryFilter: ExerciseCategory?
     @State private var showingNewExercise = false
     @State private var editingExercise: CustomExerciseEntity?
     var body: some View {
@@ -20,7 +21,7 @@ struct MovementSettingsView: View {
                 }
             }
             Section("Intégrés") {
-                ForEach(ExerciseLibrary.all.filter { search.isEmpty || $0.name.localizedStandardContains(search) }) { exercise in
+                ForEach(filteredBuiltInExercises) { exercise in
             Toggle(isOn: Binding(get: { !store.movement.disabledExerciseIDs.contains(exercise.id) }, set: { enabled in if enabled { store.movement.disabledExerciseIDs.remove(exercise.id) } else { store.movement.disabledExerciseIDs.insert(exercise.id) } })) {
                 HStack { Text(exercise.emoji); VStack(alignment: .leading) { Text(exercise.name); Text(exercise.category.rawValue).font(.caption).foregroundStyle(.secondary) } }
             }
@@ -40,7 +41,15 @@ struct MovementSettingsView: View {
                     for index in offsets { archive(visibleCustomExercises[index]) }
                 }
             }
-        }.toolbar { Button(MoveCopy.text("exercise.new"), systemImage: "plus") { showingNewExercise = true } }
+        }.toolbar {
+            Picker(MoveCopy.text("exercise.category"), selection: $categoryFilter) {
+                Text(MoveCopy.text("exercise.allCategories")).tag(nil as ExerciseCategory?)
+                ForEach(ExerciseCategory.allCases, id: \.self) { category in
+                    Text(category.rawValue.capitalized).tag(category as ExerciseCategory?)
+                }
+            }
+            Button(MoveCopy.text("exercise.new"), systemImage: "plus") { showingNewExercise = true }
+        }
         .sheet(isPresented: $showingNewExercise) { NewExerciseView { exercise in
             modelContext.insert(exercise)
             try? modelContext.save()
@@ -49,7 +58,19 @@ struct MovementSettingsView: View {
         .searchable(text: $search, prompt: "Rechercher un mouvement").navigationTitle("Mouvements")
     }
 
-    private var visibleCustomExercises: [CustomExerciseEntity] { customExercises.filter { !$0.archived && (search.isEmpty || $0.name.localizedStandardContains(search)) } }
+    private var filteredBuiltInExercises: [Exercise] {
+        ExerciseLibrary.all.filter {
+            (categoryFilter == nil || $0.category == categoryFilter)
+                && (search.isEmpty || $0.name.localizedStandardContains(search))
+        }
+    }
+    private var visibleCustomExercises: [CustomExerciseEntity] {
+        customExercises.filter {
+            !$0.archived
+                && (categoryFilter == nil || $0.categoryRaw == categoryFilter?.rawValue)
+                && (search.isEmpty || $0.name.localizedStandardContains(search))
+        }
+    }
     private func customEnabledBinding(_ exercise: CustomExerciseEntity) -> Binding<Bool> {
         .init(get: { !store.movement.disabledExerciseIDs.contains(exercise.id) }, set: { enabled in
             if enabled { store.movement.disabledExerciseIDs.remove(exercise.id) } else { store.movement.disabledExerciseIDs.insert(exercise.id) }

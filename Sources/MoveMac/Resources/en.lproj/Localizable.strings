@@ -201,6 +201,7 @@
 "exercise.defaultAmount" = "Default amount: %d";
 "exercise.instructions" = "Instructions";
 "exercise.equipment" = "Equipment";
+"exercise.allCategories" = "All categories";
 "settings.interval" = "Every %d minutes";
 "settings.snoozeDefault" = "Default snooze: %d min";
 "settings.startHour" = "Start at %d h";

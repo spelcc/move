@@ -201,6 +201,7 @@
 "exercise.defaultAmount" = "Quantité par défaut : %d";
 "exercise.instructions" = "Consigne";
 "exercise.equipment" = "Matériel";
+"exercise.allCategories" = "Toutes les catégories";
 "settings.interval" = "Toutes les %d minutes";
 "settings.snoozeDefault" = "Snooze par défaut : %d min";
 "settings.startHour" = "Début à %d h";

@@ -25,7 +25,7 @@ import MoveCore
         guard let category = ExerciseCategory(rawValue: categoryRaw),
               let metric = ExerciseMetric(rawValue: metricRaw) else { return nil }
         return Exercise(id: id, name: name, category: category, metric: metric,
-                        defaultAmount: max(0, defaultAmount), emoji: emoji,
-                        tags: ["personnalisé"])
+                        defaultAmount: max(0, defaultAmount), tags: ["personnalisé"],
+                        emoji: emoji)
     }
 }

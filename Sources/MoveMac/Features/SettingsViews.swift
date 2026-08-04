@@ -51,7 +51,7 @@ struct MovementSettingsView: View {
     }
     private func archive(_ exercise: CustomExerciseEntity) { exercise.archived = true; exercise.updatedAt = .now; try? modelContext.save() }
     private func duplicate(_ exercise: CustomExerciseEntity) {
-        modelContext.insert(CustomExerciseEntity(name: "\(exercise.name) (copie)", emoji: exercise.emoji, category: ExerciseCategory(rawValue: exercise.categoryRaw) ?? .strength, metric: ExerciseMetric(rawValue: exercise.metricRaw) ?? .repetitions, defaultAmount: exercise.defaultAmount, instructions: exercise.instructions, equipment: exercise.equipment, tags: exercise.tags.subtracting(["personnalisé"])))
+        modelContext.insert(CustomExerciseEntity(name: "\(exercise.name) (copie)", emoji: exercise.emoji, category: ExerciseCategory(rawValue: exercise.categoryRaw) ?? .strength, metric: ExerciseMetric(rawValue: exercise.metricRaw) ?? .repetitions, defaultAmount: exercise.defaultAmount, instructions: exercise.instructions, equipment: exercise.equipment, tags: exercise.tags.subtracting(["personnalisé"]), muscleZones: exercise.muscleZones))
         try? modelContext.save()
     }
 }
@@ -66,6 +66,7 @@ private struct NewExerciseView: View {
     @State private var instructions = ""
     @State private var equipment: Set<String> = []
     @State private var tags: Set<String> = []
+    @State private var muscleZones: Set<String> = []
     let onSave: (CustomExerciseEntity) -> Void
     var body: some View {
         Form {
@@ -86,8 +87,16 @@ private struct NewExerciseView: View {
                 Toggle("Sollicite les poignets", isOn: setBinding("wrists", in: $tags))
                 Toggle("Bruyant", isOn: setBinding("noisy", in: $tags))
             }
+            Section("Zones musculaires") {
+                Toggle("Jambes", isOn: setBinding("legs", in: $muscleZones))
+                Toggle("Fessiers", isOn: setBinding("glutes", in: $muscleZones))
+                Toggle("Dos", isOn: setBinding("back", in: $muscleZones))
+                Toggle("Épaules", isOn: setBinding("shoulders", in: $muscleZones))
+                Toggle("Bras", isOn: setBinding("arms", in: $muscleZones))
+                Toggle("Centre du corps", isOn: setBinding("core", in: $muscleZones))
+            }
             TextField("Consigne (optionnel)", text: $instructions, axis: .vertical)
-            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Créer") { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
+            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Créer") { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags, muscleZones: muscleZones)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
         }.padding().frame(width: 420, height: 620)
     }
 
@@ -112,6 +121,14 @@ private struct EditExerciseView: View {
                 Toggle("Sollicite les poignets", isOn: tagBinding("wrists"))
                 Toggle("Bruyant", isOn: tagBinding("noisy"))
             }
+            Section("Zones musculaires") {
+                Toggle("Jambes", isOn: zoneBinding("legs"))
+                Toggle("Fessiers", isOn: zoneBinding("glutes"))
+                Toggle("Dos", isOn: zoneBinding("back"))
+                Toggle("Épaules", isOn: zoneBinding("shoulders"))
+                Toggle("Bras", isOn: zoneBinding("arms"))
+                Toggle("Centre du corps", isOn: zoneBinding("core"))
+            }
             TextField("Consigne", text: $exercise.instructions, axis: .vertical)
             Button("Terminer") { exercise.updatedAt = .now; dismiss() }.buttonStyle(.borderedProminent)
         }.padding().frame(width: 380, height: 430)
@@ -122,6 +139,15 @@ private struct EditExerciseView: View {
             var tags = exercise.tags
             if enabled { tags.insert(tag) } else { tags.remove(tag) }
             exercise.tagsRaw = tags.sorted().joined(separator: ",")
+            exercise.updatedAt = .now
+        })
+    }
+
+    private func zoneBinding(_ zone: String) -> Binding<Bool> {
+        Binding(get: { exercise.muscleZones.contains(zone) }, set: { enabled in
+            var zones = exercise.muscleZones
+            if enabled { zones.insert(zone) } else { zones.remove(zone) }
+            exercise.muscleZonesRaw = zones.sorted().joined(separator: ",")
             exercise.updatedAt = .now
         })
     }

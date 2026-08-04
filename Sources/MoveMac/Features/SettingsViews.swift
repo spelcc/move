@@ -54,7 +54,7 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section("Jours actifs") {
-                ForEach(2...6, id: \.self) { weekday in
+                ForEach(1...7, id: \.self) { weekday in
                     Toggle(Calendar.current.shortWeekdaySymbols[weekday - 1], isOn: weekdayBinding(weekday))
                 }
             }

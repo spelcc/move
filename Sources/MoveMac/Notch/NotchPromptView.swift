@@ -48,16 +48,18 @@ struct NotchPromptView: View {
                     Text(subMessage).font(.caption).foregroundStyle(.white.opacity(0.65)).multilineTextAlignment(.center)
                 }
                 HStack(spacing: 8) {
-                    Button(MoveCopy.text("notch.action.snooze")) { snooze(for: store.reminder.snoozeMinutes) }
-                    Button(MoveCopy.text("notch.action.done")) { complete() }
-                        .buttonStyle(.borderedProminent).tint(.white).foregroundStyle(.black)
-                    Button(MoveCopy.text("notch.action.other")) { store.chooseNext(); onResize(460, 300) }
-                        .keyboardShortcut("c", modifiers: [.command])
+                    NotchActionButton(title: MoveCopy.text("notch.action.snooze"), color: .red.opacity(0.82)) {
+                        snooze(for: store.reminder.snoozeMinutes)
+                    }
+                    NotchActionButton(title: MoveCopy.text("notch.action.done"), color: .green.opacity(0.82)) {
+                        complete()
+                    }
+                    NotchActionButton(title: MoveCopy.text("notch.action.other"), color: .white.opacity(0.24)) {
+                        store.chooseNext(); onResize(460, 300)
+                    }
+                    .keyboardShortcut("c", modifiers: [.command])
                 }
-                .buttonStyle(.bordered)
-                .tint(.white)
                 .frame(maxWidth: .infinity)
-                .controlSize(.large)
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel(MoveCopy.text("notch.actions"))
             }
@@ -118,14 +120,15 @@ private struct StickyPanelShape: Shape {
     func path(in rect: CGRect) -> Path {
         let r = min(radius, min(rect.width / 3, rect.height / 2))
         var path = Path()
-        // Broad, soft shoulders make the top edge feel attached to the notch,
-        // like a Dynamic Island expansion rather than a rounded rectangle.
-        let shoulder = min(r * 1.55, rect.width / 3.2)
-        path.move(to: CGPoint(x: rect.minX + shoulder, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX - shoulder, y: rect.minY))
-        path.addCurve(to: CGPoint(x: rect.maxX, y: rect.minY + shoulder),
-                      control1: CGPoint(x: rect.maxX - shoulder * 0.18, y: rect.minY),
-                      control2: CGPoint(x: rect.maxX, y: rect.minY + shoulder * 0.18))
+        // The top edge must be painted from edge to edge. Inset shoulders leave
+        // transparent pixels at the screen boundary and make the panel appear
+        // detached instead of physically docked to the notch.
+        let topDrop = min(24, rect.height / 8)
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addCurve(to: CGPoint(x: rect.maxX, y: rect.minY + topDrop),
+                      control1: CGPoint(x: rect.maxX, y: rect.minY),
+                      control2: CGPoint(x: rect.maxX, y: rect.minY + topDrop * 0.55))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - r))
         path.addCurve(to: CGPoint(x: rect.maxX - r, y: rect.maxY),
                       control1: CGPoint(x: rect.maxX, y: rect.maxY - r * 0.28),
@@ -134,11 +137,29 @@ private struct StickyPanelShape: Shape {
         path.addCurve(to: CGPoint(x: rect.minX, y: rect.maxY - r),
                       control1: CGPoint(x: rect.minX + r * 0.28, y: rect.maxY),
                       control2: CGPoint(x: rect.minX, y: rect.maxY - r * 0.28))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + shoulder))
-        path.addCurve(to: CGPoint(x: rect.minX + shoulder, y: rect.minY),
-                      control1: CGPoint(x: rect.minX, y: rect.minY + shoulder * 0.18),
-                      control2: CGPoint(x: rect.minX + shoulder * 0.18, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + topDrop))
+        path.addCurve(to: CGPoint(x: rect.minX, y: rect.minY),
+                      control1: CGPoint(x: rect.minX, y: rect.minY + topDrop * 0.55),
+                      control2: CGPoint(x: rect.minX, y: rect.minY))
         path.closeSubpath()
         return path
+    }
+}
+
+private struct NotchActionButton: View {
+    let title: String
+    let color: Color
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity, minHeight: 42)
+                .background(color, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .contentShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
     }
 }

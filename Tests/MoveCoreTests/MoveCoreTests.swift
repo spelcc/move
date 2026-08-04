@@ -89,6 +89,21 @@ import Testing
     #expect(stats.completedCount == 2)
     #expect(stats.totalRepetitions == 10)
     #expect(stats.activeSeconds == 60)
+    #expect(stats.bestDayCompletedCount == 2)
+    #expect(stats.longestStreak == 1)
+}
+
+@Test func statisticsExposeExerciseRecords() {
+    let first = Date(timeIntervalSince1970: 1_000_000)
+    let records = [
+        ActivityRecord(exerciseID: "squats", performedAt: first, amount: 10, metric: .repetitions, status: .completed, source: .manual),
+        ActivityRecord(exerciseID: "squats", performedAt: first.addingTimeInterval(3600), amount: 12, metric: .repetitions, status: .completed, source: .manual),
+        ActivityRecord(exerciseID: "squats", performedAt: first, amount: 5, metric: .repetitions, status: .skipped, source: .manual)
+    ]
+    let stats = StatisticsService.forExercise(records, exerciseID: "squats")
+    #expect(stats.completedCount == 2)
+    #expect(stats.totalAmount == 22)
+    #expect(stats.bestDayAmount == 22)
 }
 
 @Test func schedulerRejectsUnsafeIntervals() {

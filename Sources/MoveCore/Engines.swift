@@ -57,6 +57,16 @@ public struct Statistics: Equatable, Sendable {
     public var byExercise: [String: Int]
     public var activeDays: Int
     public var currentStreak: Int
+    public var bestDayCompletedCount: Int
+    public var longestStreak: Int
+}
+
+public struct ExerciseStatistics: Equatable, Sendable, Identifiable {
+    public let id: String
+    public var completedCount: Int
+    public var totalAmount: Int
+    public var bestDayAmount: Int
+    public var lastPerformedAt: Date?
 }
 
 public enum StatisticsService {
@@ -73,14 +83,27 @@ public enum StatisticsService {
             }
         }
         let days = Set(done.map { Calendar.current.startOfDay(for: $0.performedAt) })
+        let calendar = Calendar.current
+        var dailyCounts: [Date: Int] = [:]
+        for record in done { dailyCounts[calendar.startOfDay(for: record.performedAt), default: 0] += 1 }
+        let bestDay = dailyCounts.values.max() ?? 0
         var streak = 0
-        var day = Calendar.current.startOfDay(for: .now)
+        var day = calendar.startOfDay(for: .now)
+        if !days.contains(day), let yesterday = calendar.date(byAdding: .day, value: -1, to: day), days.contains(yesterday) { day = yesterday }
         while days.contains(day) {
             streak += 1
             guard let previous = Calendar.current.date(byAdding: .day, value: -1, to: day) else { break }
             day = previous
         }
-        return .init(completedCount: done.count, totalRepetitions: reps, activeSeconds: seconds, byExercise: byExercise, activeDays: days.count, currentStreak: streak)
+        var longest = 0
+        for candidate in days {
+            let previous = calendar.date(byAdding: .day, value: -1, to: candidate)
+            if let previous, days.contains(previous) { continue }
+            var length = 0; var cursor = candidate
+            while days.contains(cursor) { length += 1; guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }; cursor = next }
+            longest = max(longest, length)
+        }
+        return .init(completedCount: done.count, totalRepetitions: reps, activeSeconds: seconds, byExercise: byExercise, activeDays: days.count, currentStreak: streak, bestDayCompletedCount: bestDay, longestStreak: longest)
     }
 
     public static func calculate(_ records: [ActivityRecord], since start: Date, until end: Date = .now) -> Statistics {
@@ -90,5 +113,13 @@ public enum StatisticsService {
     public static func currentWeek(_ records: [ActivityRecord], calendar: Calendar = .current, now: Date = .now) -> Statistics {
         let start = calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? now
         return calculate(records, since: start, until: now)
+    }
+
+    public static func forExercise(_ records: [ActivityRecord], exerciseID: String) -> ExerciseStatistics {
+        let matching = records.filter { $0.exerciseID == exerciseID && $0.status == .completed }
+        let calendar = Calendar.current
+        var daily: [Date: Int] = [:]
+        for record in matching { daily[calendar.startOfDay(for: record.performedAt), default: 0] += record.amount }
+        return .init(id: exerciseID, completedCount: matching.count, totalAmount: matching.reduce(0) { $0 + $1.amount }, bestDayAmount: daily.values.max() ?? 0, lastPerformedAt: matching.map(\.performedAt).max())
     }
 }

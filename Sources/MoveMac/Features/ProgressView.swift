@@ -16,9 +16,26 @@ struct MoveProgressView: View {
                     ProgressCard(value: "\(stats.totalRepetitions)", label: "répétitions")
                     ProgressCard(value: "\(stats.activeSeconds / 60) min", label: "actives")
                 }
-                Text("Série actuelle : \(stats.currentStreak) jour\(stats.currentStreak == 1 ? "" : "s")").font(.headline)
+                HStack {
+                    ProgressCard(value: "\(stats.currentStreak) j", label: "série actuelle")
+                    ProgressCard(value: "\(stats.longestStreak) j", label: "meilleure série")
+                    ProgressCard(value: "\(stats.bestDayCompletedCount)", label: "record du jour")
+                }
+                Text("Par exercice").font(.title2.bold())
+                ForEach(exerciseRows) { row in
+                    HStack {
+                        Text(row.id)
+                        Spacer()
+                        Text("\(row.totalAmount) • record \(row.bestDayAmount)").foregroundStyle(.secondary).monospacedDigit()
+                    }
+                }
             }.padding(28)
         }
+    }
+
+    private var exerciseRows: [ExerciseStatistics] {
+        let records = activities.map(\.record)
+        return Set(records.map(\.exerciseID)).sorted().map { StatisticsService.forExercise(records, exerciseID: $0) }
     }
 }
 

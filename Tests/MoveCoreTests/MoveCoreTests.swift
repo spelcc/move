@@ -10,6 +10,11 @@ import Testing
     #expect(!candidates.contains { !$0.equipment.isEmpty })
 }
 
+@Test func exerciseLibraryHasV1Coverage() {
+    #expect(ExerciseLibrary.all.count >= 50)
+    #expect(Set(ExerciseLibrary.all.map(\.category)).count >= 5)
+}
+
 @Test func workoutValidationRejectsEmptyWorkout() {
     let workout = WorkoutTemplate(name: "", rounds: 0, steps: [])
     #expect(workout.validationError != nil)

@@ -34,6 +34,30 @@ public enum ExerciseLibrary {
         .init(id: "eye-break", name: "Regarder au loin", category: .recovery, metric: .seconds, defaultAmount: 60, emoji: "👀")
     ]
 
+    public static let additional: [Exercise] = [
+        .init(id: "wall-sit", name: "Chaise contre le mur", category: .strength, metric: .seconds, defaultAmount: 30, difficulty: 2, tags: ["knees"], emoji: "🪑"),
+        .init(id: "step-back", name: "Pas en arrière", category: .cardio, metric: .seconds, defaultAmount: 45, emoji: "👣"),
+        .init(id: "bear-crawl", name: "Marche de l’ours", category: .strength, metric: .seconds, defaultAmount: 30, difficulty: 3, tags: ["floor", "wrists"], emoji: "🐻"),
+        .init(id: "superman", name: "Superman", category: .strength, metric: .seconds, defaultAmount: 30, difficulty: 2, tags: ["floor", "back"], emoji: "🦸"),
+        .init(id: "reverse-snow-angels", name: "Anges inversés", category: .mobility, metric: .seconds, defaultAmount: 45, tags: ["floor"], emoji: "❄️"),
+        .init(id: "thoracic-rotation", name: "Rotation thoracique", category: .mobility, metric: .repetitions, defaultAmount: 10, tags: ["floor"], emoji: "🔄"),
+        .init(id: "worlds-greatest-stretch", name: "Plus grand étirement", category: .stretch, metric: .seconds, defaultAmount: 45, tags: ["floor"], emoji: "🌍"),
+        .init(id: "quad-stretch", name: "Étirement quadriceps", category: .stretch, metric: .seconds, defaultAmount: 45, tags: ["knees"], emoji: "🦵"),
+        .init(id: "hamstring-stretch", name: "Étirement ischio-jambiers", category: .stretch, metric: .seconds, defaultAmount: 45, emoji: "🪢"),
+        .init(id: "wrist-circles", name: "Cercles de poignets", category: .mobility, metric: .seconds, defaultAmount: 30, emoji: "✋"),
+        .init(id: "ankle-circles", name: "Cercles de chevilles", category: .mobility, metric: .seconds, defaultAmount: 30, emoji: "🦶"),
+        .init(id: "standing-side-bend", name: "Inclinaison latérale", category: .mobility, metric: .seconds, defaultAmount: 45, emoji: "↔️"),
+        .init(id: "standing-twist", name: "Rotation debout", category: .mobility, metric: .seconds, defaultAmount: 45, emoji: "🌪️"),
+        .init(id: "toe-raises", name: "Pointes de pieds", category: .strength, metric: .repetitions, defaultAmount: 20, emoji: "🦶"),
+        .init(id: "single-leg-balance", name: "Équilibre sur une jambe", category: .recovery, metric: .seconds, defaultAmount: 30, difficulty: 2, emoji: "⚖️"),
+        .init(id: "shadow-boxing", name: "Boxe dans le vide", category: .cardio, metric: .seconds, defaultAmount: 45, tags: ["noisy"], emoji: "🥊"),
+        .init(id: "march-in-place", name: "Marche sur place", category: .cardio, metric: .seconds, defaultAmount: 60, emoji: "🚶"),
+        .init(id: "butt-kicks", name: "Talons-fesses", category: .cardio, metric: .seconds, defaultAmount: 30, tags: ["noisy"], emoji: "🏃"),
+        .init(id: "wall-pushups", name: "Pompes au mur", category: .strength, metric: .repetitions, defaultAmount: 15, difficulty: 1, tags: ["wrists"], emoji: "🧱")
+    ]
+
+    public static let all: [Exercise] = builtIn + additional
+
     public static let quickWorkouts: [WorkoutTemplate] = [
         .init(name: "Réveil 5 min", rounds: 1, steps: ["shoulder-rolls", "squats", "incline-pushups", "bird-dog", "forward-fold"].map { .init(exerciseID: $0, workSeconds: 40, restSeconds: 20) }),
         .init(name: "Corps complet 10 min", rounds: 2, steps: ["squats", "pushups", "lunges", "plank", "jumping-jacks"].map { .init(exerciseID: $0, workSeconds: 40, restSeconds: 20) }),

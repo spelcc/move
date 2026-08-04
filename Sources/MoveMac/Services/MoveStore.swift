@@ -5,7 +5,7 @@ import UserNotifications
 import MoveCore
 
 @MainActor @Observable final class MoveStore {
-    var currentExercise: Exercise = ExerciseLibrary.builtIn.first!
+    var currentExercise: Exercise = ExerciseLibrary.all.first!
     var isExpanded = false
     var selectedTab = "Aujourd’hui"
     var reminder = ReminderPreferences()
@@ -71,7 +71,7 @@ import MoveCore
         try? context.save(); ReminderNotificationService.cancelPending(); scheduleNextReminder()
     }
 
-    func chooseNext() { currentExercise = selector.next(from: ExerciseLibrary.builtIn, preferences: movement, recentExerciseIDs: []) ?? ExerciseLibrary.builtIn[0]; persistSettings() }
+    func chooseNext() { currentExercise = selector.next(from: ExerciseLibrary.all, preferences: movement, recentExerciseIDs: []) ?? ExerciseLibrary.all[0]; persistSettings() }
     func completeCurrent(source: ActivitySource = .hourly) {
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .completed, source: source)))
         markReminderInteraction(); try? context.save(); isExpanded = false; chooseNext(); scheduleNextReminder()
@@ -97,7 +97,7 @@ import MoveCore
     }
 
     private func handleNotificationAction(_ action: String, exerciseID: String?) {
-        if let exerciseID, let exercise = ExerciseLibrary.builtIn.first(where: { $0.id == exerciseID }) { currentExercise = exercise }
+        if let exerciseID, let exercise = ExerciseLibrary.all.first(where: { $0.id == exerciseID }) { currentExercise = exercise }
         switch action {
         case "DONE": completeCurrent()
         case "SKIP": skipCurrent()

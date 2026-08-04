@@ -11,7 +11,7 @@ struct MovementSettingsView: View {
     var body: some View {
         List {
             Section("Intégrés") {
-                ForEach(ExerciseLibrary.builtIn.filter { search.isEmpty || $0.name.localizedStandardContains(search) }) { exercise in
+                ForEach(ExerciseLibrary.all.filter { search.isEmpty || $0.name.localizedStandardContains(search) }) { exercise in
             Toggle(isOn: Binding(get: { !store.movement.disabledExerciseIDs.contains(exercise.id) }, set: { enabled in if enabled { store.movement.disabledExerciseIDs.remove(exercise.id) } else { store.movement.disabledExerciseIDs.insert(exercise.id) } })) {
                 HStack { Text(exercise.emoji); VStack(alignment: .leading) { Text(exercise.name); Text(exercise.category.rawValue).font(.caption).foregroundStyle(.secondary) } }
             }

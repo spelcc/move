@@ -4,11 +4,17 @@ import MoveCore
 struct WorkoutLibraryView: View {
     @Bindable var store: MoveStore
     var body: some View {
-        ScrollView { LazyVGrid(columns: [.init(.adaptive(minimum: 230))], spacing: 16) {
+        ScrollView { VStack(alignment: .leading, spacing: 16) {
+            if let saved = store.resumableWorkout, let workout = ExerciseLibrary.quickWorkouts.first(where: { $0.id == saved.workoutID }) {
+                Button("Reprendre \(workout.name)") { store.resume(workout) }
+                    .buttonStyle(.borderedProminent)
+            }
+            LazyVGrid(columns: [.init(.adaptive(minimum: 230))], spacing: 16) {
             ForEach(ExerciseLibrary.quickWorkouts) { workout in
                 Button { store.start(workout) } label: {
                     VStack(alignment: .leading, spacing: 8) { Text(workout.name).font(.title3.bold()); Text("\(workout.estimatedDuration / 60) min • \(workout.rounds) tours").foregroundStyle(.secondary); Text("Démarrer").font(.callout.bold()) }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.quaternary, in: RoundedRectangle(cornerRadius: 20))
                 }.buttonStyle(.plain)
+            }
             }
         }.padding(28) }
         .overlay { if let workout = store.activeWorkout { WorkoutRunnerView(store: store, workout: workout) } }
@@ -27,7 +33,7 @@ private struct WorkoutRunnerView: View {
                 Button(store.workoutState == .paused ? "Reprendre" : "Pause") { store.togglePause() }
                 Button("+10 s") { store.addTenSeconds() }
                 Button("Suivant") { store.advanceWorkout() }
-                Button("Arrêter") { store.workoutState = .cancelled; store.activeWorkout = nil }
+                Button("Arrêter") { store.cancelWorkout() }
             }
         }.foregroundStyle(.white) }
     }

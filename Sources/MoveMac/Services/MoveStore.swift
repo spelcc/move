@@ -15,6 +15,7 @@ import MoveCore
     var workoutRound = 1
     var secondsRemaining = 0
     var workoutState: WorkoutRunnerState = .preparing
+    var resumableWorkout: WorkoutSessionEntity?
     private var timer: Timer?
     private let selector = ExerciseSelector()
     private let context: ModelContext
@@ -24,6 +25,7 @@ import MoveCore
         if let saved = try? context.fetch(FetchDescriptor<AppSettingsEntity>()), let settings = saved.first {
             let values = settings.values(); reminder = values.0; movement = values.1
         }
+        resumableWorkout = (try? context.fetch(FetchDescriptor<WorkoutSessionEntity>()))?.first
         chooseNext()
     }
 
@@ -53,26 +55,50 @@ import MoveCore
     }
     func start(_ workout: WorkoutTemplate) {
         guard workout.validationError == nil else { return }
-        activeWorkout = workout; workoutStepIndex = 0; workoutRound = 1; workoutState = .preparing; beginStep()
+        activeWorkout = workout; workoutStepIndex = 0; workoutRound = 1; workoutState = .preparing; beginStep(); saveWorkoutProgress()
+    }
+
+    func resume(_ workout: WorkoutTemplate) {
+        guard let saved = resumableWorkout, saved.workoutID == workout.id,
+              let state = WorkoutRunnerState(rawValue: saved.stateRaw), state != .completed, state != .cancelled else { return }
+        activeWorkout = workout; workoutStepIndex = min(saved.stepIndex, max(0, workout.steps.count - 1)); workoutRound = max(1, saved.round)
+        secondsRemaining = max(0, saved.secondsRemaining); workoutState = state
+        if workoutState != .paused { beginStep() }
     }
     func beginStep() {
         guard let workout = activeWorkout else { return }
         workoutState = .working
         secondsRemaining = workout.steps[workoutStepIndex].workSeconds
         timer?.invalidate(); timer = .scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in Task { @MainActor in self?.tick() } }
+        saveWorkoutProgress()
     }
-    private func tick() { if secondsRemaining > 0 { secondsRemaining -= 1 } else { advanceWorkout() } }
+    private func tick() { if secondsRemaining > 0 { secondsRemaining -= 1; saveWorkoutProgress() } else { advanceWorkout() } }
     func togglePause() {
         guard activeWorkout != nil else { return }
-        if workoutState == .paused { beginStep() } else { workoutState = .paused; timer?.invalidate() }
+        if workoutState == .paused { beginStep() } else { workoutState = .paused; timer?.invalidate(); saveWorkoutProgress() }
     }
     func addTenSeconds() { secondsRemaining += 10 }
     func advanceWorkout() {
         guard let workout = activeWorkout else { return }
         workoutStepIndex += 1
         if workoutStepIndex >= workout.steps.count { workoutStepIndex = 0; workoutRound += 1 }
-        if workoutRound > workout.rounds { timer?.invalidate(); workoutState = .completed; activeWorkout = nil; return }
+        if workoutRound > workout.rounds { timer?.invalidate(); workoutState = .completed; activeWorkout = nil; clearWorkoutProgress(); return }
         beginStep()
+    }
+
+    func cancelWorkout() { timer?.invalidate(); workoutState = .cancelled; activeWorkout = nil; clearWorkoutProgress() }
+
+    private func saveWorkoutProgress() {
+        guard let workout = activeWorkout else { return }
+        let session = resumableWorkout ?? WorkoutSessionEntity(workout: workout)
+        session.workoutID = workout.id; session.workoutName = workout.name; session.stepIndex = workoutStepIndex
+        session.round = workoutRound; session.secondsRemaining = secondsRemaining; session.stateRaw = workoutState.rawValue; session.updatedAt = .now
+        if resumableWorkout == nil { context.insert(session); resumableWorkout = session }
+        try? context.save()
+    }
+
+    private func clearWorkoutProgress() {
+        if let session = resumableWorkout { context.delete(session); resumableWorkout = nil; try? context.save() }
     }
     func requestNotifications() async { _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) }
 }

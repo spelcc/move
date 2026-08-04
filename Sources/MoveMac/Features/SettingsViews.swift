@@ -236,7 +236,7 @@ struct SettingsView: View {
                 Button(MoveCopy.text("settings.reset")) { pendingDataAction = .resetSettings }
                 Button(MoveCopy.text("settings.deleteAll"), role: .destructive) { pendingDataAction = .deleteAll }
             }
-        }.formStyle(.grouped).padding().navigationTitle("Réglages")
+        }.formStyle(.grouped).padding().navigationTitle(MoveCopy.text("settings.title"))
         .fileExporter(isPresented: $exportingDiagnostic, document: diagnosticDocument, contentType: .json, defaultFilename: "move-diagnostic.json") { _ in }
         .onChange(of: store.reminder) { _, _ in store.persistSettings() }
         .onChange(of: store.movement) { _, _ in store.persistSettings(); store.chooseNext() }
@@ -244,9 +244,9 @@ struct SettingsView: View {
         .onAppear { launchAtLogin = LaunchAtLoginService.isEnabled }
         .alert(item: $pendingDataAction) { action in
             Alert(title: Text(action.title), message: Text(action.message),
-                  primaryButton: .destructive(Text("Confirmer")) {
+                  primaryButton: .destructive(Text(MoveCopy.text("common.confirm"))) {
                       switch action { case .resetSettings: store.resetSettings(); case .deleteAll: store.deleteAllData() }
-                  }, secondaryButton: .cancel(Text("Annuler")))
+                  }, secondaryButton: .cancel(Text(MoveCopy.text("common.cancel"))))
         }
     }
 

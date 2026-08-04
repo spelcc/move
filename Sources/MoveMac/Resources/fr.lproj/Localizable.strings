@@ -139,3 +139,5 @@
 "exercise.instructionsOptional" = "Consigne (optionnel)";
 "common.cancel" = "Annuler";
 "common.create" = "Créer";
+"common.confirm" = "Confirmer";
+"settings.title" = "Réglages";

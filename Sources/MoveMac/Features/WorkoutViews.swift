@@ -105,7 +105,7 @@ struct WorkoutLibraryView: View {
 
     private func duplicate(_ entity: WorkoutTemplateEntity) {
         guard let template = entity.template else { return }
-        let copy = WorkoutTemplate(id: UUID(), name: "\(template.name) (copie)", description: template.description, emoji: template.emoji, rounds: template.rounds, preparationSeconds: template.preparationSeconds, roundRestSeconds: template.roundRestSeconds, finalRecoverySeconds: template.finalRecoverySeconds, steps: template.steps, mode: template.mode)
+        let copy = WorkoutTemplate(id: UUID(), name: String(format: MoveCopy.text("workout.copyName"), template.name), description: template.description, emoji: template.emoji, rounds: template.rounds, preparationSeconds: template.preparationSeconds, roundRestSeconds: template.roundRestSeconds, finalRecoverySeconds: template.finalRecoverySeconds, steps: template.steps, mode: template.mode)
         modelContext.insert(WorkoutTemplateEntity(template: copy))
         try? modelContext.save()
     }
@@ -351,12 +351,12 @@ private struct WorkoutRunnerView: View {
                     .accessibilityLabel(MoveCopy.text("runner.skipExercise"))
                 Button(MoveCopy.text("runner.stop")) { store.cancelWorkout() }
                     .keyboardShortcut(.escape, modifiers: [])
-                    .accessibilityLabel("Arrêter la séance")
+                    .accessibilityLabel(MoveCopy.text("runner.stopWorkout"))
             }
         }.foregroundStyle(.white) }
     }
     private var exerciseName: String {
-        store.exercise(withID: workout.steps[store.workoutStepIndex].exerciseID)?.name ?? "Mouvement"
+        store.exercise(withID: workout.steps[store.workoutStepIndex].exerciseID)?.name ?? MoveCopy.text("exercise.defaultName")
     }
     private var phaseTitle: String {
         switch store.workoutState {

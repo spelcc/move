@@ -218,6 +218,9 @@
 "constraint.knees" = "Loads the knees";
 "exercise.constraints" = "Constraints";
 "workout.descriptionOptional" = "Description (optional)";
+"workout.copyName" = "%@ (copy)";
+"runner.stopWorkout" = "Stop workout";
+"exercise.defaultName" = "Movement";
 "exercise.muscleZones" = "Muscle zones";
 "constraint.floor" = "On the floor";
 "constraint.jump" = "Includes jumps";

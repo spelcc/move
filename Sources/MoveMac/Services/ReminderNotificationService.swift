@@ -59,7 +59,7 @@ final class MoveNotificationDelegate: NSObject, UNUserNotificationCenterDelegate
             isMeeting: ReminderContextDetector.isMeeting,
             preferences: preferences
         ) else { return [] }
-        notification.request.content.userInfo["soundEnabled"] as? Bool == true ? [.banner, .sound] : [.banner]
+        return notification.request.content.userInfo["soundEnabled"] as? Bool == true ? [.banner, .sound] : [.banner]
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {

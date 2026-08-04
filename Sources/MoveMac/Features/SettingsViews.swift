@@ -152,54 +152,54 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Général") {
-                Toggle("Lancer Move à la connexion", isOn: $launchAtLogin)
+            Section(MoveCopy.text("settings.general")) {
+                Toggle(MoveCopy.text("settings.launchAtLogin"), isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
                 if let launchError { Text(launchError).font(.caption).foregroundStyle(.red) }
             }
-            Section("Jours actifs") {
+            Section(MoveCopy.text("settings.activeDays")) {
                 ForEach(1...7, id: \.self) { weekday in
                     Toggle(Calendar.current.shortWeekdaySymbols[weekday - 1], isOn: weekdayBinding(weekday))
                 }
             }
-            Section("Rappels") {
+            Section(MoveCopy.text("settings.reminders")) {
                 Stepper("Toutes les \(store.reminder.intervalMinutes) minutes", value: $store.reminder.intervalMinutes, in: 15...180, step: 15)
                 Stepper("Début à \(store.reminder.activeStartHour) h", value: $store.reminder.activeStartHour, in: 0...23)
                 Stepper("Fin à \(store.reminder.activeEndHour) h", value: $store.reminder.activeEndHour, in: 1...24)
-                Toggle("Afficher pendant les apps plein écran", isOn: $store.reminder.notificationsDuringFullScreen)
-                Toggle("Afficher pendant les réunions", isOn: $store.reminder.notificationsDuringMeetings)
+                Toggle(MoveCopy.text("settings.fullScreen"), isOn: $store.reminder.notificationsDuringFullScreen)
+                Toggle(MoveCopy.text("settings.meetings"), isOn: $store.reminder.notificationsDuringMeetings)
             }
-            Section("Contraintes") { Toggle("Sans sauts", isOn: tagBinding("jump")); Toggle("Silencieux", isOn: tagBinding("noisy")); Toggle("Éviter le sol", isOn: tagBinding("floor")); Toggle("Éviter les poignets", isOn: tagBinding("wrists")); Toggle("Barre de traction disponible", isOn: equipmentBinding("pullup-bar")) }
-            Section("Apparence et ambiance") {
-                Picker("Afficher les rappels sur", selection: $store.appearance.screenTarget) {
-                    Text("Écran principal").tag(ReminderScreenTarget.main)
-                    Text("Écran actif").tag(ReminderScreenTarget.active)
-                    Text("Écran du MacBook").tag(ReminderScreenTarget.macBook)
+            Section(MoveCopy.text("settings.constraints")) { Toggle(MoveCopy.text("settings.noJumps"), isOn: tagBinding("jump")); Toggle(MoveCopy.text("settings.quiet"), isOn: tagBinding("noisy")); Toggle(MoveCopy.text("settings.avoidFloor"), isOn: tagBinding("floor")); Toggle(MoveCopy.text("settings.avoidWrists"), isOn: tagBinding("wrists")); Toggle(MoveCopy.text("settings.pullupBar"), isOn: equipmentBinding("pullup-bar")) }
+            Section(MoveCopy.text("settings.appearance")) {
+                Picker(MoveCopy.text("settings.screenTarget"), selection: $store.appearance.screenTarget) {
+                    Text(MoveCopy.text("settings.mainScreen")).tag(ReminderScreenTarget.main)
+                    Text(MoveCopy.text("settings.activeScreen")).tag(ReminderScreenTarget.active)
+                    Text(MoveCopy.text("settings.macBookScreen")).tag(ReminderScreenTarget.macBook)
                 }
-                Picker("Humour", selection: $store.appearance.humor) {
-                    Text("Normal").tag(HumorMode.normal)
-                    Text("Discret").tag(HumorMode.discreet)
-                    Text("Désactivé").tag(HumorMode.disabled)
+                Picker(MoveCopy.text("settings.humor"), selection: $store.appearance.humor) {
+                    Text(MoveCopy.text("settings.normal")).tag(HumorMode.normal)
+                    Text(MoveCopy.text("settings.discreet")).tag(HumorMode.discreet)
+                    Text(MoveCopy.text("settings.disabled")).tag(HumorMode.disabled)
                 }
-                Toggle("Emojis", isOn: $store.appearance.emojisEnabled)
-                Picker("Animations", selection: $store.appearance.animations) {
-                    Text("Complètes").tag(AnimationMode.full)
-                    Text("Réduites").tag(AnimationMode.reduced)
-                    Text("Désactivées").tag(AnimationMode.disabled)
+                Toggle(MoveCopy.text("settings.emojis"), isOn: $store.appearance.emojisEnabled)
+                Picker(MoveCopy.text("settings.animations"), selection: $store.appearance.animations) {
+                    Text(MoveCopy.text("settings.full")).tag(AnimationMode.full)
+                    Text(MoveCopy.text("settings.reduced")).tag(AnimationMode.reduced)
+                    Text(MoveCopy.text("settings.disabled")).tag(AnimationMode.disabled)
                 }
-                Picker("Sons", selection: $store.appearance.sounds) {
-                    Text("Aucun").tag(SoundMode.off)
-                    Text("Discrets").tag(SoundMode.discreet)
-                    Text("Normaux").tag(SoundMode.normal)
+                Picker(MoveCopy.text("settings.sounds"), selection: $store.appearance.sounds) {
+                    Text(MoveCopy.text("settings.none")).tag(SoundMode.off)
+                    Text(MoveCopy.text("settings.discreet")).tag(SoundMode.discreet)
+                    Text(MoveCopy.text("settings.normal")).tag(SoundMode.normal)
                 }
             }
-            Section("Données") {
-                Button("Exporter un diagnostic", systemImage: "stethoscope") {
+            Section(MoveCopy.text("settings.data")) {
+                Button(MoveCopy.text("settings.exportDiagnostic"), systemImage: "stethoscope") {
                     diagnosticDocument = DiagnosticDocument(report: MoveDiagnosticReport.make(context: modelContext, store: store, persistenceIssue: nil))
                     exportingDiagnostic = true
                 }
-                Button("Réinitialiser les réglages") { pendingDataAction = .resetSettings }
-                Button("Supprimer toutes les données", role: .destructive) { pendingDataAction = .deleteAll }
+                Button(MoveCopy.text("settings.reset")) { pendingDataAction = .resetSettings }
+                Button(MoveCopy.text("settings.deleteAll"), role: .destructive) { pendingDataAction = .deleteAll }
             }
         }.formStyle(.grouped).padding().navigationTitle("Réglages")
         .fileExporter(isPresented: $exportingDiagnostic, document: diagnosticDocument, contentType: .json, defaultFilename: "move-diagnostic.json") { _ in }

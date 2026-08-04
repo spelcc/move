@@ -10,9 +10,12 @@ import MoveCore
     var metricRaw: String
     var statusRaw: String
     var sourceRaw: String
+    var createdAt: Date = .now
+    var updatedAt: Date = .now
     init(record: ActivityRecord) {
         id = record.id; exerciseID = record.exerciseID; performedAt = record.performedAt; amount = record.amount
         metricRaw = record.metric.rawValue; statusRaw = record.status.rawValue; sourceRaw = record.source.rawValue
+        createdAt = record.performedAt; updatedAt = .now
     }
     var record: ActivityRecord {
         .init(id: id, exerciseID: exerciseID, performedAt: performedAt, amount: amount, metric: ExerciseMetric(rawValue: metricRaw) ?? .free, status: ActivityStatus(rawValue: statusRaw) ?? .completed, source: ActivitySource(rawValue: sourceRaw) ?? .hourly)
@@ -21,5 +24,6 @@ import MoveCore
     func update(amount: Int, status: ActivityStatus? = nil) {
         self.amount = max(0, amount)
         if let status { statusRaw = status.rawValue }
+        updatedAt = .now
     }
 }

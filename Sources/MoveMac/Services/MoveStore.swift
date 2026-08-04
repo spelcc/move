@@ -42,7 +42,9 @@ import MoveCore
         if let saved = try? context.fetch(FetchDescriptor<AppSettingsEntity>()), let settings = saved.first {
             let values = settings.values(); reminder = values.0; movement = values.1; appearance = values.2
         }
-        resumableWorkout = (try? context.fetch(FetchDescriptor<WorkoutSessionEntity>()))?.first
+        resumableWorkout = (try? context.fetch(FetchDescriptor<WorkoutSessionEntity>(predicate: #Predicate { session in
+            session.stateRaw != "completed" && session.stateRaw != "cancelled"
+        })))?.first
         if let savedReminder = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first { reminderState = savedReminder.state }
         chooseNext()
         scheduleNextReminder()
@@ -309,8 +311,13 @@ import MoveCore
             workoutState = .completed
             WorkoutSoundService.play(.end, mode: appearance.sounds)
             completedWorkout = workout
+            if let session = resumableWorkout {
+                session.stateRaw = WorkoutRunnerState.completed.rawValue
+                session.updatedAt = .now
+                try? context.save()
+                resumableWorkout = nil
+            }
             activeWorkout = nil
-            clearWorkoutProgress()
             return
         }
         beginStep()

@@ -7,6 +7,7 @@ struct HistoryView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ActivityEntity.performedAt, order: .reverse) private var activities: [ActivityEntity]
     @Query private var customExercises: [CustomExerciseEntity]
+    @Query(sort: \.updatedAt, order: .reverse) private var workoutSessions: [WorkoutSessionEntity]
     @State private var editing: ActivityEntity?
     @State private var adding = false
     @State private var exportingJSON = false
@@ -22,6 +23,7 @@ struct HistoryView: View {
     @State private var statusFilter: ActivityStatus?
     @State private var customStart = Calendar.current.date(byAdding: .day, value: -7, to: .now) ?? .now
     @State private var customEnd = Date.now
+    @State private var selectedSession: WorkoutSessionEntity?
 
     private enum HistoryPeriod: String, CaseIterable {
         case today = "Aujourd’hui", week = "Semaine", month = "Mois", custom = "Personnalisée", all = "Tout"
@@ -29,6 +31,24 @@ struct HistoryView: View {
 
     var body: some View {
         List {
+            if !completedSessions.isEmpty {
+                Section("Séances terminées") {
+                    ForEach(completedSessions) { session in
+                        Button { selectedSession = session } label: {
+                            HStack {
+                                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                                VStack(alignment: .leading) {
+                                    Text(session.workoutName)
+                                    Text(session.updatedAt, style: .date)
+                                        .font(.caption).foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Text("Détails").font(.caption).foregroundStyle(.secondary)
+                            }
+                        }.buttonStyle(.plain)
+                    }
+                }
+            }
             ForEach(filteredActivities) { activity in
                 HStack {
                     Text(activity.statusRaw == ActivityStatus.completed.rawValue ? "✓" : "–")
@@ -85,6 +105,7 @@ struct HistoryView: View {
         }
         .overlay { if filteredActivities.isEmpty { ContentUnavailableView("Rien pour le moment", systemImage: "clock") } }
         .sheet(item: $editing) { ActivityEditView(activity: $0) }
+        .sheet(item: $selectedSession) { WorkoutSessionDetailView(session: $0, customExercises: customExercises) }
         .sheet(isPresented: $adding) { AddActivityView() }
         .fileExporter(isPresented: $exportingJSON, document: ActivityExportDocument(data: jsonData), contentType: .json, defaultFilename: "move-activities.json") { _ in }
         .fileExporter(isPresented: $exportingCSV, document: ActivityExportDocument(data: csvData), contentType: .commaSeparatedText, defaultFilename: "move-activities.csv") { _ in }
@@ -121,6 +142,10 @@ struct HistoryView: View {
         }
     }
 
+    private var completedSessions: [WorkoutSessionEntity] {
+        workoutSessions.filter { $0.stateRaw == WorkoutRunnerState.completed.rawValue }
+    }
+
     private func sourceLabel(_ rawValue: String) -> String {
         switch ActivitySource(rawValue: rawValue) {
         case .hourly: "Rappel"
@@ -152,6 +177,51 @@ struct HistoryView: View {
         pendingImport.forEach { modelContext.insert(ActivityEntity(record: $0)) }
         do { try modelContext.save() } catch { importError = error.localizedDescription }
         pendingImport.removeAll()
+    }
+}
+
+private struct WorkoutSessionDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Query private var results: [WorkoutStepResultEntity]
+    let session: WorkoutSessionEntity
+    let customExercises: [CustomExerciseEntity]
+
+    init(session: WorkoutSessionEntity, customExercises: [CustomExerciseEntity]) {
+        self.session = session
+        self.customExercises = customExercises
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(session.workoutName).font(.title.bold())
+            Text("Terminée le \(session.updatedAt, style: .date) à \(session.updatedAt, style: .time)")
+                .foregroundStyle(.secondary)
+            HStack {
+                Label("\(sessionResults.filter { $0.statusRaw == ActivityStatus.completed.rawValue }.count) terminées", systemImage: "checkmark")
+                Label("\(sessionResults.filter { $0.statusRaw == ActivityStatus.skipped.rawValue }.count) passées", systemImage: "forward")
+            }
+            List(sessionResults) { result in
+                HStack {
+                    Text(result.statusRaw == ActivityStatus.completed.rawValue ? "✓" : "–")
+                    Text(exerciseName(result.exerciseID))
+                    Spacer()
+                    Text("Tour \(result.round)").foregroundStyle(.secondary)
+                }
+            }
+            HStack { Spacer(); Button("Fermer") { dismiss() }.buttonStyle(.borderedProminent) }
+        }
+        .padding()
+        .frame(width: 480, height: 420)
+    }
+
+    private var sessionResults: [WorkoutStepResultEntity] {
+        results.filter { $0.sessionID == session.id }.sorted { $0.completedAt < $1.completedAt }
+    }
+
+    private func exerciseName(_ id: String) -> String {
+        ExerciseLibrary.all.first(where: { $0.id == id })?.name
+            ?? customExercises.first(where: { $0.id == id })?.name
+            ?? id
     }
 }
 

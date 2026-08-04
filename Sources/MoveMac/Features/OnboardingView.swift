@@ -6,6 +6,9 @@ struct OnboardingView: View {
     @State private var step = 0
     @State private var interval = 60
     @State private var notificationsEnabled = false
+    let onTestNotch: () -> Void
+
+    init(onTestNotch: @escaping () -> Void = {}) { self.onTestNotch = onTestNotch }
 
     private let pages = [
         ("Bouge un peu, souvent.", "Move te rappelle de bouger.\nPas de compte. Pas de classement. Pas de coach qui crie."),
@@ -35,6 +38,7 @@ struct OnboardingView: View {
     private func finish() {
         Task {
             notificationsEnabled = (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
+            onTestNotch()
             completed = true
         }
     }

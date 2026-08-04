@@ -49,6 +49,11 @@ import MoveCore
             session.stateRaw != "completed" && session.stateRaw != "cancelled"
         })))?.first
         if let savedReminder = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first { reminderState = savedReminder.state }
+        recentExerciseIDs = Array(((try? context.fetch(FetchDescriptor<ActivityEntity>(sortBy: [SortDescriptor(\.performedAt, order: .reverse)]))) ?? [])
+            .filter { $0.statusRaw == ActivityStatus.completed.rawValue || $0.statusRaw == ActivityStatus.proposed.rawValue }
+            .prefix(6)
+            .map(\.exerciseID)
+            .reversed())
         chooseNext()
         scheduleNextReminder()
         notificationObserver = NotificationCenter.default.addObserver(forName: .moveNotificationAction, object: nil, queue: .main) { [weak self] note in

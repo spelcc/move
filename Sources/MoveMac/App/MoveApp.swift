@@ -38,6 +38,9 @@ import MoveCore
                 let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: .now)) ?? .now.addingTimeInterval(86400)
                 store.pauseReminders(until: tomorrow)
             }
+            Button(LaunchAtLoginService.isEnabled ? "Désactiver le lancement automatique" : "Lancer Move à la connexion") {
+                try? LaunchAtLoginService.setEnabled(!LaunchAtLoginService.isEnabled)
+            }
             Divider()
             SettingsLink { Text("Ouvrir Move") }
             Button("Quitter") { NSApplication.shared.terminate(nil) }

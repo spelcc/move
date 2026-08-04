@@ -38,7 +38,7 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         panel.setFrame(NSRect(x: x, y: y, width: width, height: height), display: true)
         panel.orderFrontRegardless()
         state = .compact
-        resize(width: 460, height: 214, on: screen, anchor: anchor, animated: true) { [weak self] in self?.state = .expanded }
+        resize(width: 460, height: 230, on: screen, anchor: anchor, animated: true) { [weak self] in self?.state = .expanded }
     }
 
     private func repositionOnScreenChange() {

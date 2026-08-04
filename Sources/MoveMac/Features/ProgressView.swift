@@ -30,6 +30,16 @@ struct MoveProgressView: View {
                         Text("\(row.totalAmount) • record \(row.bestDayAmount)").foregroundStyle(.secondary).monospacedDigit()
                     }
                 }
+                Text("Par catégorie").font(.title2.bold())
+                ForEach(categoryRows) { row in
+                    HStack {
+                        Text(row.category.rawValue.capitalized)
+                        Spacer()
+                        ProgressView(value: Double(row.count), total: Double(max(1, categoryRows.map(\.count).max() ?? 1)))
+                            .frame(width: 140)
+                        Text("\(row.count)").monospacedDigit().foregroundStyle(.secondary)
+                    }
+                }
             }.padding(28)
         }
     }
@@ -43,6 +53,24 @@ struct MoveProgressView: View {
         if let builtIn = ExerciseLibrary.all.first(where: { $0.id == id }) { return builtIn.name }
         return customExercises.first(where: { $0.id == id })?.name ?? id
     }
+
+    private var categoryRows: [CategorySummary] {
+        let records = activities.map(\.record).filter { $0.status == .completed }
+        var counts: [ExerciseCategory: Int] = [:]
+        for record in records {
+            let category = ExerciseLibrary.all.first(where: { $0.id == record.exerciseID })?.category
+                ?? customExercises.first(where: { $0.id == record.exerciseID }).flatMap { ExerciseCategory(rawValue: $0.categoryRaw) }
+                ?? .free
+            counts[category, default: 0] += 1
+        }
+        return counts.keys.sorted { $0.rawValue < $1.rawValue }.map { CategorySummary(category: $0, count: counts[$0] ?? 0) }
+    }
+}
+
+private struct CategorySummary: Identifiable {
+    let category: ExerciseCategory
+    let count: Int
+    var id: String { category.rawValue }
 }
 
 private struct ProgressCard: View {

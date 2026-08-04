@@ -6,6 +6,7 @@ import MoveCore
 struct HistoryView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ActivityEntity.performedAt, order: .reverse) private var activities: [ActivityEntity]
+    @Query private var customExercises: [CustomExerciseEntity]
     @State private var editing: ActivityEntity?
     @State private var adding = false
     @State private var exportingJSON = false
@@ -30,7 +31,7 @@ struct HistoryView: View {
                 HStack {
                     Text(activity.statusRaw == ActivityStatus.completed.rawValue ? "✓" : "–")
                     VStack(alignment: .leading) {
-                        Text(activity.exerciseID)
+                        Text(exerciseName(for: activity.exerciseID))
                         HStack(spacing: 4) {
                             Text(sourceLabel(activity.sourceRaw))
                             Text("•")
@@ -121,6 +122,11 @@ struct HistoryView: View {
         case .manual: "Ajout manuel"
         case .none: "Inconnu"
         }
+    }
+
+    private func exerciseName(for id: String) -> String {
+        if let builtIn = ExerciseLibrary.all.first(where: { $0.id == id }) { return builtIn.name }
+        return customExercises.first(where: { $0.id == id })?.name ?? id
     }
 
     private func importJSON(_ result: Result<[URL], Error>) {

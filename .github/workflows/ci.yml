@@ -2,6 +2,7 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -39,3 +40,19 @@ jobs:
         with:
           name: Move-unsigned
           path: Move-unsigned.zip
+      - name: Create unsigned DMG for release tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -path '*/Build/Products/Release/Move.app' -print -quit)
+          test -n "$APP_PATH"
+          hdiutil create -volname Move -srcfolder "$APP_PATH" -ov -format UDZO Move.dmg
+          test -s Move.dmg
+      - name: Upload release artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: Move-${{ github.ref_name }}
+          path: |
+            Move-unsigned.zip
+            Move.dmg

@@ -32,15 +32,15 @@ struct MovementSettingsView: View {
                         HStack { Text(exercise.emoji); VStack(alignment: .leading) { Text(exercise.name); Text("\(exercise.categoryRaw) • \(exercise.metricRaw)").font(.caption).foregroundStyle(.secondary) }; Spacer(); Text("\(exercise.defaultAmount)").foregroundStyle(.secondary) }
                     }
                     .contextMenu {
-                        Button("Modifier") { editingExercise = exercise }
-                        Button("Dupliquer") { duplicate(exercise) }
-                        Button("Archiver", role: .destructive) { archive(exercise) }
+                        Button(MoveCopy.text("exercise.edit")) { editingExercise = exercise }
+                        Button(MoveCopy.text("exercise.duplicate")) { duplicate(exercise) }
+                        Button(MoveCopy.text("exercise.archive"), role: .destructive) { archive(exercise) }
                     }
                 }.onDelete { offsets in
                     for index in offsets { archive(visibleCustomExercises[index]) }
                 }
             }
-        }.toolbar { Button("Nouveau mouvement", systemImage: "plus") { showingNewExercise = true } }
+        }.toolbar { Button(MoveCopy.text("exercise.new"), systemImage: "plus") { showingNewExercise = true } }
         .sheet(isPresented: $showingNewExercise) { NewExerciseView { exercise in
             modelContext.insert(exercise)
             try? modelContext.save()
@@ -77,10 +77,10 @@ private struct NewExerciseView: View {
     let onSave: (CustomExerciseEntity) -> Void
     var body: some View {
         Form {
-            TextField("Nom", text: $name)
-            TextField("Emoji", text: $emoji)
-            Picker("Catégorie", selection: $category) { ForEach(ExerciseCategory.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
-            Picker("Mesure", selection: $metric) { Text("Répétitions").tag(ExerciseMetric.repetitions); Text("Secondes").tag(ExerciseMetric.seconds); Text("Minutes").tag(ExerciseMetric.minutes); Text("Libre").tag(ExerciseMetric.free) }
+            TextField(MoveCopy.text("exercise.name"), text: $name)
+            TextField(MoveCopy.text("exercise.emoji"), text: $emoji)
+            Picker(MoveCopy.text("exercise.category"), selection: $category) { ForEach(ExerciseCategory.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
+            Picker(MoveCopy.text("exercise.metric"), selection: $metric) { Text(MoveCopy.text("exercise.repetitions")).tag(ExerciseMetric.repetitions); Text(MoveCopy.text("exercise.seconds")).tag(ExerciseMetric.seconds); Text(MoveCopy.text("exercise.minutes")).tag(ExerciseMetric.minutes); Text(MoveCopy.text("exercise.free")).tag(ExerciseMetric.free) }
             Stepper("Quantité par défaut : \(amount)", value: $amount, in: 1...999)
             Section("Matériel") {
                 Toggle("Chaise", isOn: setBinding("chair", in: $equipment))
@@ -102,8 +102,8 @@ private struct NewExerciseView: View {
                 Toggle("Bras", isOn: setBinding("arms", in: $muscleZones))
                 Toggle("Centre du corps", isOn: setBinding("core", in: $muscleZones))
             }
-            TextField("Consigne (optionnel)", text: $instructions, axis: .vertical)
-            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Créer") { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags, muscleZones: muscleZones)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
+            TextField(MoveCopy.text("exercise.instructionsOptional"), text: $instructions, axis: .vertical)
+            HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("common.create")) { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags, muscleZones: muscleZones)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
         }.padding().frame(width: 420, height: 620)
     }
 

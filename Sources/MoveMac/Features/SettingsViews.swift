@@ -94,6 +94,8 @@ private struct EditExerciseView: View {
 struct SettingsView: View {
     @Bindable var store: MoveStore
     @State private var pendingDataAction: DataAction?
+    @State private var launchAtLogin = false
+    @State private var launchError: String?
 
     private enum DataAction: Identifiable {
         case resetSettings, deleteAll
@@ -111,6 +113,11 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            Section("Général") {
+                Toggle("Lancer Move à la connexion", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
+                if let launchError { Text(launchError).font(.caption).foregroundStyle(.red) }
+            }
             Section("Jours actifs") {
                 ForEach(1...7, id: \.self) { weekday in
                     Toggle(Calendar.current.shortWeekdaySymbols[weekday - 1], isOn: weekdayBinding(weekday))
@@ -155,11 +162,23 @@ struct SettingsView: View {
         .onChange(of: store.reminder) { _, _ in store.persistSettings() }
         .onChange(of: store.movement) { _, _ in store.persistSettings(); store.chooseNext() }
         .onChange(of: store.appearance) { _, _ in store.persistSettings() }
+        .onAppear { launchAtLogin = LaunchAtLoginService.isEnabled }
         .alert(item: $pendingDataAction) { action in
             Alert(title: Text(action.title), message: Text(action.message),
                   primaryButton: .destructive(Text("Confirmer")) {
                       switch action { case .resetSettings: store.resetSettings(); case .deleteAll: store.deleteAllData() }
                   }, secondaryButton: .cancel(Text("Annuler")))
+        }
+    }
+
+    private func setLaunchAtLogin(_ enabled: Bool) {
+        do {
+            try LaunchAtLoginService.setEnabled(enabled)
+            launchError = nil
+            launchAtLogin = LaunchAtLoginService.isEnabled
+        } catch {
+            launchAtLogin = LaunchAtLoginService.isEnabled
+            launchError = "Lancement automatique indisponible : \(error.localizedDescription)"
         }
     }
     private func weekdayBinding(_ weekday: Int) -> Binding<Bool> {

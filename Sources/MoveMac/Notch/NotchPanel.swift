@@ -4,6 +4,39 @@ import MoveCore
 
 enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped, snooze, workoutSuggestion, closing }
 
+enum NotchLayout {
+    static let expandedWidth: CGFloat = 460
+
+    static func screen(for target: ReminderScreenTarget) -> NSScreen? {
+        let screens = NSScreen.screens
+        switch target {
+        case .main:
+            return NSScreen.main ?? screens.first
+        case .active:
+            return screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) }) ?? NSScreen.main ?? screens.first
+        case .macBook:
+            return screens.first(where: { $0.safeAreaInsets.top > 0 }) ?? NSScreen.main ?? screens.first
+        }
+    }
+
+    static func compactSize(on screen: NSScreen) -> CGSize {
+        let width = screen.auxiliaryTopLeftArea.flatMap { left in
+            screen.auxiliaryTopRightArea.map { $0.minX - left.maxX }
+        } ?? 180
+        let height = screen.safeAreaInsets.top > 0 ? screen.safeAreaInsets.top : 32
+        return CGSize(width: width, height: height)
+    }
+
+    static func contentTopInset(on screen: NSScreen?) -> CGFloat {
+        guard let screen, screen.safeAreaInsets.top > 0 else { return 24 }
+        return screen.safeAreaInsets.top + 14
+    }
+
+    static func expandedHeight(on screen: NSScreen) -> CGFloat {
+        contentTopInset(on: screen) + 148
+    }
+}
+
 @MainActor final class NotchPanelController {
     private let panel: NSPanel
     private var screenChangeObserver: NSObjectProtocol?
@@ -16,6 +49,7 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         panel.hasShadow = true
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.contentView = NSHostingView(rootView: rootView)
+        panel.contentView?.wantsLayer = true
         screenChangeObserver = NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in self?.repositionOnScreenChange() }
         }
@@ -24,28 +58,27 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
     private(set) var state: NotchPanelState = .hidden
 
     private func originY(on screen: NSScreen, height: CGFloat) -> CGFloat {
-        // Let the expanded shell cross the physical top edge slightly. This
-        // keeps its upper lobes attached instead of leaving a floating gap.
-        let overlap = height > 60 ? min(16, height * 0.12) : 0
-        return screen.frame.maxY - height + overlap
+        // Use the physical frame, not visibleFrame. The latter starts below
+        // the menu bar and makes a notch panel look detached from the display.
+        screen.frame.maxY - height
     }
 
-    func show(target: ReminderScreenTarget = .main, width: CGFloat = 180, height: CGFloat = 40) {
+    func show(target: ReminderScreenTarget = .main) {
         self.target = target
         guard let screen = targetScreen(target) else { return }
+        let compact = NotchLayout.compactSize(on: screen)
         state = .bumping
         let notch = screen.auxiliaryTopLeftArea.map { left in
             NSRect(x: left.maxX, y: screen.frame.maxY - 2, width: (screen.auxiliaryTopRightArea?.minX ?? left.maxX) - left.maxX, height: 2)
         }
         let anchor = notch?.midX ?? screen.frame.midX
-        let x = min(max(anchor - width / 2, screen.visibleFrame.minX + 8), screen.visibleFrame.maxX - width - 8)
-        // The panel is attached to the physical top edge. The content shape
-        // supplies the soft, inverted corner instead of leaving a sharp gap.
-        let y = originY(on: screen, height: height)
-        panel.setFrame(NSRect(x: x, y: y, width: width, height: height), display: true)
+        let x = min(max(anchor - compact.width / 2, screen.visibleFrame.minX + 8), screen.visibleFrame.maxX - compact.width - 8)
+        let y = originY(on: screen, height: compact.height)
+        panel.setFrame(NSRect(x: x, y: y, width: compact.width, height: compact.height), display: true)
+        panel.contentView?.layoutSubtreeIfNeeded()
         panel.orderFrontRegardless()
         state = .compact
-        resizeWithBounce(width: 460, height: 300, on: screen, anchor: anchor) { [weak self] in self?.state = .expanded }
+        resizeWithArrivalBounce(on: screen, anchor: anchor) { [weak self] in self?.state = .expanded }
     }
 
     private func repositionOnScreenChange() {
@@ -70,53 +103,42 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         resize(width: width, height: height, on: screen, anchor: anchor, animated: animated, completion: completion)
     }
 
-    private func resize(width: CGFloat, height: CGFloat, on screen: NSScreen, anchor: CGFloat, animated: Bool, completion: (() -> Void)? = nil) {
+    private func resize(width: CGFloat, height: CGFloat, on screen: NSScreen, anchor: CGFloat, animated: Bool, duration: TimeInterval = 0.52, completion: (() -> Void)? = nil) {
         let x = min(max(anchor - width / 2, screen.visibleFrame.minX + 8), screen.visibleFrame.maxX - width - 8)
         let frame = NSRect(x: x, y: originY(on: screen, height: height), width: width, height: height)
         if animated {
             NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.52
+                context.duration = duration
                 context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
                 panel.animator().setFrame(frame, display: true)
             } completionHandler: { completion?() }
         } else { panel.setFrame(frame, display: true); completion?() }
     }
 
-    private func resizeWithBounce(width: CGFloat, height: CGFloat, on screen: NSScreen, anchor: CGFloat, completion: (() -> Void)? = nil) {
-        let overshoot = (width: width + 18, height: height + 10)
-        resize(width: overshoot.width, height: overshoot.height, on: screen, anchor: anchor, animated: true) { [weak self] in
-            guard let self else { return }
-            self.resize(width: width, height: height, on: screen, anchor: anchor, animated: true, completion: completion)
+    private func resizeWithArrivalBounce(on screen: NSScreen, anchor: CGFloat, completion: (() -> Void)? = nil) {
+        let width = NotchLayout.expandedWidth
+        let height = NotchLayout.expandedHeight(on: screen)
+        resize(width: width + 6, height: height + 3, on: screen, anchor: anchor, animated: true, duration: 0.42) { [weak self] in
+            self?.resize(width: width, height: height, on: screen, anchor: anchor, animated: true, duration: 0.14, completion: completion)
         }
     }
 
-    private func targetScreen(_ target: ReminderScreenTarget) -> NSScreen? {
-        let screens = NSScreen.screens
-        switch target {
-        case .main:
-            return NSScreen.main ?? screens.first
-        case .active:
-            return screens.first(where: { $0.frame.contains(NSEvent.mouseLocation) }) ?? NSScreen.main ?? screens.first
-        case .macBook:
-            return screens.first(where: { $0.auxiliaryTopLeftArea != nil && $0.auxiliaryTopRightArea != nil }) ?? NSScreen.main ?? screens.first
-        }
-    }
+    private func targetScreen(_ target: ReminderScreenTarget) -> NSScreen? { NotchLayout.screen(for: target) }
+
     func hide() {
         state = .closing
         guard let screen = panel.screen ?? NSScreen.main else { return }
+        let compact = NotchLayout.compactSize(on: screen)
         let anchor = screen.auxiliaryTopLeftArea.map { left in
             (left.maxX + (screen.auxiliaryTopRightArea?.minX ?? left.maxX)) / 2
         } ?? screen.frame.midX
-        resize(width: 200, height: 50, on: screen, anchor: anchor, animated: true) { [weak self] in
-            guard let self else { return }
-            self.resize(width: 180, height: 40, on: screen, anchor: anchor, animated: true) { [weak self] in
+        resize(width: compact.width, height: compact.height, on: screen, anchor: anchor, animated: true) { [weak self] in
             guard let self else { return }
             if let screenChangeObserver {
                 NotificationCenter.default.removeObserver(screenChangeObserver)
                 self.screenChangeObserver = nil
             }
             panel.orderOut(nil); state = .hidden
-            }
         }
     }
 }

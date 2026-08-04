@@ -58,6 +58,7 @@
 "history.period" = "Period";
 "history.filters" = "Filters";
 "history.source" = "Source";
+"history.category" = "Category";
 "history.status" = "Status";
 "history.all" = "All";
 "history.add" = "Add";

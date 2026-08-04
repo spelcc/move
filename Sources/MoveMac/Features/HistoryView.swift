@@ -21,6 +21,7 @@ struct HistoryView: View {
     @State private var period = HistoryPeriod.all
     @State private var sourceFilter: ActivitySource?
     @State private var statusFilter: ActivityStatus?
+    @State private var categoryFilter: ExerciseCategory?
     @State private var customStart = Calendar.current.date(byAdding: .day, value: -7, to: .now) ?? .now
     @State private var customEnd = Date.now
     @State private var selectedSession: WorkoutSessionEntity?
@@ -81,6 +82,12 @@ struct HistoryView: View {
                 DatePicker("Au", selection: $customEnd, displayedComponents: .date)
             }
             Menu(MoveCopy.text("history.filters"), systemImage: "line.3.horizontal.decrease.circle") {
+                Menu(MoveCopy.text("history.category")) {
+                    Button(MoveCopy.text("history.all")) { categoryFilter = nil }
+                    ForEach(ExerciseCategory.allCases, id: \.self) { category in
+                        Button(category.rawValue.capitalized) { categoryFilter = category }
+                    }
+                }
                 Menu(MoveCopy.text("history.source")) {
                     Button(MoveCopy.text("history.all")) { sourceFilter = nil }
                     Button(MoveCopy.text("source.reminder")) { sourceFilter = .hourly }
@@ -137,6 +144,7 @@ struct HistoryView: View {
         return activities.filter { activity in
             (start == nil || (activity.performedAt >= start! && activity.performedAt < end)) &&
             (search.isEmpty || activity.exerciseID.localizedStandardContains(search)) &&
+            (categoryFilter == nil || category(for: activity.exerciseID) == categoryFilter) &&
             (sourceFilter == nil || ActivitySource(rawValue: activity.sourceRaw) == sourceFilter) &&
             (statusFilter == nil || ActivityStatus(rawValue: activity.statusRaw) == statusFilter)
         }
@@ -170,6 +178,11 @@ struct HistoryView: View {
     private func exerciseName(for id: String) -> String {
         if let builtIn = ExerciseLibrary.all.first(where: { $0.id == id }) { return builtIn.name }
         return customExercises.first(where: { $0.id == id })?.name ?? id
+    }
+
+    private func category(for id: String) -> ExerciseCategory? {
+        if let builtIn = ExerciseLibrary.all.first(where: { $0.id == id }) { return builtIn.category }
+        return customExercises.first(where: { $0.id == id }).flatMap { ExerciseCategory(rawValue: $0.categoryRaw) }
     }
 
     private func importJSON(_ result: Result<[URL], Error>) {

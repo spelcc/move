@@ -46,7 +46,8 @@ private struct WorkoutEditorView: View {
     @Query private var customExercises: [CustomExerciseEntity]
     @State private var name = "Ma séance"
     @State private var rounds = 2
-    @State private var selected = Set<String>()
+    @State private var mode = WorkoutMode.interval
+    @State private var steps: [WorkoutStep] = []
     @State private var search = ""
     let onSave: (WorkoutTemplate) -> Void
     var body: some View {
@@ -54,18 +55,61 @@ private struct WorkoutEditorView: View {
             Text("Nouvelle séance").font(.title.bold())
             TextField("Nom", text: $name)
             Stepper("Tours : \(rounds)", value: $rounds, in: 1...20)
-            Text("Mouvements").font(.headline)
-            TextField("Rechercher", text: $search)
-            List(filteredExercises) { exercise in
-                Toggle(isOn: Binding(get: { selected.contains(exercise.id) }, set: { if $0 { selected.insert(exercise.id) } else { selected.remove(exercise.id) } })) { Text("\(exercise.emoji) \(exercise.name)") }
+            Picker("Mode", selection: $mode) {
+                Text("Intervalle").tag(WorkoutMode.interval)
+                Text("Répétitions").tag(WorkoutMode.repetitions)
+                Text("Libre").tag(WorkoutMode.free)
             }
-            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Sauvegarder") { save() }.buttonStyle(.borderedProminent).disabled(selected.isEmpty) }
-        }.padding().frame(width: 420, height: 560)
+            Text("Mouvements de la séance").font(.headline)
+            if steps.isEmpty {
+                Text("Ajoute au moins un mouvement ci-dessous.").foregroundStyle(.secondary)
+            } else {
+                List {
+                    ForEach($steps) { $step in
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Text(exerciseName(step.exerciseID)).font(.headline)
+                                Spacer()
+                                Button("Dupliquer", systemImage: "plus.square.on.square") { duplicate(step.wrappedValue) }
+                                    .labelStyle(.iconOnly)
+                                Button("Supprimer", systemImage: "trash", role: .destructive) { remove(step.wrappedValue) }
+                                    .labelStyle(.iconOnly)
+                            }
+                            if mode == .interval {
+                                Stepper("Travail : \(step.workSeconds) s", value: $step.workSeconds, in: 0...900, step: 5)
+                                Stepper("Repos : \(step.restSeconds) s", value: $step.restSeconds, in: 0...900, step: 5)
+                            } else {
+                                Stepper("Répétitions : \(step.workSeconds)", value: $step.workSeconds, in: 1...999)
+                            }
+                        }
+                    }
+                    .onMove { steps.move(fromOffsets: $0, toOffset: $1) }
+                }
+                .frame(minHeight: 120)
+            }
+            Text("Ajouter un mouvement").font(.headline)
+            TextField("Rechercher", text: $search)
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 6) {
+                    ForEach(filteredExercises) { exercise in
+                        Button { add(exercise) } label: {
+                            Label("\(exercise.emoji) \(exercise.name)", systemImage: "plus.circle")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }.buttonStyle(.plain)
+                    }
+                }
+            }
+            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Sauvegarder") { save() }.buttonStyle(.borderedProminent).disabled(steps.isEmpty) }
+        }.padding().frame(width: 520, height: 720)
     }
     private func save() {
-        let steps = allExercises.filter { selected.contains($0.id) }.map { WorkoutStep(exerciseID: $0.id) }
-        onSave(WorkoutTemplate(name: name, rounds: rounds, steps: steps)); dismiss()
+        onSave(WorkoutTemplate(name: name, rounds: rounds, steps: steps, mode: mode)); dismiss()
     }
+
+    private func add(_ exercise: Exercise) { steps.append(WorkoutStep(exerciseID: exercise.id, workSeconds: mode == .free ? 600 : 40)) }
+    private func duplicate(_ step: WorkoutStep) { steps.append(WorkoutStep(exerciseID: step.exerciseID, workSeconds: step.workSeconds, restSeconds: step.restSeconds)) }
+    private func remove(_ step: WorkoutStep) { steps.removeAll { $0.id == step.id } }
+    private func exerciseName(_ id: String) -> String { allExercises.first { $0.id == id }?.name ?? "Mouvement" }
 
     private var allExercises: [Exercise] {
         let custom = customExercises.filter { !$0.archived }.compactMap(\.exercise)

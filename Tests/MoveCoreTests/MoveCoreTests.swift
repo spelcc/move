@@ -121,6 +121,17 @@ import Testing
     #expect(candidates.contains { $0.id == "pullups" })
 }
 
+@Test func selectorRespectsPreferredDifficulty() {
+    var preferences = MovementPreferences()
+    preferences.preferredDifficulty = 2...2
+    let candidates = ExerciseSelector().candidates(from: [
+        Exercise(id: "easy", name: "Facile", category: .mobility, metric: .repetitions, defaultAmount: 5, difficulty: 1, emoji: "🙂"),
+        Exercise(id: "medium", name: "Intermédiaire", category: .mobility, metric: .repetitions, defaultAmount: 8, difficulty: 2, emoji: "💪"),
+        Exercise(id: "hard", name: "Difficile", category: .mobility, metric: .repetitions, defaultAmount: 10, difficulty: 3, emoji: "🔥")
+    ], preferences: preferences)
+    #expect(candidates.map(\.id) == ["medium"])
+}
+
 @Test func selectorAvoidsRecentlyShownExercisesWhenAlternativesExist() {
     let exercises = [
         Exercise(id: "one", name: "Un", category: .mobility, metric: .repetitions, defaultAmount: 1, emoji: "1️⃣"),

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 import MoveCore
 
 struct WorkoutLibraryView: View {
@@ -9,9 +10,15 @@ struct WorkoutLibraryView: View {
     @State private var showingEditor = false
     @State private var previewing: WorkoutTemplate?
     @State private var renaming: WorkoutTemplateEntity?
+    @State private var exportingTemplates = false
     var body: some View {
         ScrollView { VStack(alignment: .leading, spacing: 16) {
-            HStack { Text("Séances").font(.title.bold()); Spacer(); Button("Créer", systemImage: "plus") { showingEditor = true } }
+            HStack {
+                Text("Séances").font(.title.bold())
+                Spacer()
+                Button("Exporter", systemImage: "square.and.arrow.up") { exportingTemplates = true }
+                Button("Créer", systemImage: "plus") { showingEditor = true }
+            }
             if let saved = store.resumableWorkout, let workout = resumableWorkout(saved) {
                 Button("Reprendre \(workout.name)") { store.resume(workout) }
                     .buttonStyle(.borderedProminent)
@@ -51,6 +58,12 @@ struct WorkoutLibraryView: View {
         .sheet(item: $renaming) { entity in
             WorkoutRenameView(entity: entity)
         }
+        .fileExporter(
+            isPresented: $exportingTemplates,
+            document: WorkoutTemplatesDocument(templates: customWorkouts.compactMap(\.template)),
+            contentType: .json,
+            defaultFilename: "move-workouts.json"
+        ) { _ in }
     }
 
     private func workoutCard(_ workout: WorkoutTemplate) -> some View {
@@ -80,6 +93,21 @@ struct WorkoutLibraryView: View {
         let copy = WorkoutTemplate(id: UUID(), name: "\(template.name) (copie)", rounds: template.rounds, steps: template.steps, mode: template.mode)
         modelContext.insert(WorkoutTemplateEntity(template: copy))
         try? modelContext.save()
+    }
+}
+
+private struct WorkoutTemplatesDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.json] }
+    var templates: [WorkoutTemplate]
+
+    init(templates: [WorkoutTemplate] = []) { self.templates = templates }
+    init(configuration: ReadConfiguration) throws {
+        let data = configuration.file.regularFileContents ?? Data()
+        templates = try JSONDecoder().decode([WorkoutTemplate].self, from: data)
+    }
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        let data = try JSONEncoder().encode(templates)
+        return FileWrapper(regularFileWithContents: data)
     }
 }
 

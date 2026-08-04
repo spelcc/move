@@ -9,27 +9,39 @@ import MoveCore
     private let notificationDelegate = MoveNotificationDelegate()
     @State private var store: MoveStore
     @State private var panel: NotchPanelController?
+    @State private var persistenceError: String?
     @AppStorage("move.onboardingCompleted") private var onboardingCompleted = false
     init() {
+        _persistenceError = State(initialValue: nil)
         ReminderNotificationService.configure()
         UNUserNotificationCenter.current().delegate = notificationDelegate
         let schema = MoveSchemaV1.schema
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         let container: ModelContainer
+        var persistenceIssue: String?
         do {
             container = try ModelContainer(for: schema, migrationPlan: MoveMigrationPlan.self, configurations: configuration)
         } catch {
             NSLog("Move persistence failed: %@", String(describing: error))
+            persistenceIssue = String(describing: error)
             let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
             container = (try? ModelContainer(for: schema, migrationPlan: MoveMigrationPlan.self, configurations: fallback)) ?? {
                 fatalError("Unable to create Move storage")
             }()
         }
+        _persistenceError = State(initialValue: persistenceIssue)
         self.container = container
         _store = State(initialValue: MoveStore(context: container.mainContext))
     }
     var body: some Scene {
         MenuBarExtra("Move", systemImage: "figure.run") {
+            if persistenceError != nil {
+                Label("Stockage local indisponible", systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(.orange)
+                Text("Les données de cette session ne survivront pas au redémarrage.")
+                    .font(.caption)
+                Divider()
+            }
             if let next = store.reminderState.nextReminderAt { Text("Prochain rappel : \(next, style: .time)") }
             Button("Bouger maintenant") { showNotch() }
             Button("Séance 10 min") { store.start(ExerciseLibrary.quickWorkouts[1]) }

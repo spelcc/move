@@ -154,6 +154,9 @@ private struct NewExerciseView: View {
                 Toggle("Avec sauts", isOn: setBinding("jump", in: $tags))
                 Toggle("Sollicite les poignets", isOn: setBinding("wrists", in: $tags))
                 Toggle("Bruyant", isOn: setBinding("noisy", in: $tags))
+                Toggle(MoveCopy.text("constraint.knees"), isOn: setBinding("knees", in: $tags))
+                Toggle(MoveCopy.text("constraint.back"), isOn: setBinding("back", in: $tags))
+                Toggle(MoveCopy.text("constraint.space"), isOn: setBinding("space", in: $tags))
             }
             Section("Zones musculaires") {
                 Toggle(MoveCopy.text("zone.fullBody"), isOn: setBinding("fullBody", in: $muscleZones))
@@ -216,6 +219,9 @@ private struct EditExerciseView: View {
                 Toggle("Avec sauts", isOn: tagBinding("jump"))
                 Toggle("Sollicite les poignets", isOn: tagBinding("wrists"))
                 Toggle("Bruyant", isOn: tagBinding("noisy"))
+                Toggle(MoveCopy.text("constraint.knees"), isOn: tagBinding("knees"))
+                Toggle(MoveCopy.text("constraint.back"), isOn: tagBinding("back"))
+                Toggle(MoveCopy.text("constraint.space"), isOn: tagBinding("space"))
             }
             Section("Zones musculaires") {
                 Toggle(MoveCopy.text("zone.fullBody"), isOn: zoneBinding("fullBody"))

@@ -215,6 +215,9 @@
 "zone.neck" = "Cou";
 "zone.wrists" = "Poignets";
 "zone.hips" = "Hanches";
+"constraint.knees" = "Sollicite les genoux";
+"constraint.back" = "Sollicite le dos";
+"constraint.space" = "Nécessite de l’espace";
 "settings.interval" = "Toutes les %d minutes";
 "settings.snoozeDefault" = "Snooze par défaut : %d min";
 "settings.startHour" = "Début à %d h";

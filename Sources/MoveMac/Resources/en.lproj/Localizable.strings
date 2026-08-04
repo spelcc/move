@@ -215,6 +215,9 @@
 "zone.neck" = "Neck";
 "zone.wrists" = "Wrists";
 "zone.hips" = "Hips";
+"constraint.knees" = "Loads the knees";
+"constraint.back" = "Loads the back";
+"constraint.space" = "Needs open space";
 "settings.interval" = "Every %d minutes";
 "settings.snoozeDefault" = "Default snooze: %d min";
 "settings.startHour" = "Start at %d h";

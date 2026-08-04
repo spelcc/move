@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 import MoveCore
 
 struct MovementSettingsView: View {
@@ -128,9 +129,12 @@ private struct EditExerciseView: View {
 
 struct SettingsView: View {
     @Bindable var store: MoveStore
+    @Environment(\.modelContext) private var modelContext
     @State private var pendingDataAction: DataAction?
     @State private var launchAtLogin = false
     @State private var launchError: String?
+    @State private var exportingDiagnostic = false
+    @State private var diagnosticDocument = DiagnosticDocument()
 
     private enum DataAction: Identifiable {
         case resetSettings, deleteAll
@@ -190,10 +194,15 @@ struct SettingsView: View {
                 }
             }
             Section("Données") {
+                Button("Exporter un diagnostic", systemImage: "stethoscope") {
+                    diagnosticDocument = DiagnosticDocument(report: MoveDiagnosticReport.make(context: modelContext, store: store, persistenceIssue: nil))
+                    exportingDiagnostic = true
+                }
                 Button("Réinitialiser les réglages") { pendingDataAction = .resetSettings }
                 Button("Supprimer toutes les données", role: .destructive) { pendingDataAction = .deleteAll }
             }
         }.formStyle(.grouped).padding().navigationTitle("Réglages")
+        .fileExporter(isPresented: $exportingDiagnostic, document: diagnosticDocument, contentType: .json, defaultFilename: "move-diagnostic.json") { _ in }
         .onChange(of: store.reminder) { _, _ in store.persistSettings() }
         .onChange(of: store.movement) { _, _ in store.persistSettings(); store.chooseNext() }
         .onChange(of: store.appearance) { _, _ in store.persistSettings() }

@@ -24,6 +24,10 @@ struct WorkoutLibraryView: View {
                     .buttonStyle(.borderedProminent)
             }
             LazyVGrid(columns: [.init(.adaptive(minimum: 230))], spacing: 16) {
+            if customWorkouts.filter({ !$0.archived }).isEmpty {
+                ContentUnavailableView("Aucune séance personnalisée", systemImage: "timer", description: Text("Crée ta première séance pour la retrouver ici."))
+                    .frame(maxWidth: .infinity)
+            }
             ForEach(customWorkouts.filter { !$0.archived }) { entity in
                 if let workout = entity.template {
                     workoutCard(workout)
@@ -185,6 +189,7 @@ private struct WorkoutEditorView: View {
     @State private var mode = WorkoutMode.interval
     @State private var steps: [WorkoutStep] = []
     @State private var search = ""
+    @State private var validationMessage: String?
     let onSave: (WorkoutTemplate) -> Void
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -235,11 +240,18 @@ private struct WorkoutEditorView: View {
                     }
                 }
             }
-            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Sauvegarder") { save() }.buttonStyle(.borderedProminent).disabled(steps.isEmpty) }
+            if let validationMessage {
+                Label(validationMessage, systemImage: "exclamationmark.triangle").font(.caption).foregroundStyle(.red)
+            }
+            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Sauvegarder") { save() }.buttonStyle(.borderedProminent) }
         }.padding().frame(width: 520, height: 720)
     }
     private func save() {
-        onSave(WorkoutTemplate(name: name, rounds: rounds, steps: steps, mode: mode)); dismiss()
+        let template = WorkoutTemplate(name: name.trimmingCharacters(in: .whitespacesAndNewlines), rounds: rounds, steps: steps, mode: mode)
+        guard let error = template.validationError else {
+            onSave(template); dismiss(); return
+        }
+        validationMessage = error
     }
 
     private func add(_ exercise: Exercise) { steps.append(WorkoutStep(exerciseID: exercise.id, workSeconds: mode == .free ? 600 : 40)) }

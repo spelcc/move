@@ -10,6 +10,7 @@ import MoveCore
     @State private var store: MoveStore
     @State private var panel: NotchPanelController?
     @State private var persistenceError: String?
+    @Environment(\.openWindow) private var openWindow
     init() {
         _persistenceError = State(initialValue: nil)
         ReminderNotificationService.configure()
@@ -52,6 +53,10 @@ import MoveCore
                 Text("Prochain rappel : \(next, style: .time)")
             }
             Button("Bouger maintenant") { showNotch() }
+            Button("Ouvrir l’historique") {
+                store.selectedTab = "Historique"
+                openWindow(id: "dashboard")
+            }
             Button("Séance 10 min") { store.start(ExerciseLibrary.quickWorkouts[1]) }
             Button("Pause 1 heure") { store.pauseReminders(until: .now.addingTimeInterval(3600)) }
             Button("Pause jusqu’à demain") {

@@ -23,6 +23,13 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
 
     private(set) var state: NotchPanelState = .hidden
 
+    private func originY(on screen: NSScreen, height: CGFloat) -> CGFloat {
+        // Let the expanded shell cross the physical top edge slightly. This
+        // keeps its upper lobes attached instead of leaving a floating gap.
+        let overlap = height > 60 ? min(16, height * 0.12) : 0
+        return screen.frame.maxY - height + overlap
+    }
+
     func show(target: ReminderScreenTarget = .main, width: CGFloat = 180, height: CGFloat = 40) {
         self.target = target
         guard let screen = targetScreen(target) else { return }
@@ -34,7 +41,7 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         let x = min(max(anchor - width / 2, screen.visibleFrame.minX + 8), screen.visibleFrame.maxX - width - 8)
         // The panel is attached to the physical top edge. The content shape
         // supplies the soft, inverted corner instead of leaving a sharp gap.
-        let y = screen.frame.maxY - height
+        let y = originY(on: screen, height: height)
         panel.setFrame(NSRect(x: x, y: y, width: width, height: height), display: true)
         panel.orderFrontRegardless()
         state = .compact
@@ -48,7 +55,7 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
             (left.maxX + (screen.auxiliaryTopRightArea?.minX ?? left.maxX)) / 2
         } ?? screen.frame.midX
         let x = min(max(anchor - frame.width / 2, screen.visibleFrame.minX + 8), screen.visibleFrame.maxX - frame.width - 8)
-        let updated = NSRect(x: x, y: screen.frame.maxY - frame.height, width: frame.width, height: frame.height)
+        let updated = NSRect(x: x, y: originY(on: screen, height: frame.height), width: frame.width, height: frame.height)
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.28
             panel.animator().setFrame(updated, display: true)
@@ -65,7 +72,7 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
 
     private func resize(width: CGFloat, height: CGFloat, on screen: NSScreen, anchor: CGFloat, animated: Bool, completion: (() -> Void)? = nil) {
         let x = min(max(anchor - width / 2, screen.visibleFrame.minX + 8), screen.visibleFrame.maxX - width - 8)
-        let frame = NSRect(x: x, y: screen.frame.maxY - height, width: width, height: height)
+        let frame = NSRect(x: x, y: originY(on: screen, height: height), width: width, height: height)
         if animated {
             NSAnimationContext.runAnimationGroup { context in
                 context.duration = 0.52

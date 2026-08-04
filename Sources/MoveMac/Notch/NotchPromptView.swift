@@ -8,6 +8,7 @@ struct NotchPromptView: View {
     let onResize: (CGFloat, CGFloat) -> Void
     @State private var bumped = false
     @State private var reaction: Reaction?
+    @State private var closing = false
 
     init(store: MoveStore, onClose: @escaping () -> Void = {}, onResize: @escaping (CGFloat, CGFloat) -> Void = { _, _ in }) {
         self.store = store
@@ -48,13 +49,13 @@ struct NotchPromptView: View {
                     Text(subMessage).font(.caption).foregroundStyle(.white.opacity(0.65)).multilineTextAlignment(.center)
                 }
                 HStack(spacing: 8) {
-                    NotchActionButton(title: MoveCopy.text("notch.action.snooze"), color: .red.opacity(0.82)) {
+                    NotchActionButton(title: MoveCopy.text("notch.action.snooze"), color: Color(red: 0.22, green: 0.025, blue: 0.025), textColor: .red) {
                         snooze(for: store.reminder.snoozeMinutes)
                     }
-                    NotchActionButton(title: MoveCopy.text("notch.action.done"), color: .green.opacity(0.82)) {
+                    NotchActionButton(title: MoveCopy.text("notch.action.done"), color: Color(red: 0.025, green: 0.22, blue: 0.07), textColor: .green) {
                         complete()
                     }
-                    NotchActionButton(title: MoveCopy.text("notch.action.other"), color: .white.opacity(0.24)) {
+                    NotchActionButton(title: MoveCopy.text("notch.action.other"), color: Color.white.opacity(0.16), textColor: .white.opacity(0.82)) {
                         store.chooseNext(); onResize(460, 300)
                     }
                     .keyboardShortcut("c", modifiers: [.command])
@@ -76,6 +77,7 @@ struct NotchPromptView: View {
         .scaleEffect(bumped ? 1 : 0.92, anchor: .top)
         .offset(y: bumped ? 0 : -18)
         .opacity(bumped ? 1 : 0)
+        .opacity(closing ? 0 : 1)
         .onAppear {
             if reduceMotion || store.appearance.animations == .disabled { bumped = true }
             else {
@@ -92,7 +94,9 @@ struct NotchPromptView: View {
     private func show(_ value: Reaction) {
         reaction = value
         Task {
-            try? await Task.sleep(for: .seconds(2))
+            try? await Task.sleep(for: .seconds(1.45))
+            withAnimation(.easeOut(duration: 0.22)) { closing = true }
+            try? await Task.sleep(for: .seconds(0.24))
             onClose()
         }
     }
@@ -149,13 +153,14 @@ private struct StickyPanelShape: Shape {
 private struct NotchActionButton: View {
     let title: String
     let color: Color
+    let textColor: Color
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(textColor)
                 .frame(maxWidth: .infinity, minHeight: 42)
                 .background(color, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
         }

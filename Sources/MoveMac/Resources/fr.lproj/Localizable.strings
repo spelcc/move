@@ -151,3 +151,12 @@
 "equipment.pullupBar" = "J’ai une barre de traction";
 "equipment.dumbbells" = "J’ai des haltères";
 "equipment.band" = "J’ai un élastique";
+"runner.round" = "Tour %d/%d";
+"runner.minusTen" = "−10 s";
+"runner.plusTen" = "+10 s";
+"runner.removeTen" = "Retirer dix secondes";
+"runner.addTen" = "Ajouter dix secondes";
+"runner.recordFree" = "Enregistrer un mouvement libre";
+"runner.skipExercise" = "Passer cet exercice";
+"runner.resumeWorkout" = "Reprendre la séance";
+"runner.pauseWorkout" = "Mettre la séance en pause";

@@ -318,7 +318,7 @@ private struct WorkoutRunnerView: View {
     let workout: WorkoutTemplate
     var body: some View {
         ZStack { Color.black.opacity(0.9).ignoresSafeArea(); VStack(spacing: 22) {
-            Text("Tour \(store.workoutRound)/\(workout.rounds)").foregroundStyle(.secondary)
+            Text(String(format: MoveCopy.text("runner.round"), store.workoutRound, workout.rounds)).foregroundStyle(.secondary)
             ProgressView(value: progress)
                 .tint(.white)
                 .frame(maxWidth: 360)
@@ -329,12 +329,12 @@ private struct WorkoutRunnerView: View {
             HStack {
                 Button(store.workoutState == .paused ? MoveCopy.text("runner.resume") : MoveCopy.text("runner.pause")) { store.togglePause() }
                     .keyboardShortcut(.space, modifiers: [])
-                    .accessibilityLabel(store.workoutState == .paused ? "Reprendre la séance" : "Mettre la séance en pause")
+                    .accessibilityLabel(store.workoutState == .paused ? MoveCopy.text("runner.resumeWorkout") : MoveCopy.text("runner.pauseWorkout"))
                 if workout.mode != .repetitions {
-                    Button("−10 s") { store.subtractTenSeconds() }
-                        .accessibilityLabel("Retirer dix secondes")
-                    Button("+10 s") { store.addTenSeconds() }
-                        .accessibilityLabel("Ajouter dix secondes")
+                    Button(MoveCopy.text("runner.minusTen")) { store.subtractTenSeconds() }
+                        .accessibilityLabel(MoveCopy.text("runner.removeTen"))
+                    Button(MoveCopy.text("runner.plusTen")) { store.addTenSeconds() }
+                        .accessibilityLabel(MoveCopy.text("runner.addTen"))
                 }
                 Button(MoveCopy.text("runner.previous")) { store.previousWorkoutStep() }
                     .keyboardShortcut(.leftArrow, modifiers: [])
@@ -342,13 +342,13 @@ private struct WorkoutRunnerView: View {
                     .keyboardShortcut(.rightArrow, modifiers: [])
                 if workout.mode == .free {
                     Button(MoveCopy.text("runner.addMovement")) { store.recordFreeMovement() }
-                        .accessibilityLabel("Enregistrer un mouvement libre")
+                        .accessibilityLabel(MoveCopy.text("runner.recordFree"))
                 }
                 if store.workoutState == .resting {
                     Button(MoveCopy.text("runner.skipRest")) { store.advanceWorkout() }
                 }
                 Button(MoveCopy.text("runner.skip")) { store.skipWorkoutStep() }
-                    .accessibilityLabel("Passer cet exercice")
+                    .accessibilityLabel(MoveCopy.text("runner.skipExercise"))
                 Button(MoveCopy.text("runner.stop")) { store.cancelWorkout() }
                     .keyboardShortcut(.escape, modifiers: [])
                     .accessibilityLabel("Arrêter la séance")

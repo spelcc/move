@@ -151,3 +151,12 @@
 "equipment.pullupBar" = "I have a pull-up bar";
 "equipment.dumbbells" = "I have dumbbells";
 "equipment.band" = "I have a resistance band";
+"runner.round" = "Round %d/%d";
+"runner.minusTen" = "−10 s";
+"runner.plusTen" = "+10 s";
+"runner.removeTen" = "Remove ten seconds";
+"runner.addTen" = "Add ten seconds";
+"runner.recordFree" = "Record a free movement";
+"runner.skipExercise" = "Skip this exercise";
+"runner.resumeWorkout" = "Resume workout";
+"runner.pauseWorkout" = "Pause workout";

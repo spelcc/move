@@ -40,8 +40,8 @@ struct HistoryView: View {
         .overlay { if activities.isEmpty { ContentUnavailableView("Rien pour le moment", systemImage: "clock") } }
         .sheet(item: $editing) { ActivityEditView(activity: $0) }
         .sheet(isPresented: $adding) { AddActivityView() }
-        .fileExporter(isPresented: $exportingJSON, document: ActivityExportDocument(data: jsonData), contentType: .json, defaultFilename: "move-activities.json")
-        .fileExporter(isPresented: $exportingCSV, document: ActivityExportDocument(data: csvData), contentType: .commaSeparatedText, defaultFilename: "move-activities.csv")
+        .fileExporter(isPresented: $exportingJSON, document: ActivityExportDocument(data: jsonData), contentType: .json, defaultFilename: "move-activities.json") { _ in }
+        .fileExporter(isPresented: $exportingCSV, document: ActivityExportDocument(data: csvData), contentType: .commaSeparatedText, defaultFilename: "move-activities.csv") { _ in }
     }
 
     private var jsonData: Data { (try? DataTransferService.exportJSON(activities.map(\.record))) ?? Data() }

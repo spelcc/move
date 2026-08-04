@@ -44,7 +44,7 @@ struct OnboardingView: View {
                     Text("Réduites").tag(AnimationMode.reduced)
                     Text("Désactivées").tag(AnimationMode.disabled)
                 }
-            } else if step == 3 {
+            } else if step == 4 {
                 Toggle("Lancer Move à la connexion", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
                 if let launchError { Text(launchError).font(.caption).foregroundStyle(.red) }

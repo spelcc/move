@@ -38,6 +38,7 @@ private struct TodayView: View {
         ScrollView { VStack(alignment: .leading, spacing: 20) {
             Text(MoveCopy.text("nav.today")).font(.largeTitle.bold())
             HStack { StatCard(value: "\(stats.completedCount)", label: MoveCopy.text("stats.movements")); StatCard(value: "\(stats.totalRepetitions)", label: MoveCopy.text("stats.repetitions")); StatCard(value: "\(stats.activeSeconds / 60) min", label: MoveCopy.text("stats.activeMinutes")) }
+            HStack { StatCard(value: "\(stats.acceptedReminderCount)", label: MoveCopy.text("stats.acceptedReminders")); StatCard(value: "\(stats.skippedCount)", label: MoveCopy.text("stats.ignoredReminders")); StatCard(value: "\(stats.completedWorkoutCount)", label: MoveCopy.text("stats.workouts")) }
             Text(MoveCopy.text("nav.history")).font(.title2.bold())
             if todaysActivities.isEmpty {
                 ContentUnavailableView(MoveCopy.text("empty.activity.title"), systemImage: "figure.walk", description: Text(MoveCopy.text("empty.activity.message")))

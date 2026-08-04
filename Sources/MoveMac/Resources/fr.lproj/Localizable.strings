@@ -21,6 +21,9 @@
 "stats.movements" = "mouvements";
 "stats.repetitions" = "répétitions";
 "stats.activeMinutes" = "actives";
+"stats.acceptedReminders" = "rappels acceptés";
+"stats.ignoredReminders" = "rappels ignorés";
+"stats.workouts" = "séances";
 "empty.activity.title" = "Rien pour le moment";
 "empty.activity.message" = "Ton premier mouvement attend patiemment.";
 "settings.general" = "Général";

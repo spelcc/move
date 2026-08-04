@@ -125,6 +125,9 @@ import Testing
     ]
     let stats = StatisticsService.calculate(records)
     #expect(stats.completedCount == 2)
+    #expect(stats.acceptedReminderCount == 2)
+    #expect(stats.skippedCount == 1)
+    #expect(stats.snoozedCount == 0)
     #expect(stats.totalRepetitions == 10)
     #expect(stats.activeSeconds == 60)
     #expect(stats.bestDayCompletedCount == 2)

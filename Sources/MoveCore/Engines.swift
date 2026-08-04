@@ -87,6 +87,10 @@ public struct ReminderScheduler: Sendable {
 
 public struct Statistics: Equatable, Sendable {
     public var completedCount: Int
+    public var acceptedReminderCount: Int
+    public var skippedCount: Int
+    public var snoozedCount: Int
+    public var completedWorkoutCount: Int
     public var totalRepetitions: Int
     public var activeSeconds: Int
     public var byExercise: [String: Int]
@@ -107,6 +111,13 @@ public struct ExerciseStatistics: Equatable, Sendable, Identifiable {
 public enum StatisticsService {
     public static func calculate(_ records: [ActivityRecord]) -> Statistics {
         let done = records.filter { $0.status == .completed }
+        let skipped = records.filter { $0.status == .skipped }.count
+        let snoozed = records.filter { $0.status == .snoozed }.count
+        let acceptedReminders = done.filter { $0.source == .hourly }.count
+        let completedWorkouts = Set(done.compactMap { record in
+            guard record.source == .quickWorkout || record.source == .customWorkout else { return nil }
+            return record.workoutID
+        }).count
         var reps = 0, seconds = 0, byExercise: [String: Int] = [:]
         for record in done {
             byExercise[record.exerciseID, default: 0] += record.amount
@@ -138,7 +149,7 @@ public enum StatisticsService {
             while days.contains(cursor) { length += 1; guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }; cursor = next }
             longest = max(longest, length)
         }
-        return .init(completedCount: done.count, totalRepetitions: reps, activeSeconds: seconds, byExercise: byExercise, activeDays: days.count, currentStreak: streak, bestDayCompletedCount: bestDay, longestStreak: longest)
+        return .init(completedCount: done.count, acceptedReminderCount: acceptedReminders, skippedCount: skipped, snoozedCount: snoozed, completedWorkoutCount: completedWorkouts, totalRepetitions: reps, activeSeconds: seconds, byExercise: byExercise, activeDays: days.count, currentStreak: streak, bestDayCompletedCount: bestDay, longestStreak: longest)
     }
 
     public static func calculate(_ records: [ActivityRecord], since start: Date, until end: Date = .now) -> Statistics {

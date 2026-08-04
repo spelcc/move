@@ -13,6 +13,7 @@ import MoveCore
     var reminderState = ReminderState()
     var movement = MovementPreferences()
     var activeWorkout: WorkoutTemplate?
+    private var recentExerciseIDs: [String] = []
     var workoutStepIndex = 0
     var workoutRound = 1
     var secondsRemaining = 0
@@ -82,7 +83,11 @@ import MoveCore
         try? context.save(); ReminderNotificationService.cancelPending(); scheduleNextReminder()
     }
 
-    func chooseNext() { currentExercise = selector.next(from: ExerciseLibrary.all, preferences: movement, recentExerciseIDs: []) ?? ExerciseLibrary.all[0]; persistSettings() }
+    func chooseNext() {
+        let next = selector.next(from: ExerciseLibrary.all, preferences: movement, recentExerciseIDs: recentExerciseIDs)
+        if let next { currentExercise = next; recentExerciseIDs.append(next.id); recentExerciseIDs = Array(recentExerciseIDs.suffix(6)) }
+        persistSettings()
+    }
     func completeCurrent(source: ActivitySource = .hourly) {
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .completed, source: source)))
         markReminderInteraction(); try? context.save(); isExpanded = false; chooseNext(); scheduleNextReminder()

@@ -94,7 +94,7 @@ struct WorkoutLibraryView: View {
 
     private func duplicate(_ entity: WorkoutTemplateEntity) {
         guard let template = entity.template else { return }
-        let copy = WorkoutTemplate(id: UUID(), name: "\(template.name) (copie)", rounds: template.rounds, steps: template.steps, mode: template.mode)
+        let copy = WorkoutTemplate(id: UUID(), name: "\(template.name) (copie)", description: template.description, emoji: template.emoji, rounds: template.rounds, preparationSeconds: template.preparationSeconds, roundRestSeconds: template.roundRestSeconds, finalRecoverySeconds: template.finalRecoverySeconds, steps: template.steps, mode: template.mode)
         modelContext.insert(WorkoutTemplateEntity(template: copy))
         try? modelContext.save()
     }
@@ -170,8 +170,13 @@ private struct WorkoutSummaryView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             Text(workout.name).font(.title.bold())
+            if !workout.description.isEmpty { Text(workout.description).foregroundStyle(.secondary) }
             Text("Résumé").font(.headline)
             HStack { Label("\(workout.estimatedDuration / 60) min", systemImage: "clock"); Spacer(); Label("\(workout.rounds) tours", systemImage: "repeat") }
+            if workout.preparationSeconds > 0 || workout.roundRestSeconds > 0 || workout.finalRecoverySeconds > 0 {
+                Text("Préparation \(workout.preparationSeconds)s • repos entre tours \(workout.roundRestSeconds)s • récupération finale \(workout.finalRecoverySeconds)s")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Text("\(workout.steps.count) mouvements").foregroundStyle(.secondary)
             List(workout.steps) { step in Text(stepName(step.exerciseID)) }
             HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Démarrer") { onStart(); dismiss() }.buttonStyle(.borderedProminent) }
@@ -185,7 +190,12 @@ private struct WorkoutEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Query private var customExercises: [CustomExerciseEntity]
     @State private var name = "Ma séance"
+    @State private var description = ""
+    @State private var emoji = "💪"
     @State private var rounds = 2
+    @State private var preparationSeconds = 0
+    @State private var roundRestSeconds = 0
+    @State private var finalRecoverySeconds = 0
     @State private var mode = WorkoutMode.interval
     @State private var steps: [WorkoutStep] = []
     @State private var search = ""
@@ -195,7 +205,16 @@ private struct WorkoutEditorView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Nouvelle séance").font(.title.bold())
             TextField("Nom", text: $name)
+            HStack {
+                TextField("Emoji", text: $emoji).frame(width: 80)
+                TextField("Description (optionnel)", text: $description)
+            }
             Stepper("Tours : \(rounds)", value: $rounds, in: 1...20)
+            Section("Temps globaux") {
+                Stepper("Préparation : \(preparationSeconds) s", value: $preparationSeconds, in: 0...900, step: 5)
+                Stepper("Repos entre les tours : \(roundRestSeconds) s", value: $roundRestSeconds, in: 0...900, step: 5)
+                Stepper("Récupération finale : \(finalRecoverySeconds) s", value: $finalRecoverySeconds, in: 0...900, step: 5)
+            }
             Picker("Mode", selection: $mode) {
                 Text("Intervalle").tag(WorkoutMode.interval)
                 Text("Répétitions").tag(WorkoutMode.repetitions)
@@ -247,7 +266,7 @@ private struct WorkoutEditorView: View {
         }.padding().frame(width: 520, height: 720)
     }
     private func save() {
-        let template = WorkoutTemplate(name: name.trimmingCharacters(in: .whitespacesAndNewlines), rounds: rounds, steps: steps, mode: mode)
+        let template = WorkoutTemplate(name: name.trimmingCharacters(in: .whitespacesAndNewlines), description: description.trimmingCharacters(in: .whitespacesAndNewlines), emoji: emoji, rounds: rounds, preparationSeconds: preparationSeconds, roundRestSeconds: roundRestSeconds, finalRecoverySeconds: finalRecoverySeconds, steps: steps, mode: mode)
         guard let error = template.validationError else {
             onSave(template); dismiss(); return
         }

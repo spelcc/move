@@ -92,16 +92,41 @@ public struct WorkoutStep: Identifiable, Codable, Hashable, Sendable {
 public struct WorkoutTemplate: Identifiable, Codable, Hashable, Sendable {
     public let id: UUID
     public var name: String
+    public var description: String
+    public var emoji: String
     public var rounds: Int
+    public var preparationSeconds: Int
+    public var roundRestSeconds: Int
+    public var finalRecoverySeconds: Int
     public var steps: [WorkoutStep]
     public var mode: WorkoutMode
-    public init(id: UUID = UUID(), name: String, rounds: Int, steps: [WorkoutStep], mode: WorkoutMode = .interval) { self.id = id; self.name = name; self.rounds = rounds; self.steps = steps; self.mode = mode }
-    public var estimatedDuration: Int { rounds * steps.reduce(0) { $0 + $1.workSeconds + $1.restSeconds } }
+    public init(id: UUID = UUID(), name: String, description: String = "", emoji: String = "💪", rounds: Int, preparationSeconds: Int = 0, roundRestSeconds: Int = 0, finalRecoverySeconds: Int = 0, steps: [WorkoutStep], mode: WorkoutMode = .interval) {
+        self.id = id; self.name = name; self.description = description; self.emoji = emoji; self.rounds = rounds
+        self.preparationSeconds = preparationSeconds; self.roundRestSeconds = roundRestSeconds; self.finalRecoverySeconds = finalRecoverySeconds
+        self.steps = steps; self.mode = mode
+    }
+    private enum CodingKeys: String, CodingKey { case id, name, description, emoji, rounds, preparationSeconds, roundRestSeconds, finalRecoverySeconds, steps, mode }
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(UUID.self, forKey: .id)
+        name = try values.decode(String.self, forKey: .name)
+        description = try values.decodeIfPresent(String.self, forKey: .description) ?? ""
+        emoji = try values.decodeIfPresent(String.self, forKey: .emoji) ?? "💪"
+        rounds = try values.decode(Int.self, forKey: .rounds)
+        preparationSeconds = try values.decodeIfPresent(Int.self, forKey: .preparationSeconds) ?? 0
+        roundRestSeconds = try values.decodeIfPresent(Int.self, forKey: .roundRestSeconds) ?? 0
+        finalRecoverySeconds = try values.decodeIfPresent(Int.self, forKey: .finalRecoverySeconds) ?? 0
+        steps = try values.decode([WorkoutStep].self, forKey: .steps)
+        mode = try values.decode(WorkoutMode.self, forKey: .mode)
+    }
+    public var estimatedDuration: Int {
+        max(0, preparationSeconds) + rounds * steps.reduce(0) { $0 + $1.workSeconds + $1.restSeconds } + max(0, roundRestSeconds) * max(0, rounds - 1) + max(0, finalRecoverySeconds)
+    }
     public var validationError: String? {
         if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return "Le nom est requis." }
         if rounds < 1 { return "La séance doit contenir au moins un tour." }
         if steps.isEmpty { return "Ajoute au moins un mouvement." }
-        if steps.contains(where: { $0.workSeconds < 0 || $0.restSeconds < 0 }) { return "Les durées ne peuvent pas être négatives." }
+        if steps.contains(where: { $0.workSeconds < 0 || $0.restSeconds < 0 }) || preparationSeconds < 0 || roundRestSeconds < 0 || finalRecoverySeconds < 0 { return "Les durées ne peuvent pas être négatives." }
         if mode == .interval && steps.allSatisfy({ $0.workSeconds == 0 }) { return "Le temps de travail doit être supérieur à zéro." }
         if estimatedDuration > 2 * 60 * 60 { return "La séance est trop longue." }
         return nil

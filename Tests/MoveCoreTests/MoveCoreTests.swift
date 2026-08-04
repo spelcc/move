@@ -103,6 +103,15 @@ import Testing
     #expect(workout.estimatedDuration == 120)
 }
 
+@Test func workoutGlobalRecoveryTimesAreIncluded() throws {
+    let workout = WorkoutTemplate(name: "Test", rounds: 2, preparationSeconds: 10, roundRestSeconds: 20, finalRecoverySeconds: 30, steps: [.init(exerciseID: "squats", workSeconds: 40, restSeconds: 20)])
+    #expect(workout.estimatedDuration == 180)
+    let data = try JSONEncoder().encode(workout)
+    let decoded = try JSONDecoder().decode(WorkoutTemplate.self, from: data)
+    #expect(decoded.description == "")
+    #expect(decoded.preparationSeconds == 10)
+}
+
 @Test func statisticsAggregateMetrics() {
     let records = [
         ActivityRecord(exerciseID: "pushups", amount: 10, metric: .repetitions, status: .completed, source: .hourly),

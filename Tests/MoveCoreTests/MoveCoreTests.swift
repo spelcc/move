@@ -15,6 +15,12 @@ import Testing
     #expect(Set(ExerciseLibrary.all.map(\.category)).count >= 5)
 }
 
+@Test func quickWorkoutPresetsCoverV1List() {
+    #expect(ExerciseLibrary.quickWorkouts.count >= 13)
+    #expect(ExerciseLibrary.quickWorkouts.contains { $0.name.contains("Mouvement libre") })
+    #expect(ExerciseLibrary.quickWorkouts.allSatisfy { $0.validationError == nil })
+}
+
 @Test func selectorAdaptsToRepeatedRefusals() {
     let easy = Exercise(id: "easy", name: "Facile", category: .strength, metric: .repetitions, defaultAmount: 8, emoji: "🙂")
     let hard = Exercise(id: "hard", name: "Difficile", category: .strength, metric: .repetitions, defaultAmount: 10, difficulty: 2, emoji: "💪")

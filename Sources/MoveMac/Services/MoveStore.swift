@@ -213,7 +213,10 @@ import MoveCore
     private func finishWorkoutStep(status: ActivityStatus) {
         guard let workout = activeWorkout else { return }
         let finishedStep = workout.steps[workoutStepIndex]
-        context.insert(ActivityEntity(record: .init(exerciseID: finishedStep.exerciseID, amount: finishedStep.workSeconds, metric: .seconds, status: status, source: .customWorkout, workoutID: workout.id)))
+        let exercise = exercise(withID: finishedStep.exerciseID)
+        let metric: ExerciseMetric = workout.mode == .repetitions ? .repetitions : (exercise?.metric == .minutes ? .minutes : .seconds)
+        let source: ActivitySource = workout.mode == .free ? .freeMovement : (ExerciseLibrary.quickWorkouts.contains(where: { $0.id == workout.id }) ? .quickWorkout : .customWorkout)
+        context.insert(ActivityEntity(record: .init(exerciseID: finishedStep.exerciseID, amount: finishedStep.workSeconds, metric: metric, status: status, source: source, workoutID: workout.id)))
         try? context.save()
         workoutStepIndex += 1
         if workoutStepIndex >= workout.steps.count { workoutStepIndex = 0; workoutRound += 1 }

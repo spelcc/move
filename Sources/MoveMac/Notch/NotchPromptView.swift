@@ -73,10 +73,10 @@ struct NotchPromptView: View {
 
     private var prompt: String {
         switch store.currentExercise.metric {
-        case .repetitions: "Fais \(store.currentExercise.defaultAmount) \(store.currentExercise.name.lowercased())"
-        case .seconds: "\(store.currentExercise.name) pendant \(store.currentExercise.defaultAmount) s"
-        case .minutes: "\(store.currentExercise.name) pendant \(store.currentExercise.defaultAmount) min"
-        case .free: store.currentExercise.name
+        case .repetitions: "\(store.currentExercise.defaultAmount) \(store.currentExercise.displayName.lowercased())"
+        case .seconds: "\(store.currentExercise.displayName) — \(store.currentExercise.defaultAmount) s"
+        case .minutes: "\(store.currentExercise.displayName) — \(store.currentExercise.defaultAmount) min"
+        case .free: store.currentExercise.displayName
         }
     }
 

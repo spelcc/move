@@ -49,7 +49,7 @@ private struct TodayView: View {
     }
 
     private func exerciseName(for id: String) -> String {
-        ExerciseLibrary.all.first(where: { $0.id == id })?.name ?? id
+        ExerciseLibrary.all.first(where: { $0.id == id })?.displayName ?? id
     }
 }
 private struct StatCard: View { let value: String; let label: String; var body: some View { VStack(alignment: .leading) { Text(value).font(.title.bold()); Text(label).foregroundStyle(.secondary) }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.quaternary, in: RoundedRectangle(cornerRadius: 18)) } }

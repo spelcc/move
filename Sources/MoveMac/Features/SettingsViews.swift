@@ -26,7 +26,7 @@ struct MovementSettingsView: View {
             Section("Intégrés") {
                 ForEach(filteredBuiltInExercises) { exercise in
             Toggle(isOn: Binding(get: { !store.movement.disabledExerciseIDs.contains(exercise.id) }, set: { enabled in if enabled { store.movement.disabledExerciseIDs.remove(exercise.id) } else { store.movement.disabledExerciseIDs.insert(exercise.id) } })) {
-                HStack { Text(exercise.emoji); VStack(alignment: .leading) { Text(exercise.name); Text(exercise.category.rawValue).font(.caption).foregroundStyle(.secondary) } }
+                HStack { Text(exercise.emoji); VStack(alignment: .leading) { Text(exercise.displayName); Text(exercise.category.rawValue).font(.caption).foregroundStyle(.secondary) } }
             }
                 }
             }
@@ -80,8 +80,8 @@ struct MovementSettingsView: View {
                 && (equipmentFilter == nil || $0.equipment.contains(equipmentFilter!))
                 && (difficultyFilter == nil || $0.difficulty == difficultyFilter)
                 && (!activeOnly || !store.movement.disabledExerciseIDs.contains($0.id))
-                && (search.isEmpty || $0.name.localizedStandardContains(search))
-        }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+                && (search.isEmpty || $0.displayName.localizedStandardContains(search))
+        }.sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
     }
     private var visibleCustomExercises: [CustomExerciseEntity] {
         customExercises.filter {
@@ -90,8 +90,8 @@ struct MovementSettingsView: View {
                 && (equipmentFilter == nil || $0.equipment.contains(equipmentFilter!))
                 && (difficultyFilter == nil || $0.exercise?.difficulty == difficultyFilter)
                 && (!activeOnly || !store.movement.disabledExerciseIDs.contains($0.id))
-                && (search.isEmpty || $0.name.localizedStandardContains(search))
-        }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+                && (search.isEmpty || $0.displayName.localizedStandardContains(search))
+        }.sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
     }
     private var allEquipment: [String] {
         Set((ExerciseLibrary.all.flatMap(\.equipment) + customExercises.flatMap(\.equipment))).sorted()
@@ -113,7 +113,7 @@ struct MovementSettingsView: View {
     }
     private func archive(_ exercise: CustomExerciseEntity) { exercise.archived = true; exercise.updatedAt = .now; try? modelContext.save() }
     private func duplicate(_ exercise: CustomExerciseEntity) {
-        modelContext.insert(CustomExerciseEntity(name: String(format: MoveCopy.text("workout.copyName"), exercise.name), emoji: exercise.emoji, category: ExerciseCategory(rawValue: exercise.categoryRaw) ?? .strength, metric: ExerciseMetric(rawValue: exercise.metricRaw) ?? .repetitions, defaultAmount: exercise.defaultAmount, instructions: exercise.instructions, equipment: exercise.equipment, tags: exercise.tags.subtracting(["personnalisé"]), muscleZones: exercise.muscleZones))
+        modelContext.insert(CustomExerciseEntity(name: String(format: MoveCopy.text("workout.copyName"), exercise.displayName), emoji: exercise.emoji, category: ExerciseCategory(rawValue: exercise.categoryRaw) ?? .strength, metric: ExerciseMetric(rawValue: exercise.metricRaw) ?? .repetitions, defaultAmount: exercise.defaultAmount, instructions: exercise.instructions, equipment: exercise.equipment, tags: exercise.tags.subtracting(["personnalisé"]), muscleZones: exercise.muscleZones))
         try? modelContext.save()
     }
 }

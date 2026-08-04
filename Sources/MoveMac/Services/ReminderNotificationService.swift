@@ -36,7 +36,7 @@ enum ReminderNotificationService {
     static func schedule(exercise: Exercise, at date: Date, sound: SoundMode = .normal) async throws {
         let content = UNMutableNotificationContent()
         content.title = MoveCopy.text("notification.title")
-        content.body = "\(exercise.emoji) \(exercise.name) — \(exercise.defaultAmount)"
+        content.body = "\(exercise.emoji) \(exercise.displayName) — \(exercise.defaultAmount)"
         content.categoryIdentifier = category
         content.userInfo = ["exerciseID": exercise.id, "soundEnabled": sound != .off]
         if sound != .off { content.sound = .default }

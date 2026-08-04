@@ -12,3 +12,14 @@
 "notch.action.skip" = "Not now";
 "notch.action.snooze" = "Snooze";
 "notch.action.change" = "Change";
+"nav.today" = "Today";
+"nav.history" = "History";
+"nav.progress" = "Progress";
+"nav.workouts" = "Workouts";
+"nav.movements" = "Movements";
+"nav.settings" = "Settings";
+"stats.movements" = "movements";
+"stats.repetitions" = "repetitions";
+"stats.activeMinutes" = "active minutes";
+"empty.activity.title" = "Nothing yet";
+"empty.activity.message" = "Your first movement is waiting patiently.";

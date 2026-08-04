@@ -12,3 +12,14 @@
 "notch.action.skip" = "La flemme";
 "notch.action.snooze" = "Reporter";
 "notch.action.change" = "Changer";
+"nav.today" = "Aujourd’hui";
+"nav.history" = "Historique";
+"nav.progress" = "Progression";
+"nav.workouts" = "Séances";
+"nav.movements" = "Mouvements";
+"nav.settings" = "Réglages";
+"stats.movements" = "mouvements";
+"stats.repetitions" = "répétitions";
+"stats.activeMinutes" = "actives";
+"empty.activity.title" = "Rien pour le moment";
+"empty.activity.message" = "Ton premier mouvement attend patiemment.";

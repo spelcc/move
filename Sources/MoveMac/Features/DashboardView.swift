@@ -8,12 +8,12 @@ struct DashboardView: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $store.selectedTab) {
-                Label("Aujourd’hui", systemImage: "figure.run").tag("Aujourd’hui")
-                Label("Historique", systemImage: "clock").tag("Historique")
-                Label("Progression", systemImage: "chart.bar").tag("Progression")
-                Label("Séances", systemImage: "timer").tag("Séances")
-                Label("Mouvements", systemImage: "list.bullet").tag("Mouvements")
-                Label("Réglages", systemImage: "gear").tag("Réglages")
+                Label(MoveCopy.text("nav.today"), systemImage: "figure.run").tag("Aujourd’hui")
+                Label(MoveCopy.text("nav.history"), systemImage: "clock").tag("Historique")
+                Label(MoveCopy.text("nav.progress"), systemImage: "chart.bar").tag("Progression")
+                Label(MoveCopy.text("nav.workouts"), systemImage: "timer").tag("Séances")
+                Label(MoveCopy.text("nav.movements"), systemImage: "list.bullet").tag("Mouvements")
+                Label(MoveCopy.text("nav.settings"), systemImage: "gear").tag("Réglages")
             }.navigationSplitViewColumnWidth(min: 180, ideal: 210)
         } detail: {
             switch store.selectedTab {
@@ -36,11 +36,11 @@ private struct TodayView: View {
         let todaysActivities = activities.filter { $0.performedAt >= today }
         let stats = StatisticsService.calculate(todaysActivities.map(\.record))
         ScrollView { VStack(alignment: .leading, spacing: 20) {
-            Text("Aujourd’hui").font(.largeTitle.bold())
-            HStack { StatCard(value: "\(stats.completedCount)", label: "mouvements"); StatCard(value: "\(stats.totalRepetitions)", label: "répétitions"); StatCard(value: "\(stats.activeSeconds / 60) min", label: "actives") }
-            Text("Historique").font(.title2.bold())
+            Text(MoveCopy.text("nav.today")).font(.largeTitle.bold())
+            HStack { StatCard(value: "\(stats.completedCount)", label: MoveCopy.text("stats.movements")); StatCard(value: "\(stats.totalRepetitions)", label: MoveCopy.text("stats.repetitions")); StatCard(value: "\(stats.activeSeconds / 60) min", label: MoveCopy.text("stats.activeMinutes")) }
+            Text(MoveCopy.text("nav.history")).font(.title2.bold())
             if todaysActivities.isEmpty {
-                ContentUnavailableView("Rien pour le moment", systemImage: "figure.walk", description: Text("Ton premier mouvement attend patiemment."))
+                ContentUnavailableView(MoveCopy.text("empty.activity.title"), systemImage: "figure.walk", description: Text(MoveCopy.text("empty.activity.message")))
             } else {
                 ForEach(todaysActivities.prefix(20)) { item in HStack { Text(item.statusRaw == "completed" ? "✓" : "–"); Text(exerciseName(for: item.exerciseID)); Spacer(); Text(item.performedAt, style: .time).foregroundStyle(.secondary) }.padding(.vertical, 4) }
             }

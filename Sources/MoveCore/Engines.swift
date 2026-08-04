@@ -53,6 +53,7 @@ public struct ExerciseSelector: Sendable {
 public struct ReminderScheduler: Sendable {
     public init() {}
     public func nextDate(after date: Date, preferences: ReminderPreferences, calendar: Calendar = .current) -> Date? {
+        guard preferences.enabled else { return nil }
         guard preferences.intervalMinutes >= 15, preferences.intervalMinutes <= 180,
               preferences.activeStartHour < preferences.activeEndHour else { return nil }
         for offset in 1...(8 * 24 * 60) {

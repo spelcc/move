@@ -150,6 +150,12 @@ import Testing
     #expect(ReminderScheduler().nextDate(after: .now, preferences: preferences) == nil)
 }
 
+@Test func disabledSchedulerProducesNoReminder() {
+    var preferences = ReminderPreferences()
+    preferences.enabled = false
+    #expect(ReminderScheduler().nextDate(after: .now, preferences: preferences) == nil)
+}
+
 @Test func pausedSchedulerReturnsPauseBoundary() {
     let now = Date(timeIntervalSince1970: 1000)
     let pause = now.addingTimeInterval(3600)

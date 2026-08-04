@@ -27,6 +27,7 @@
 "settings.launchAtLogin" = "Launch Move at login";
 "settings.activeDays" = "Active days";
 "settings.reminders" = "Reminders";
+"settings.remindersEnabled" = "Enable reminders";
 "settings.fullScreen" = "Show during full-screen apps";
 "settings.meetings" = "Show during meetings";
 "settings.constraints" = "Constraints";

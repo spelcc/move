@@ -189,7 +189,9 @@ struct SettingsView: View {
                 }
             }
             Section(MoveCopy.text("settings.reminders")) {
+                Toggle(MoveCopy.text("settings.remindersEnabled"), isOn: $store.reminder.enabled)
                 Stepper("Toutes les \(store.reminder.intervalMinutes) minutes", value: $store.reminder.intervalMinutes, in: 15...180, step: 15)
+                Stepper("Snooze par défaut : \(store.reminder.snoozeMinutes) min", value: $store.reminder.snoozeMinutes, in: 15...60, step: 15)
                 Stepper("Début à \(store.reminder.activeStartHour) h", value: $store.reminder.activeStartHour, in: 0...23)
                 Stepper("Fin à \(store.reminder.activeEndHour) h", value: $store.reminder.activeEndHour, in: 1...24)
                 Toggle(MoveCopy.text("settings.fullScreen"), isOn: $store.reminder.notificationsDuringFullScreen)

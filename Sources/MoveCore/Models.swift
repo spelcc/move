@@ -51,6 +51,7 @@ public struct MovementPreferences: Codable, Equatable, Sendable {
 }
 
 public struct ReminderPreferences: Codable, Equatable, Sendable {
+    public var enabled = true
     public var intervalMinutes = 60
     public var activeStartHour = 9
     public var activeEndHour = 19
@@ -59,6 +60,18 @@ public struct ReminderPreferences: Codable, Equatable, Sendable {
     public var notificationsDuringFullScreen = false
     public var notificationsDuringMeetings = false
     public init() {}
+    private enum CodingKeys: String, CodingKey { case enabled, intervalMinutes, activeStartHour, activeEndHour, enabledWeekdays, snoozeMinutes, notificationsDuringFullScreen, notificationsDuringMeetings }
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        enabled = try values.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
+        intervalMinutes = try values.decodeIfPresent(Int.self, forKey: .intervalMinutes) ?? 60
+        activeStartHour = try values.decodeIfPresent(Int.self, forKey: .activeStartHour) ?? 9
+        activeEndHour = try values.decodeIfPresent(Int.self, forKey: .activeEndHour) ?? 19
+        enabledWeekdays = try values.decodeIfPresent(Set<Int>.self, forKey: .enabledWeekdays) ?? [2, 3, 4, 5, 6]
+        snoozeMinutes = try values.decodeIfPresent(Int.self, forKey: .snoozeMinutes) ?? 15
+        notificationsDuringFullScreen = try values.decodeIfPresent(Bool.self, forKey: .notificationsDuringFullScreen) ?? false
+        notificationsDuringMeetings = try values.decodeIfPresent(Bool.self, forKey: .notificationsDuringMeetings) ?? false
+    }
 }
 
 public struct AppearancePreferences: Codable, Equatable, Sendable {

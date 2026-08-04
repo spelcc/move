@@ -54,7 +54,12 @@ struct NotchPromptView: View {
                     Button(MoveCopy.text("notch.action.skip")) { skip() }.buttonStyle(.bordered).tint(.white)
                 }
                 HStack(spacing: 18) {
-                    Button(MoveCopy.text("notch.action.snooze")) { snooze() }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
+                    Menu(MoveCopy.text("notch.action.snooze")) {
+                        Button("15 minutes") { snooze(for: 15) }
+                        Button("30 minutes") { snooze(for: 30) }
+                    }
+                    .menuStyle(.borderlessButton)
+                    .foregroundStyle(.white.opacity(0.75))
                     Button(MoveCopy.text("notch.action.change")) { store.chooseNext(); onResize(460, 214) }.keyboardShortcut("c", modifiers: [.command]).buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
                 }
             }
@@ -80,7 +85,7 @@ struct NotchPromptView: View {
 
     private func complete() { store.completeCurrent(); show(.success) }
     private func skip() { store.skipCurrent(); show(.skipped) }
-    private func snooze() { store.snoozeCurrent(for: store.reminder.snoozeMinutes); show(.snoozed) }
+    private func snooze(for minutes: Int) { store.snoozeCurrent(for: minutes); show(.snoozed) }
 
     private func show(_ value: Reaction) {
         reaction = value

@@ -39,7 +39,11 @@ private struct TodayView: View {
             Text("Aujourd’hui").font(.largeTitle.bold())
             HStack { StatCard(value: "\(stats.completedCount)", label: "mouvements"); StatCard(value: "\(stats.totalRepetitions)", label: "répétitions"); StatCard(value: "\(stats.activeSeconds / 60) min", label: "actives") }
             Text("Historique").font(.title2.bold())
-            ForEach(activities.prefix(20)) { item in HStack { Text(item.statusRaw == "completed" ? "✓" : "–"); Text(item.exerciseID); Spacer(); Text(item.performedAt, style: .time).foregroundStyle(.secondary) }.padding(.vertical, 4) }
+            if todaysActivities.isEmpty {
+                ContentUnavailableView("Rien pour le moment", systemImage: "figure.walk", description: Text("Ton premier mouvement attend patiemment."))
+            } else {
+                ForEach(activities.prefix(20)) { item in HStack { Text(item.statusRaw == "completed" ? "✓" : "–"); Text(item.exerciseID); Spacer(); Text(item.performedAt, style: .time).foregroundStyle(.secondary) }.padding(.vertical, 4) }
+            }
         }.padding(28) }
     }
 }

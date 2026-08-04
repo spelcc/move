@@ -12,6 +12,9 @@ struct HistoryView: View {
     @State private var exportingCSV = false
     @State private var importing = false
     @State private var importError: String?
+    @State private var pendingImport: [ActivityRecord] = []
+    @State private var importSummary = ""
+    @State private var showingImportConfirmation = false
     @State private var search = ""
     @State private var period = HistoryPeriod.all
 
@@ -64,6 +67,10 @@ struct HistoryView: View {
             importJSON(result)
         }
         .alert("Import impossible", isPresented: Binding(get: { importError != nil }, set: { if !$0 { importError = nil } })) { Button("OK") { importError = nil } } message: { Text(importError ?? "") }
+        .alert("Confirmer l’import", isPresented: $showingImportConfirmation) {
+            Button("Annuler", role: .cancel) { pendingImport.removeAll() }
+            Button("Importer") { applyPendingImport() }
+        } message: { Text(importSummary) }
     }
 
     private var jsonData: Data { (try? DataTransferService.exportJSON(activities.map(\.record))) ?? Data() }
@@ -100,10 +107,17 @@ struct HistoryView: View {
         do {
             guard let url = try result.get().first else { return }
             let data = try Data(contentsOf: url)
-            let records = try DataTransferService.importJSON(data, existing: activities.map(\.record))
-            records.forEach { modelContext.insert(ActivityEntity(record: $0)) }
-            try modelContext.save()
+            let preview = try DataTransferService.previewImport(data, existing: activities.map(\.record))
+            pendingImport = preview.records
+            importSummary = "(preview.summary.newRecords) nouvelle(s) activité(s) seront ajoutée(s). (preview.summary.duplicateRecords) doublon(s) seront ignoré(s)."
+            showingImportConfirmation = true
         } catch { importError = error.localizedDescription }
+    }
+
+    private func applyPendingImport() {
+        pendingImport.forEach { modelContext.insert(ActivityEntity(record: $0)) }
+        do { try modelContext.save() } catch { importError = error.localizedDescription }
+        pendingImport.removeAll()
     }
 }
 

@@ -88,6 +88,7 @@ struct OnboardingView: View {
             }
             onTestNotch()
             completed = true
+            NotificationCenter.default.post(name: .moveOnboardingCompleted, object: nil)
         }
     }
 }

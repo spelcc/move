@@ -30,7 +30,11 @@ import MoveCore
         }
         _persistenceError = State(initialValue: persistenceIssue)
         self.container = container
-        _store = State(initialValue: MoveStore(context: container.mainContext))
+        let store = MoveStore(context: container.mainContext)
+        _store = State(initialValue: store)
+        DispatchQueue.main.async {
+            OnboardingWindowController.shared.showIfNeeded(store: store, container: container)
+        }
     }
     var body: some Scene {
         MenuBarExtra("Move", systemImage: "figure.run") {

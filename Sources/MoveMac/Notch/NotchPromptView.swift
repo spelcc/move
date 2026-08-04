@@ -7,9 +7,9 @@ struct NotchPromptView: View {
     var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 10) {
-                Text(store.currentExercise.emoji).font(.system(size: 28))
+                Text(store.currentExercise.emoji).font(.system(size: 28)).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(prompt).font(.headline).foregroundStyle(.white)
+                    Text(prompt).font(.headline).foregroundStyle(.white).accessibilityAddTraits(.isHeader)
                     Text("Ton squelette a encore déposé une réclamation.").font(.caption).foregroundStyle(.white.opacity(0.65))
                 }
                 Spacer()
@@ -18,7 +18,7 @@ struct NotchPromptView: View {
                 Button("C’est fait") { store.completeCurrent() }.buttonStyle(.borderedProminent).tint(.white).foregroundStyle(.black)
                 Button("La flemme") { store.skipCurrent() }.buttonStyle(.bordered).tint(.white)
                 Button("Reporter") { store.snoozeCurrent(for: store.reminder.snoozeMinutes) }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
-                Button("Changer") { store.chooseNext() }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
+                Button("Changer") { store.chooseNext() }.keyboardShortcut("c", modifiers: [.command]).buttonStyle(.plain).foregroundStyle(.white.opacity(0.75))
             }
         }
         .padding(16)

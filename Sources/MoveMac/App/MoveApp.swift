@@ -45,6 +45,12 @@ import MoveCore
         Window("Move", id: "dashboard") { DashboardView(store: store).modelContainer(container) }
         Window("Bienvenue dans Move", id: "onboarding") { OnboardingView() }
         Settings { SettingsView(store: store).frame(width: 520, height: 420) }
+            .commands {
+                CommandMenu("Move") {
+                    Button("Bouger maintenant") { showNotch() }.keyboardShortcut("b", modifiers: [.command, .option])
+                    Button("Ouvrir Move") { NSApp.activate(ignoringOtherApps: true) }.keyboardShortcut("m", modifiers: [.command, .option])
+                }
+            }
     }
     private func showNotch() {
         let controller = NotchPanelController(rootView: NotchPromptView(store: store).modelContainer(container))

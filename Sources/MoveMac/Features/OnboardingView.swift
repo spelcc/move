@@ -8,7 +8,7 @@ struct OnboardingView: View {
     @State private var step = 0
     @State private var interval = 60
     @State private var notificationsEnabled = false
-    @State private var launchAtLogin = LaunchAtLoginService.isEnabled
+    @State private var launchAtLogin = false
     @State private var launchError: String?
     let onTestNotch: () -> Void
 
@@ -49,7 +49,9 @@ struct OnboardingView: View {
                     if step < pages.count - 1 { step += 1 } else { finish() }
                 }.buttonStyle(.borderedProminent)
             }
-        }.padding(36).frame(width: 460, height: 380)
+        }
+        .onAppear { launchAtLogin = LaunchAtLoginService.isEnabled }
+        .padding(36).frame(width: 460, height: 380)
     }
 
     private func setLaunchAtLogin(_ enabled: Bool) {

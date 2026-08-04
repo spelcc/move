@@ -63,7 +63,11 @@ import MoveCore
               let state = WorkoutRunnerState(rawValue: saved.stateRaw), state != .completed, state != .cancelled else { return }
         activeWorkout = workout; workoutStepIndex = min(saved.stepIndex, max(0, workout.steps.count - 1)); workoutRound = max(1, saved.round)
         secondsRemaining = max(0, saved.secondsRemaining); workoutState = state
-        if workoutState != .paused { beginStep() }
+        if workoutState != .paused {
+            timer?.invalidate()
+            timer = .scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in Task { @MainActor in self?.tick() } }
+            saveWorkoutProgress()
+        }
     }
     func beginStep() {
         guard let workout = activeWorkout else { return }

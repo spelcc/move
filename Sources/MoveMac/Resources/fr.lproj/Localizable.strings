@@ -193,3 +193,12 @@
 "history.round" = "Tour %d";
 "onboarding.notificationsDisabled" = "Les notifications sont désactivées. Tu peux les autoriser dans Réglages Système pour recevoir les rappels.";
 "settings.launchError" = "Lancement automatique indisponible : %@";
+"exercise.noneActive" = "Aucun mouvement actif";
+"exercise.noneActiveMessage" = "Réactive un mouvement ou retire une contrainte.";
+"exercise.enableAll" = "Réactiver tous les mouvements";
+"exercise.defaultAmount" = "Quantité par défaut : %d";
+"exercise.instructions" = "Consigne";
+"settings.interval" = "Toutes les %d minutes";
+"settings.snoozeDefault" = "Snooze par défaut : %d min";
+"settings.startHour" = "Début à %d h";
+"settings.endHour" = "Fin à %d h";

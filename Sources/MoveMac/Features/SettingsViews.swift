@@ -14,8 +14,8 @@ struct MovementSettingsView: View {
         List {
             if store.noCompatibleExercises {
                 Section {
-                    ContentUnavailableView("Aucun mouvement actif", systemImage: "exclamationmark.triangle", description: Text("Réactive un mouvement ou retire une contrainte."))
-                    Button("Réactiver tous les mouvements") { store.enableAllExercises() }
+                    ContentUnavailableView(MoveCopy.text("exercise.noneActive"), systemImage: "exclamationmark.triangle", description: Text(MoveCopy.text("exercise.noneActiveMessage")))
+                    Button(MoveCopy.text("exercise.enableAll")) { store.enableAllExercises() }
                         .buttonStyle(.borderedProminent)
                 }
             }
@@ -81,7 +81,7 @@ private struct NewExerciseView: View {
             TextField(MoveCopy.text("exercise.emoji"), text: $emoji)
             Picker(MoveCopy.text("exercise.category"), selection: $category) { ForEach(ExerciseCategory.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
             Picker(MoveCopy.text("exercise.metric"), selection: $metric) { Text(MoveCopy.text("exercise.repetitions")).tag(ExerciseMetric.repetitions); Text(MoveCopy.text("exercise.seconds")).tag(ExerciseMetric.seconds); Text(MoveCopy.text("exercise.minutes")).tag(ExerciseMetric.minutes); Text(MoveCopy.text("exercise.free")).tag(ExerciseMetric.free) }
-            Stepper("Quantité par défaut : \(amount)", value: $amount, in: 1...999)
+            Stepper(String(format: MoveCopy.text("exercise.defaultAmount"), amount), value: $amount, in: 1...999)
             Section("Matériel") {
                 Toggle("Chaise", isOn: setBinding("chair", in: $equipment))
                 Toggle("Barre de traction", isOn: setBinding("pullup-bar", in: $equipment))
@@ -121,7 +121,7 @@ private struct EditExerciseView: View {
         Form {
             TextField("Nom", text: $exercise.name)
             TextField("Emoji", text: $exercise.emoji)
-            Stepper("Quantité par défaut : \(exercise.defaultAmount)", value: $exercise.defaultAmount, in: 1...999)
+            Stepper(String(format: MoveCopy.text("exercise.defaultAmount"), exercise.defaultAmount), value: $exercise.defaultAmount, in: 1...999)
             Section("Contraintes") {
                 Toggle("Au sol", isOn: tagBinding("floor"))
                 Toggle("Avec sauts", isOn: tagBinding("jump"))
@@ -136,8 +136,8 @@ private struct EditExerciseView: View {
                 Toggle("Bras", isOn: zoneBinding("arms"))
                 Toggle("Centre du corps", isOn: zoneBinding("core"))
             }
-            TextField("Consigne", text: $exercise.instructions, axis: .vertical)
-            Button("Terminer") { exercise.updatedAt = .now; dismiss() }.buttonStyle(.borderedProminent)
+            TextField(MoveCopy.text("exercise.instructions"), text: $exercise.instructions, axis: .vertical)
+            Button(MoveCopy.text("common.done")) { exercise.updatedAt = .now; dismiss() }.buttonStyle(.borderedProminent)
         }.padding().frame(width: 380, height: 430)
     }
 
@@ -197,10 +197,10 @@ struct SettingsView: View {
             }
             Section(MoveCopy.text("settings.reminders")) {
                 Toggle(MoveCopy.text("settings.remindersEnabled"), isOn: $store.reminder.enabled)
-                Stepper("Toutes les \(store.reminder.intervalMinutes) minutes", value: $store.reminder.intervalMinutes, in: 15...180, step: 15)
-                Stepper("Snooze par défaut : \(store.reminder.snoozeMinutes) min", value: $store.reminder.snoozeMinutes, in: 15...60, step: 15)
-                Stepper("Début à \(store.reminder.activeStartHour) h", value: $store.reminder.activeStartHour, in: 0...23)
-                Stepper("Fin à \(store.reminder.activeEndHour) h", value: $store.reminder.activeEndHour, in: 1...24)
+                Stepper(String(format: MoveCopy.text("settings.interval"), store.reminder.intervalMinutes), value: $store.reminder.intervalMinutes, in: 15...180, step: 15)
+                Stepper(String(format: MoveCopy.text("settings.snoozeDefault"), store.reminder.snoozeMinutes), value: $store.reminder.snoozeMinutes, in: 15...60, step: 15)
+                Stepper(String(format: MoveCopy.text("settings.startHour"), store.reminder.activeStartHour), value: $store.reminder.activeStartHour, in: 0...23)
+                Stepper(String(format: MoveCopy.text("settings.endHour"), store.reminder.activeEndHour), value: $store.reminder.activeEndHour, in: 1...24)
                 Toggle(MoveCopy.text("settings.fullScreen"), isOn: $store.reminder.notificationsDuringFullScreen)
                 Toggle(MoveCopy.text("settings.meetings"), isOn: $store.reminder.notificationsDuringMeetings)
             }

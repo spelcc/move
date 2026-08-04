@@ -193,3 +193,12 @@
 "history.round" = "Round %d";
 "onboarding.notificationsDisabled" = "Notifications are disabled. You can enable them in System Settings to receive reminders.";
 "settings.launchError" = "Launch at login unavailable: %@";
+"exercise.noneActive" = "No active movements";
+"exercise.noneActiveMessage" = "Re-enable a movement or remove a constraint.";
+"exercise.enableAll" = "Re-enable all movements";
+"exercise.defaultAmount" = "Default amount: %d";
+"exercise.instructions" = "Instructions";
+"settings.interval" = "Every %d minutes";
+"settings.snoozeDefault" = "Default snooze: %d min";
+"settings.startHour" = "Start at %d h";
+"settings.endHour" = "End at %d h";

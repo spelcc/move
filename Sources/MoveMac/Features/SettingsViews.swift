@@ -119,8 +119,19 @@ private struct EditExerciseView: View {
     @Bindable var exercise: CustomExerciseEntity
     var body: some View {
         Form {
-            TextField("Nom", text: $exercise.name)
-            TextField("Emoji", text: $exercise.emoji)
+            TextField(MoveCopy.text("exercise.name"), text: $exercise.name)
+            TextField(MoveCopy.text("exercise.emoji"), text: $exercise.emoji)
+            Picker(MoveCopy.text("exercise.category"), selection: $exercise.categoryRaw) {
+                ForEach(ExerciseCategory.allCases, id: \.rawValue) { category in
+                    Text(category.rawValue.capitalized).tag(category.rawValue)
+                }
+            }
+            Picker(MoveCopy.text("exercise.metric"), selection: $exercise.metricRaw) {
+                Text(MoveCopy.text("exercise.repetitions")).tag(ExerciseMetric.repetitions.rawValue)
+                Text(MoveCopy.text("exercise.seconds")).tag(ExerciseMetric.seconds.rawValue)
+                Text(MoveCopy.text("exercise.minutes")).tag(ExerciseMetric.minutes.rawValue)
+                Text(MoveCopy.text("exercise.free")).tag(ExerciseMetric.free.rawValue)
+            }
             Stepper(String(format: MoveCopy.text("exercise.defaultAmount"), exercise.defaultAmount), value: $exercise.defaultAmount, in: 1...999)
             Section("Contraintes") {
                 Toggle("Au sol", isOn: tagBinding("floor"))
@@ -138,7 +149,7 @@ private struct EditExerciseView: View {
             }
             TextField(MoveCopy.text("exercise.instructions"), text: $exercise.instructions, axis: .vertical)
             Button(MoveCopy.text("common.done")) { exercise.updatedAt = .now; dismiss() }.buttonStyle(.borderedProminent)
-        }.padding().frame(width: 380, height: 430)
+        }.padding().frame(width: 380, height: 500)
     }
 
     private func tagBinding(_ tag: String) -> Binding<Bool> {

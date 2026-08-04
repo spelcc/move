@@ -56,6 +56,8 @@ public struct ReminderPreferences: Codable, Equatable, Sendable {
     public var activeEndHour = 19
     public var enabledWeekdays: Set<Int> = [2, 3, 4, 5, 6]
     public var snoozeMinutes = 15
+    public var notificationsDuringFullScreen = false
+    public var notificationsDuringMeetings = false
     public init() {}
 }
 

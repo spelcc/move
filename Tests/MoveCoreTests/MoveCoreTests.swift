@@ -37,6 +37,14 @@ import Testing
     #expect(adapted.defaultAmount == 8)
 }
 
+@Test func selectorAdaptsToRepeatedEasyCompletions() {
+    let standard = Exercise(id: "standard", name: "Standard", category: .strength, metric: .repetitions, defaultAmount: 8, emoji: "💪", harderVariantID: "harder")
+    let harder = Exercise(id: "harder", name: "Plus difficile", category: .strength, metric: .repetitions, defaultAmount: 10, emoji: "🔥")
+    let adapted = ExerciseSelector().adapted(standard, from: [standard, harder], refusals: 0, easyCompletions: 3)
+    #expect(adapted.id == "harder")
+    #expect(adapted.defaultAmount == 12)
+}
+
 @Test func statisticsCanBeLimitedToPeriod() {
     let now = Date()
     let recent = ActivityRecord(exerciseID: "squats", performedAt: now, amount: 10, metric: .repetitions, status: .completed, source: .manual)

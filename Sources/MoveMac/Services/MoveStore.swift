@@ -81,7 +81,7 @@ import MoveCore
         try? context.save()
         ReminderNotificationService.cancelPending()
         Task {
-            do { try await ReminderNotificationService.schedule(exercise: currentExercise, at: next); MoveLogger.notifications.debug("Reminder scheduled") }
+            do { try await ReminderNotificationService.schedule(exercise: currentExercise, at: next, sound: appearance.sounds); MoveLogger.notifications.debug("Reminder scheduled") }
             catch { MoveLogger.notifications.error("Reminder scheduling failed: \(String(describing: error), privacy: .public)") }
         }
     }

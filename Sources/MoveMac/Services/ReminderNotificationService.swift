@@ -14,12 +14,13 @@ enum ReminderNotificationService {
         ])
     }
 
-    static func schedule(exercise: Exercise, at date: Date) async throws {
+    static func schedule(exercise: Exercise, at date: Date, sound: SoundMode = .normal) async throws {
         let content = UNMutableNotificationContent()
         content.title = "Move"
-        content.body = "(exercise.emoji) (exercise.name) — (exercise.defaultAmount)"
+        content.body = "\(exercise.emoji) \(exercise.name) — \(exercise.defaultAmount)"
         content.categoryIdentifier = category
-        content.userInfo = ["exerciseID": exercise.id]
+        content.userInfo = ["exerciseID": exercise.id, "soundEnabled": sound != .off]
+        if sound != .off { content.sound = .default }
         let interval = max(1, date.timeIntervalSinceNow)
         let request = UNNotificationRequest(identifier: "move-reminder-\(exercise.id)-\(date.timeIntervalSince1970)", content: content,
                                              trigger: UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false))
@@ -33,7 +34,7 @@ enum ReminderNotificationService {
 
 final class MoveNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        [.banner, .sound]
+        notification.request.content.userInfo["soundEnabled"] as? Bool == true ? [.banner, .sound] : [.banner]
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {

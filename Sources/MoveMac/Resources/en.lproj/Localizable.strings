@@ -81,3 +81,17 @@
 "status.snoozed" = "Snoozed";
 "empty.history.title" = "Nothing yet";
 "empty.history.message" = "Your first movement is waiting patiently.";
+"runner.next" = "Next";
+"runner.pause" = "Pause";
+"runner.resume" = "Resume";
+"runner.previous" = "Previous";
+"runner.done" = "Done";
+"runner.nextAction" = "Next";
+"runner.addMovement" = "Add movement";
+"runner.skipRest" = "Skip rest";
+"runner.skip" = "Skip";
+"runner.stop" = "Stop";
+"runner.preparing" = "Preparing";
+"runner.rest" = "Rest";
+"runner.finalRecovery" = "Final recovery";
+"runner.roundRest" = "Rest between rounds";

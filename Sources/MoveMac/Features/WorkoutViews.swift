@@ -298,11 +298,11 @@ private struct WorkoutRunnerView: View {
                 .tint(.white)
                 .frame(maxWidth: 360)
             Text(phaseTitle).font(.largeTitle.bold())
-            Text(store.workoutState == .working ? "Suivant : \(nextExerciseName)" : "").foregroundStyle(.secondary)
+            Text(store.workoutState == .working ? "\(MoveCopy.text("runner.next")) : \(nextExerciseName)" : "").foregroundStyle(.secondary)
             Text(workout.mode == .repetitions ? "\(store.secondsRemaining) reps" : "\(store.secondsRemaining)")
                 .font(.system(size: 80, weight: .black, design: .rounded)).contentTransition(.numericText())
             HStack {
-                Button(store.workoutState == .paused ? "Reprendre" : "Pause") { store.togglePause() }
+                Button(store.workoutState == .paused ? MoveCopy.text("runner.resume") : MoveCopy.text("runner.pause")) { store.togglePause() }
                     .keyboardShortcut(.space, modifiers: [])
                     .accessibilityLabel(store.workoutState == .paused ? "Reprendre la séance" : "Mettre la séance en pause")
                 if workout.mode != .repetitions {
@@ -311,20 +311,20 @@ private struct WorkoutRunnerView: View {
                     Button("+10 s") { store.addTenSeconds() }
                         .accessibilityLabel("Ajouter dix secondes")
                 }
-                Button("Précédent") { store.previousWorkoutStep() }
+                Button(MoveCopy.text("runner.previous")) { store.previousWorkoutStep() }
                     .keyboardShortcut(.leftArrow, modifiers: [])
-                Button(workout.mode == .repetitions ? "Fait" : "Suivant") { store.advanceWorkout() }
+                Button(workout.mode == .repetitions ? MoveCopy.text("runner.done") : MoveCopy.text("runner.nextAction")) { store.advanceWorkout() }
                     .keyboardShortcut(.rightArrow, modifiers: [])
                 if workout.mode == .free {
-                    Button("Ajouter mouvement") { store.recordFreeMovement() }
+                    Button(MoveCopy.text("runner.addMovement")) { store.recordFreeMovement() }
                         .accessibilityLabel("Enregistrer un mouvement libre")
                 }
                 if store.workoutState == .resting {
-                    Button("Passer le repos") { store.advanceWorkout() }
+                    Button(MoveCopy.text("runner.skipRest")) { store.advanceWorkout() }
                 }
-                Button("Passer") { store.skipWorkoutStep() }
+                Button(MoveCopy.text("runner.skip")) { store.skipWorkoutStep() }
                     .accessibilityLabel("Passer cet exercice")
-                Button("Arrêter") { store.cancelWorkout() }
+                Button(MoveCopy.text("runner.stop")) { store.cancelWorkout() }
                     .keyboardShortcut(.escape, modifiers: [])
                     .accessibilityLabel("Arrêter la séance")
             }
@@ -335,9 +335,9 @@ private struct WorkoutRunnerView: View {
     }
     private var phaseTitle: String {
         switch store.workoutState {
-        case .preparing: "Préparation"
-        case .resting: "Repos"
-        case .roundRest: store.finalRecoveryActive ? "Récupération finale" : "Repos entre les tours"
+        case .preparing: MoveCopy.text("runner.preparing")
+        case .resting: MoveCopy.text("runner.rest")
+        case .roundRest: store.finalRecoveryActive ? MoveCopy.text("runner.finalRecovery") : MoveCopy.text("runner.roundRest")
         default: exerciseName
         }
     }

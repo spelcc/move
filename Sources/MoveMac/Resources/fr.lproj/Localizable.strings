@@ -81,3 +81,17 @@
 "status.snoozed" = "Reportées";
 "empty.history.title" = "Rien pour le moment";
 "empty.history.message" = "Ton premier mouvement attend patiemment.";
+"runner.next" = "Suivant";
+"runner.pause" = "Pause";
+"runner.resume" = "Reprendre";
+"runner.previous" = "Précédent";
+"runner.done" = "Fait";
+"runner.nextAction" = "Suivant";
+"runner.addMovement" = "Ajouter mouvement";
+"runner.skipRest" = "Passer le repos";
+"runner.skip" = "Passer";
+"runner.stop" = "Arrêter";
+"runner.preparing" = "Préparation";
+"runner.rest" = "Repos";
+"runner.finalRecovery" = "Récupération finale";
+"runner.roundRest" = "Repos entre les tours";

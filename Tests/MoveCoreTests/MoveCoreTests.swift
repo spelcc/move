@@ -149,3 +149,32 @@ import Testing
     #expect(next! > now.addingTimeInterval(60))
     #expect(next! < now.addingTimeInterval(2 * 60 * 60))
 }
+
+@Test func schedulerSkipsDisabledDaysAndInactiveHours() {
+    let calendar = Calendar(identifier: .gregorian)
+    let sunday = calendar.date(from: DateComponents(year: 2026, month: 8, day: 2, hour: 18, minute: 30))!
+    var preferences = ReminderPreferences()
+    preferences.intervalMinutes = 30
+    preferences.activeStartHour = 9
+    preferences.activeEndHour = 17
+    preferences.enabledWeekdays = [2] // Monday only
+
+    let next = ReminderScheduler().nextDate(after: sunday, preferences: preferences, calendar: calendar)
+
+    #expect(next == calendar.date(from: DateComponents(year: 2026, month: 8, day: 3, hour: 9, minute: 0)))
+}
+
+@Test func wakeSchedulerClampsDelayToSafeWindow() {
+    let calendar = Calendar(identifier: .gregorian)
+    let now = calendar.date(from: DateComponents(year: 2026, month: 8, day: 3, hour: 11))!
+    var preferences = ReminderPreferences()
+    preferences.intervalMinutes = 15
+    preferences.activeStartHour = 9
+    preferences.activeEndHour = 19
+    preferences.enabledWeekdays = [2, 3, 4, 5, 6]
+
+    let next = ReminderScheduler().nextDateAfterWake(now: now, preferences: preferences, state: .init(), wakeDelay: 300, calendar: calendar)
+
+    #expect(next != nil)
+    #expect(next! >= now.addingTimeInterval(90 + 15 * 60))
+}

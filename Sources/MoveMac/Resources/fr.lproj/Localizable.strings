@@ -173,3 +173,10 @@
 "menu.enableLaunch" = "Lancer Move à la connexion";
 "menu.settings" = "Ouvrir Move";
 "menu.quit" = "Quitter";
+"common.done" = "Terminer";
+"common.start" = "Démarrer";
+"common.search" = "Rechercher";
+"common.save" = "Sauvegarder";
+"workouts.new" = "Nouvelle séance";
+"workouts.editTitle" = "Modifier la séance";
+"workouts.steps" = "Mouvements de la séance";

@@ -137,7 +137,7 @@ private struct WorkoutRenameView: View {
             TextField("Nom", text: $entity.name)
             HStack {
                 Spacer()
-                Button("Annuler") { dismiss() }
+                Button(MoveCopy.text("common.cancel")) { dismiss() }
                 Button("Enregistrer") {
                     entity.name = entity.name.trimmingCharacters(in: .whitespacesAndNewlines)
                     entity.updatedAt = .now
@@ -167,7 +167,7 @@ private struct WorkoutCompletionView: View {
                     Label("\(workout.rounds) tours", systemImage: "repeat")
                     Label("\(workout.estimatedDuration / 60) min", systemImage: "clock")
                 }.foregroundStyle(.secondary)
-                Button("Terminer") { onClose() }.buttonStyle(.borderedProminent)
+                Button(MoveCopy.text("common.done")) { onClose() }.buttonStyle(.borderedProminent)
             }.foregroundStyle(.white)
         }
     }
@@ -190,7 +190,7 @@ private struct WorkoutSummaryView: View {
             }
             Text("\(workout.steps.count) mouvements").foregroundStyle(.secondary)
             List(workout.steps) { step in Text(stepName(step.exerciseID)) }
-            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Démarrer") { onStart(); dismiss() }.buttonStyle(.borderedProminent) }
+            HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("common.start")) { onStart(); dismiss() }.buttonStyle(.borderedProminent) }
         }.padding().frame(width: 420, height: 460)
     }
 
@@ -228,7 +228,7 @@ private struct WorkoutEditorView: View {
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(initialTemplate == nil ? "Nouvelle séance" : "Modifier la séance").font(.title.bold())
+            Text(initialTemplate == nil ? MoveCopy.text("workouts.new") : MoveCopy.text("workouts.editTitle")).font(.title.bold())
             TextField("Nom", text: $name)
             HStack {
                 TextField("Emoji", text: $emoji).frame(width: 80)
@@ -245,7 +245,7 @@ private struct WorkoutEditorView: View {
                 Text("Répétitions").tag(WorkoutMode.repetitions)
                 Text("Libre").tag(WorkoutMode.free)
             }
-            Text("Mouvements de la séance").font(.headline)
+            Text(MoveCopy.text("workouts.steps")).font(.headline)
             if steps.isEmpty {
                 Text("Ajoute au moins un mouvement ci-dessous.").foregroundStyle(.secondary)
             } else {
@@ -273,7 +273,7 @@ private struct WorkoutEditorView: View {
                 .frame(minHeight: 120)
             }
             Text("Ajouter un mouvement").font(.headline)
-            TextField("Rechercher", text: $search)
+            TextField(MoveCopy.text("common.search"), text: $search)
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 6) {
                     ForEach(filteredExercises) { exercise in
@@ -287,7 +287,7 @@ private struct WorkoutEditorView: View {
             if let validationMessage {
                 Label(validationMessage, systemImage: "exclamationmark.triangle").font(.caption).foregroundStyle(.red)
             }
-            HStack { Spacer(); Button("Annuler") { dismiss() }; Button("Sauvegarder") { save() }.buttonStyle(.borderedProminent) }
+            HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("common.save")) { save() }.buttonStyle(.borderedProminent) }
         }.padding().frame(width: 520, height: 720)
     }
     private func save() {

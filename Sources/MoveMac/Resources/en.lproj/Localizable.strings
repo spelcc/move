@@ -173,3 +173,10 @@
 "menu.enableLaunch" = "Launch Move at login";
 "menu.settings" = "Open Move";
 "menu.quit" = "Quit";
+"common.done" = "Done";
+"common.start" = "Start";
+"common.search" = "Search";
+"common.save" = "Save";
+"workouts.new" = "New workout";
+"workouts.editTitle" = "Edit workout";
+"workouts.steps" = "Workout movements";

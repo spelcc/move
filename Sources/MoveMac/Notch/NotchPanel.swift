@@ -6,6 +6,8 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
 
 @MainActor final class NotchPanelController {
     private let panel: NSPanel
+    private var screenChangeObserver: NSObjectProtocol?
+    private var target: ReminderScreenTarget = .main
     init<Content: View>(rootView: Content) {
         panel = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.level = .statusBar
@@ -14,10 +16,18 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         panel.hasShadow = true
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.contentView = NSHostingView(rootView: rootView)
+        screenChangeObserver = NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.repositionOnScreenChange() }
+        }
+    }
+
+    deinit {
+        if let screenChangeObserver { NotificationCenter.default.removeObserver(screenChangeObserver) }
     }
     private(set) var state: NotchPanelState = .hidden
 
     func show(target: ReminderScreenTarget = .main, width: CGFloat = 236, height: CGFloat = 72) {
+        self.target = target
         guard let screen = targetScreen(target) else { return }
         state = .bumping
         let notch = screen.auxiliaryTopLeftArea.map { left in
@@ -32,6 +42,20 @@ enum NotchPanelState { case hidden, bumping, compact, expanded, success, skipped
         panel.orderFrontRegardless()
         state = .compact
         resize(width: 460, height: 214, on: screen, anchor: anchor, animated: true) { [weak self] in self?.state = .expanded }
+    }
+
+    private func repositionOnScreenChange() {
+        guard state != .hidden, let screen = targetScreen(target) else { return }
+        let frame = panel.frame
+        let anchor = screen.auxiliaryTopLeftArea.map { left in
+            (left.maxX + (screen.auxiliaryTopRightArea?.minX ?? left.maxX)) / 2
+        } ?? screen.frame.midX
+        let x = min(max(anchor - frame.width / 2, screen.visibleFrame.minX + 8), screen.visibleFrame.maxX - frame.width - 8)
+        let updated = NSRect(x: x, y: screen.frame.maxY - frame.height, width: frame.width, height: frame.height)
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.28
+            panel.animator().setFrame(updated, display: true)
+        }
     }
 
     func resize(width: CGFloat, height: CGFloat, animated: Bool = true, completion: (() -> Void)? = nil) {

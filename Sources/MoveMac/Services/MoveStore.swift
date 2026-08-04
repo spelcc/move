@@ -17,6 +17,7 @@ import MoveCore
     var activeWorkout: WorkoutTemplate?
     var completedWorkout: WorkoutTemplate?
     private var recentExerciseIDs: [String] = []
+    private var refusalCounts: [String: Int] = [:]
     var workoutStepIndex = 0
     var workoutRound = 1
     var secondsRemaining = 0
@@ -174,12 +175,24 @@ import MoveCore
         chooseNext()
     }
     func completeCurrent(source: ActivitySource = .hourly) {
+        refusalCounts[currentExercise.id] = 0
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .completed, source: source)))
         markReminderInteraction(); try? context.save(); panelState = .success; chooseNext(); scheduleNextReminder()
     }
     func skipCurrent() {
+        let refused = currentExercise
+        refusalCounts[refused.id, default: 0] += 1
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .skipped, source: .hourly)))
-        markReminderInteraction(); try? context.save(); panelState = .skipped; chooseNext(); scheduleNextReminder()
+        markReminderInteraction(); try? context.save(); panelState = .skipped
+        let adapted = selector.adapted(refused, from: availableExercises, refusals: refusalCounts[refused.id] ?? 0, easyCompletions: 0)
+        if adapted.id != refused.id {
+            currentExercise = adapted
+            recentExerciseIDs.append(adapted.id)
+            recentExerciseIDs = Array(recentExerciseIDs.suffix(6))
+        } else {
+            chooseNext()
+        }
+        scheduleNextReminder()
     }
 
     func snoozeCurrent(for minutes: Int = 15) {

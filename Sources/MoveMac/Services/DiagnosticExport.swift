@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import SwiftUI
 import UniformTypeIdentifiers
 import MoveCore
 
@@ -20,7 +21,7 @@ struct MoveDiagnosticReport: Codable {
     let screenTarget: ReminderScreenTarget
     let persistenceIssue: String?
 
-    static func make(context: ModelContext, store: MoveStore, persistenceIssue: String?) -> Self {
+    @MainActor static func make(context: ModelContext, store: MoveStore, persistenceIssue: String?) -> Self {
         let activities = (try? context.fetch(FetchDescriptor<ActivityEntity>()).count) ?? 0
         let customExercises = (try? context.fetch(FetchDescriptor<CustomExerciseEntity>()).count) ?? 0
         let templates = (try? context.fetch(FetchDescriptor<WorkoutTemplateEntity>()).count) ?? 0

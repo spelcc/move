@@ -9,12 +9,14 @@ struct DashboardView: View {
         NavigationSplitView {
             List(selection: $store.selectedTab) {
                 Label("Aujourd’hui", systemImage: "figure.run").tag("Aujourd’hui")
+                Label("Historique", systemImage: "clock").tag("Historique")
                 Label("Séances", systemImage: "timer").tag("Séances")
                 Label("Mouvements", systemImage: "list.bullet").tag("Mouvements")
                 Label("Réglages", systemImage: "gear").tag("Réglages")
             }.navigationSplitViewColumnWidth(min: 180, ideal: 210)
         } detail: {
             switch store.selectedTab {
+            case "Historique": HistoryView()
             case "Séances": WorkoutLibraryView(store: store)
             case "Mouvements": MovementSettingsView(store: store)
             case "Réglages": SettingsView(store: store)

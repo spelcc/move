@@ -39,7 +39,7 @@ struct HistoryView: View {
                                 Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                                 VStack(alignment: .leading) {
                                     Text(session.workoutName)
-                                    Text(session.updatedAt, style: .date)
+                        Text(session.updatedAt, style: .date)
                                         .font(.caption).foregroundStyle(.secondary)
                                 }
                                 Spacer()
@@ -72,38 +72,38 @@ struct HistoryView: View {
                 }
             }
         }
-        .searchable(text: $search, prompt: "Rechercher dans l’historique")
-        .navigationTitle("Historique")
+        .searchable(text: $search, prompt: MoveCopy.text("history.search"))
+        .navigationTitle(MoveCopy.text("nav.history"))
         .toolbar {
-            Picker("Période", selection: $period) { ForEach(HistoryPeriod.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
+            Picker(MoveCopy.text("history.period"), selection: $period) { ForEach(HistoryPeriod.allCases, id: \.self) { Text(periodLabel($0)).tag($0) } }
             if period == .custom {
                 DatePicker("Du", selection: $customStart, displayedComponents: .date)
                 DatePicker("Au", selection: $customEnd, displayedComponents: .date)
             }
-            Menu("Filtres", systemImage: "line.3.horizontal.decrease.circle") {
-                Menu("Source") {
-                    Button("Toutes") { sourceFilter = nil }
-                    Button("Rappel") { sourceFilter = .hourly }
-                    Button("Séance rapide") { sourceFilter = .quickWorkout }
-                    Button("Séance personnalisée") { sourceFilter = .customWorkout }
-                    Button("Mouvement libre") { sourceFilter = .freeMovement }
-                    Button("Ajout manuel") { sourceFilter = .manual }
+            Menu(MoveCopy.text("history.filters"), systemImage: "line.3.horizontal.decrease.circle") {
+                Menu(MoveCopy.text("history.source")) {
+                    Button(MoveCopy.text("history.all")) { sourceFilter = nil }
+                    Button(MoveCopy.text("source.reminder")) { sourceFilter = .hourly }
+                    Button(MoveCopy.text("source.quick")) { sourceFilter = .quickWorkout }
+                    Button(MoveCopy.text("source.custom")) { sourceFilter = .customWorkout }
+                    Button(MoveCopy.text("source.free")) { sourceFilter = .freeMovement }
+                    Button(MoveCopy.text("source.manual")) { sourceFilter = .manual }
                 }
-                Menu("Statut") {
-                    Button("Tous") { statusFilter = nil }
-                    Button("Terminées") { statusFilter = .completed }
-                    Button("Passées") { statusFilter = .skipped }
-                    Button("Reportées") { statusFilter = .snoozed }
+                Menu(MoveCopy.text("history.status")) {
+                    Button(MoveCopy.text("history.all")) { statusFilter = nil }
+                    Button(MoveCopy.text("status.completed")) { statusFilter = .completed }
+                    Button(MoveCopy.text("status.skipped")) { statusFilter = .skipped }
+                    Button(MoveCopy.text("status.snoozed")) { statusFilter = .snoozed }
                 }
             }
-            Button("Ajouter", systemImage: "plus") { adding = true }
-            Menu("Exporter", systemImage: "square.and.arrow.up") {
-                Button("JSON") { exportingJSON = true }
-                Button("CSV") { exportingCSV = true }
+            Button(MoveCopy.text("history.add"), systemImage: "plus") { adding = true }
+            Menu(MoveCopy.text("history.export"), systemImage: "square.and.arrow.up") {
+                Button(MoveCopy.text("history.json")) { exportingJSON = true }
+                Button(MoveCopy.text("history.csv")) { exportingCSV = true }
             }
-            Button("Importer", systemImage: "square.and.arrow.down") { importing = true }
+            Button(MoveCopy.text("history.import"), systemImage: "square.and.arrow.down") { importing = true }
         }
-        .overlay { if filteredActivities.isEmpty { ContentUnavailableView("Rien pour le moment", systemImage: "clock") } }
+        .overlay { if filteredActivities.isEmpty { ContentUnavailableView(MoveCopy.text("empty.history.title"), systemImage: "clock", description: Text(MoveCopy.text("empty.history.message"))) } }
         .sheet(item: $editing) { ActivityEditView(activity: $0) }
         .sheet(item: $selectedSession) { WorkoutSessionDetailView(session: $0, customExercises: customExercises) }
         .sheet(isPresented: $adding) { AddActivityView() }
@@ -148,12 +148,22 @@ struct HistoryView: View {
 
     private func sourceLabel(_ rawValue: String) -> String {
         switch ActivitySource(rawValue: rawValue) {
-        case .hourly: "Rappel"
-        case .quickWorkout: "Séance rapide"
-        case .customWorkout: "Séance personnalisée"
-        case .freeMovement: "Mouvement libre"
-        case .manual: "Ajout manuel"
-        case .none: "Inconnu"
+        case .hourly: MoveCopy.text("source.reminder")
+        case .quickWorkout: MoveCopy.text("source.quick")
+        case .customWorkout: MoveCopy.text("source.custom")
+        case .freeMovement: MoveCopy.text("source.free")
+        case .manual: MoveCopy.text("source.manual")
+        case .none: MoveCopy.text("source.unknown")
+        }
+    }
+
+    private func periodLabel(_ period: HistoryPeriod) -> String {
+        switch period {
+        case .today: MoveCopy.text("period.today")
+        case .week: MoveCopy.text("period.week")
+        case .month: MoveCopy.text("period.month")
+        case .custom: MoveCopy.text("period.custom")
+        case .all: MoveCopy.text("period.all")
         }
     }
 

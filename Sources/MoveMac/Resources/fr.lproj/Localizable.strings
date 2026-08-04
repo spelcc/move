@@ -95,3 +95,14 @@
 "runner.rest" = "Repos";
 "runner.finalRecovery" = "Récupération finale";
 "runner.roundRest" = "Repos entre les tours";
+"workouts.export" = "Exporter";
+"workouts.create" = "Créer";
+"workouts.resume" = "Reprendre";
+"workouts.duplicate" = "Dupliquer";
+"workouts.rename" = "Renommer";
+"workouts.archive" = "Archiver";
+"workouts.delete" = "Supprimer";
+"workouts.rounds" = "tours";
+"workouts.start" = "Démarrer";
+"empty.workouts.title" = "Aucune séance personnalisée";
+"empty.workouts.message" = "Crée ta première séance pour la retrouver ici.";

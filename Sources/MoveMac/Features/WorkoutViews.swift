@@ -14,34 +14,34 @@ struct WorkoutLibraryView: View {
     var body: some View {
         ScrollView { VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Séances").font(.title.bold())
+                Text(MoveCopy.text("nav.workouts")).font(.title.bold())
                 Spacer()
-                Button("Exporter", systemImage: "square.and.arrow.up") { exportingTemplates = true }
-                Button("Créer", systemImage: "plus") { showingEditor = true }
+                Button(MoveCopy.text("workouts.export"), systemImage: "square.and.arrow.up") { exportingTemplates = true }
+                Button(MoveCopy.text("workouts.create"), systemImage: "plus") { showingEditor = true }
             }
             if let saved = store.resumableWorkout, let workout = resumableWorkout(saved) {
-                Button("Reprendre \(workout.name)") { store.resume(workout) }
+                Button("\(MoveCopy.text("workouts.resume")) \(workout.name)") { store.resume(workout) }
                     .buttonStyle(.borderedProminent)
             }
             LazyVGrid(columns: [.init(.adaptive(minimum: 230))], spacing: 16) {
             if customWorkouts.filter({ !$0.archived }).isEmpty {
-                ContentUnavailableView("Aucune séance personnalisée", systemImage: "timer", description: Text("Crée ta première séance pour la retrouver ici."))
+                ContentUnavailableView(MoveCopy.text("empty.workouts.title"), systemImage: "timer", description: Text(MoveCopy.text("empty.workouts.message")))
                     .frame(maxWidth: .infinity)
             }
             ForEach(customWorkouts.filter { !$0.archived }) { entity in
                 if let workout = entity.template {
                     workoutCard(workout)
                         .contextMenu {
-                            Button("Dupliquer") { duplicate(entity) }
-                            Button("Renommer") { renaming = entity }
-                            Button("Archiver") { archive(entity) }
-                            Button("Supprimer", role: .destructive) { delete(entity) }
+                            Button(MoveCopy.text("workouts.duplicate")) { duplicate(entity) }
+                            Button(MoveCopy.text("workouts.rename")) { renaming = entity }
+                            Button(MoveCopy.text("workouts.archive")) { archive(entity) }
+                            Button(MoveCopy.text("workouts.delete"), role: .destructive) { delete(entity) }
                         }
                 }
             }
             ForEach(ExerciseLibrary.quickWorkouts) { workout in
                 Button { previewing = workout } label: {
-                    VStack(alignment: .leading, spacing: 8) { Text(workout.name).font(.title3.bold()); Text("\(workout.estimatedDuration / 60) min • \(workout.rounds) tours").foregroundStyle(.secondary); Text("Démarrer").font(.callout.bold()) }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.quaternary, in: RoundedRectangle(cornerRadius: 20))
+                    VStack(alignment: .leading, spacing: 8) { Text(workout.name).font(.title3.bold()); Text("\(workout.estimatedDuration / 60) min • \(workout.rounds) \(MoveCopy.text("workouts.rounds"))").foregroundStyle(.secondary); Text(MoveCopy.text("workouts.start")).font(.callout.bold()) }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.quaternary, in: RoundedRectangle(cornerRadius: 20))
                 }.buttonStyle(.plain)
             }
             }
@@ -72,7 +72,7 @@ struct WorkoutLibraryView: View {
 
     private func workoutCard(_ workout: WorkoutTemplate) -> some View {
         Button { previewing = workout } label: {
-            VStack(alignment: .leading, spacing: 8) { Text(workout.name).font(.title3.bold()); Text("\(workout.estimatedDuration / 60) min • \(workout.rounds) tours").foregroundStyle(.secondary); Text("Démarrer").font(.callout.bold()) }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.quaternary, in: RoundedRectangle(cornerRadius: 20))
+            VStack(alignment: .leading, spacing: 8) { Text(workout.name).font(.title3.bold()); Text("\(workout.estimatedDuration / 60) min • \(workout.rounds) \(MoveCopy.text("workouts.rounds"))").foregroundStyle(.secondary); Text(MoveCopy.text("workouts.start")).font(.callout.bold()) }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.quaternary, in: RoundedRectangle(cornerRadius: 20))
         }.buttonStyle(.plain)
     }
 

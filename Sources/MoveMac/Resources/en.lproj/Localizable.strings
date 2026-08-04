@@ -95,3 +95,14 @@
 "runner.rest" = "Rest";
 "runner.finalRecovery" = "Final recovery";
 "runner.roundRest" = "Rest between rounds";
+"workouts.export" = "Export";
+"workouts.create" = "Create";
+"workouts.resume" = "Resume";
+"workouts.duplicate" = "Duplicate";
+"workouts.rename" = "Rename";
+"workouts.archive" = "Archive";
+"workouts.delete" = "Delete";
+"workouts.rounds" = "rounds";
+"workouts.start" = "Start";
+"empty.workouts.title" = "No custom workouts";
+"empty.workouts.message" = "Create your first workout to find it here.";

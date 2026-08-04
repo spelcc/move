@@ -10,6 +10,8 @@ struct HistoryView: View {
     @State private var adding = false
     @State private var exportingJSON = false
     @State private var exportingCSV = false
+    @State private var importing = false
+    @State private var importError: String?
     @State private var search = ""
 
     var body: some View {
@@ -36,16 +38,31 @@ struct HistoryView: View {
                 Button("JSON") { exportingJSON = true }
                 Button("CSV") { exportingCSV = true }
             }
+            Button("Importer", systemImage: "square.and.arrow.down") { importing = true }
         }
         .overlay { if activities.isEmpty { ContentUnavailableView("Rien pour le moment", systemImage: "clock") } }
         .sheet(item: $editing) { ActivityEditView(activity: $0) }
         .sheet(isPresented: $adding) { AddActivityView() }
         .fileExporter(isPresented: $exportingJSON, document: ActivityExportDocument(data: jsonData), contentType: .json, defaultFilename: "move-activities.json") { _ in }
         .fileExporter(isPresented: $exportingCSV, document: ActivityExportDocument(data: csvData), contentType: .commaSeparatedText, defaultFilename: "move-activities.csv") { _ in }
+        .fileImporter(isPresented: $importing, allowedContentTypes: [.json], allowsMultipleSelection: false) { result in
+            importJSON(result)
+        }
+        .alert("Import impossible", isPresented: Binding(get: { importError != nil }, set: { if !$0 { importError = nil } })) { Button("OK") { importError = nil } } message: { Text(importError ?? "") }
     }
 
     private var jsonData: Data { (try? DataTransferService.exportJSON(activities.map(\.record))) ?? Data() }
     private var csvData: Data { Data(DataTransferService.exportCSV(activities.map(\.record)).utf8) }
+
+    private func importJSON(_ result: Result<[URL], Error>) {
+        do {
+            guard let url = try result.get().first else { return }
+            let data = try Data(contentsOf: url)
+            let records = try DataTransferService.importJSON(data, existing: activities.map(\.record))
+            records.forEach { modelContext.insert(ActivityEntity(record: $0)) }
+            try modelContext.save()
+        } catch { importError = error.localizedDescription }
+    }
 }
 
 struct ActivityExportDocument: FileDocument {

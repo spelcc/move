@@ -17,6 +17,8 @@ struct HistoryView: View {
     @State private var showingImportConfirmation = false
     @State private var search = ""
     @State private var period = HistoryPeriod.all
+    @State private var sourceFilter: ActivitySource?
+    @State private var statusFilter: ActivityStatus?
 
     private enum HistoryPeriod: String, CaseIterable {
         case today = "Aujourd’hui", week = "Semaine", month = "Mois", all = "Tout"
@@ -51,6 +53,22 @@ struct HistoryView: View {
         .navigationTitle("Historique")
         .toolbar {
             Picker("Période", selection: $period) { ForEach(HistoryPeriod.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
+            Menu("Filtres", systemImage: "line.3.horizontal.decrease.circle") {
+                Menu("Source") {
+                    Button("Toutes") { sourceFilter = nil }
+                    Button("Rappel") { sourceFilter = .hourly }
+                    Button("Séance rapide") { sourceFilter = .quickWorkout }
+                    Button("Séance personnalisée") { sourceFilter = .customWorkout }
+                    Button("Mouvement libre") { sourceFilter = .freeMovement }
+                    Button("Ajout manuel") { sourceFilter = .manual }
+                }
+                Menu("Statut") {
+                    Button("Tous") { statusFilter = nil }
+                    Button("Terminées") { statusFilter = .completed }
+                    Button("Passées") { statusFilter = .skipped }
+                    Button("Reportées") { statusFilter = .snoozed }
+                }
+            }
             Button("Ajouter", systemImage: "plus") { adding = true }
             Menu("Exporter", systemImage: "square.and.arrow.up") {
                 Button("JSON") { exportingJSON = true }
@@ -88,7 +106,9 @@ struct HistoryView: View {
         }
         return activities.filter { activity in
             (start == nil || activity.performedAt >= start!) &&
-            (search.isEmpty || activity.exerciseID.localizedStandardContains(search))
+            (search.isEmpty || activity.exerciseID.localizedStandardContains(search)) &&
+            (sourceFilter == nil || ActivitySource(rawValue: activity.sourceRaw) == sourceFilter) &&
+            (statusFilter == nil || ActivityStatus(rawValue: activity.statusRaw) == statusFilter)
         }
     }
 

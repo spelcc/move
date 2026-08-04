@@ -220,6 +220,10 @@ private struct WorkoutSessionDetailView: View {
             Text("Terminée le \(session.updatedAt, style: .date) à \(session.updatedAt, style: .time)")
                 .foregroundStyle(.secondary)
             HStack {
+                Label("Prévue : \(session.plannedDurationSeconds / 60) min", systemImage: "calendar")
+                Label("Réelle : \(max(0, Int(session.updatedAt.timeIntervalSince(session.startedAt)) / 60)) min", systemImage: "stopwatch")
+            }
+            HStack {
                 Label("\(sessionResults.filter { $0.statusRaw == ActivityStatus.completed.rawValue }.count) terminées", systemImage: "checkmark")
                 Label("\(sessionResults.filter { $0.statusRaw == ActivityStatus.skipped.rawValue }.count) passées", systemImage: "forward")
             }

@@ -9,6 +9,7 @@ import MoveCore
     var stepIndex: Int
     var round: Int
     var secondsRemaining: Int
+    var plannedDurationSeconds: Int = 0
     var stateRaw: String
     var startedAt: Date
     var updatedAt: Date
@@ -17,6 +18,7 @@ import MoveCore
          state: WorkoutRunnerState = .preparing) {
         id = UUID(); workoutID = workout.id; workoutName = workout.name; self.stepIndex = stepIndex
         self.round = round; self.secondsRemaining = secondsRemaining; stateRaw = state.rawValue
+        plannedDurationSeconds = workout.estimatedDuration
         startedAt = .now; updatedAt = .now
     }
 }

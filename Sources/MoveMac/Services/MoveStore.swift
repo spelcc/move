@@ -21,6 +21,9 @@ import MoveCore
     var workoutRound = 1
     var secondsRemaining = 0
     var workoutState: WorkoutRunnerState = .preparing
+    var finalRecoveryActive = false
+    private var preparationConsumed = false
+    private var stateBeforePause: WorkoutRunnerState = .working
     var resumableWorkout: WorkoutSessionEntity?
     private var timer: Timer?
     private let selector = ExerciseSelector()
@@ -201,7 +204,7 @@ import MoveCore
     func start(_ workout: WorkoutTemplate) {
         guard workout.validationError == nil else { return }
         completedWorkout = nil
-        activeWorkout = workout; workoutStepIndex = 0; workoutRound = 1; workoutState = .preparing; beginStep(); saveWorkoutProgress()
+        activeWorkout = workout; workoutStepIndex = 0; workoutRound = 1; workoutState = .preparing; finalRecoveryActive = false; preparationConsumed = false; beginStep(); saveWorkoutProgress()
     }
 
     func resume(_ workout: WorkoutTemplate) {
@@ -209,6 +212,7 @@ import MoveCore
               let state = WorkoutRunnerState(rawValue: saved.stateRaw), state != .completed, state != .cancelled else { return }
         activeWorkout = workout; workoutStepIndex = min(saved.stepIndex, max(0, workout.steps.count - 1)); workoutRound = max(1, saved.round)
         secondsRemaining = max(0, saved.secondsRemaining); workoutState = state
+        preparationConsumed = state != .preparing
         if workoutState != .paused {
             timer?.invalidate()
             timer = .scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in Task { @MainActor in self?.tick() } }
@@ -217,15 +221,36 @@ import MoveCore
     }
     func beginStep() {
         guard let workout = activeWorkout else { return }
+        if !preparationConsumed && workout.preparationSeconds > 0 {
+            preparationConsumed = true
+            workoutState = .preparing
+            secondsRemaining = workout.preparationSeconds
+            WorkoutSoundService.play(.start, mode: appearance.sounds)
+            startWorkoutTimer()
+            saveWorkoutProgress()
+            return
+        }
         workoutState = .working
         secondsRemaining = workout.steps[workoutStepIndex].workSeconds
         WorkoutSoundService.play(.start, mode: appearance.sounds)
-        timer?.invalidate(); timer = .scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in Task { @MainActor in self?.tick() } }
+        startWorkoutTimer()
         saveWorkoutProgress()
+    }
+
+    private func startWorkoutTimer() {
+        timer?.invalidate(); timer = .scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in Task { @MainActor in self?.tick() } }
     }
     private func tick() {
         guard let workout = activeWorkout else { return }
         switch workoutState {
+        case .preparing:
+            if secondsRemaining > 0 {
+                if secondsRemaining <= 3 { WorkoutSoundService.play(.countdown, mode: appearance.sounds) }
+                secondsRemaining -= 1
+                saveWorkoutProgress()
+            } else {
+                beginStep()
+            }
         case .working:
             if workout.mode == .repetitions { return }
             if secondsRemaining > 0 {
@@ -250,13 +275,32 @@ import MoveCore
             } else {
                 advanceWorkout()
             }
+        case .roundRest:
+            if secondsRemaining > 0 {
+                if secondsRemaining <= 3 { WorkoutSoundService.play(.countdown, mode: appearance.sounds) }
+                secondsRemaining -= 1
+                saveWorkoutProgress()
+            } else if finalRecoveryActive {
+                completeWorkout()
+            } else {
+                beginStep()
+            }
         default:
             break
         }
     }
     func togglePause() {
         guard activeWorkout != nil else { return }
-        if workoutState == .paused { beginStep() } else { workoutState = .paused; timer?.invalidate(); saveWorkoutProgress() }
+        if workoutState == .paused {
+            workoutState = stateBeforePause
+            startWorkoutTimer()
+            saveWorkoutProgress()
+        } else {
+            stateBeforePause = workoutState
+            workoutState = .paused
+            timer?.invalidate()
+            saveWorkoutProgress()
+        }
     }
     func addTenSeconds() { secondsRemaining += 10; saveWorkoutProgress() }
     func subtractTenSeconds() { secondsRemaining = max(0, secondsRemaining - 10); saveWorkoutProgress() }
@@ -274,6 +318,7 @@ import MoveCore
     }
     func skipWorkoutStep() { finishWorkoutStep(status: .skipped) }
     func advanceWorkout() {
+        guard workoutState == .working || workoutState == .resting else { return }
         if let workout = activeWorkout,
            workoutState == .working,
            workout.steps[workoutStepIndex].restSeconds > 0 {
@@ -305,22 +350,48 @@ import MoveCore
         }
         try? context.save()
         workoutStepIndex += 1
-        if workoutStepIndex >= workout.steps.count { workoutStepIndex = 0; workoutRound += 1 }
-        if workoutRound > workout.rounds {
-            timer?.invalidate()
-            workoutState = .completed
-            WorkoutSoundService.play(.end, mode: appearance.sounds)
-            completedWorkout = workout
-            if let session = resumableWorkout {
-                session.stateRaw = WorkoutRunnerState.completed.rawValue
-                session.updatedAt = .now
-                try? context.save()
-                resumableWorkout = nil
+        if workoutStepIndex >= workout.steps.count {
+            workoutStepIndex = 0
+            workoutRound += 1
+            if workoutRound <= workout.rounds, workout.roundRestSeconds > 0 {
+                workoutState = .roundRest
+                secondsRemaining = workout.roundRestSeconds
+                WorkoutSoundService.play(.change, mode: appearance.sounds)
+                startWorkoutTimer()
+                saveWorkoutProgress()
+                return
             }
-            activeWorkout = nil
+        }
+        if workoutRound > workout.rounds {
+            if workout.finalRecoverySeconds > 0 {
+                finalRecoveryActive = true
+                workoutState = .roundRest
+                secondsRemaining = workout.finalRecoverySeconds
+                WorkoutSoundService.play(.change, mode: appearance.sounds)
+                startWorkoutTimer()
+                saveWorkoutProgress()
+                return
+            }
+            completeWorkout()
             return
         }
         beginStep()
+    }
+
+    private func completeWorkout() {
+        guard let workout = activeWorkout else { return }
+        timer?.invalidate()
+        workoutState = .completed
+        WorkoutSoundService.play(.end, mode: appearance.sounds)
+        completedWorkout = workout
+        if let session = resumableWorkout {
+            session.stateRaw = WorkoutRunnerState.completed.rawValue
+            session.updatedAt = .now
+            try? context.save()
+            resumableWorkout = nil
+        }
+        activeWorkout = nil
+        finalRecoveryActive = false
     }
 
     func cancelWorkout() { timer?.invalidate(); workoutState = .cancelled; activeWorkout = nil; completedWorkout = nil; clearWorkoutProgress() }

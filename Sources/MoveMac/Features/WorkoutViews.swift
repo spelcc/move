@@ -297,8 +297,8 @@ private struct WorkoutRunnerView: View {
             ProgressView(value: progress)
                 .tint(.white)
                 .frame(maxWidth: 360)
-            Text(store.workoutState == .resting ? "Repos" : exerciseName).font(.largeTitle.bold())
-            Text(store.workoutState == .resting ? "Prochain : \(nextExerciseName)" : "Suivant : \(nextExerciseName)").foregroundStyle(.secondary)
+            Text(phaseTitle).font(.largeTitle.bold())
+            Text(store.workoutState == .working ? "Suivant : \(nextExerciseName)" : "").foregroundStyle(.secondary)
             Text(workout.mode == .repetitions ? "\(store.secondsRemaining) reps" : "\(store.secondsRemaining)")
                 .font(.system(size: 80, weight: .black, design: .rounded)).contentTransition(.numericText())
             HStack {
@@ -332,6 +332,14 @@ private struct WorkoutRunnerView: View {
     }
     private var exerciseName: String {
         store.exercise(withID: workout.steps[store.workoutStepIndex].exerciseID)?.name ?? "Mouvement"
+    }
+    private var phaseTitle: String {
+        switch store.workoutState {
+        case .preparing: "Préparation"
+        case .resting: "Repos"
+        case .roundRest: store.finalRecoveryActive ? "Récupération finale" : "Repos entre les tours"
+        default: exerciseName
+        }
     }
     private var nextExerciseName: String {
         let next = (store.workoutStepIndex + 1) % workout.steps.count

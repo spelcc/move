@@ -12,6 +12,13 @@ struct MovementSettingsView: View {
     @State private var editingExercise: CustomExerciseEntity?
     var body: some View {
         List {
+            if store.noCompatibleExercises {
+                Section {
+                    ContentUnavailableView("Aucun mouvement actif", systemImage: "exclamationmark.triangle", description: Text("Réactive un mouvement ou retire une contrainte."))
+                    Button("Réactiver tous les mouvements") { store.enableAllExercises() }
+                        .buttonStyle(.borderedProminent)
+                }
+            }
             Section("Intégrés") {
                 ForEach(ExerciseLibrary.all.filter { search.isEmpty || $0.name.localizedStandardContains(search) }) { exercise in
             Toggle(isOn: Binding(get: { !store.movement.disabledExerciseIDs.contains(exercise.id) }, set: { enabled in if enabled { store.movement.disabledExerciseIDs.remove(exercise.id) } else { store.movement.disabledExerciseIDs.insert(exercise.id) } })) {

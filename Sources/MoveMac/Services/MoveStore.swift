@@ -12,6 +12,7 @@ import MoveCore
     var reminder = ReminderPreferences()
     var reminderState = ReminderState()
     var movement = MovementPreferences()
+    var noCompatibleExercises = false
     var appearance = AppearancePreferences()
     var activeWorkout: WorkoutTemplate?
     private var recentExerciseIDs: [String] = []
@@ -96,8 +97,16 @@ import MoveCore
 
     func chooseNext() {
         let next = selector.next(from: availableExercises, preferences: movement, recentExerciseIDs: recentExerciseIDs)
+        noCompatibleExercises = next == nil
         if let next { currentExercise = next; recentExerciseIDs.append(next.id); recentExerciseIDs = Array(recentExerciseIDs.suffix(6)) }
         persistSettings()
+    }
+    func enableAllExercises() {
+        movement.disabledExerciseIDs.removeAll()
+        movement.excludedTags.removeAll()
+        movement.availableEquipment.removeAll()
+        persistSettings()
+        chooseNext()
     }
     func completeCurrent(source: ActivitySource = .hourly) {
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .completed, source: source)))

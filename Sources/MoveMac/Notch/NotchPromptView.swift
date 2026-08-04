@@ -26,7 +26,14 @@ struct NotchPromptView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            if let reaction {
+            if store.noCompatibleExercises {
+                Text("Aucun mouvement ne correspond à tes réglages.")
+                    .font(.headline).foregroundStyle(.white).multilineTextAlignment(.center)
+                Text("Réactive un mouvement ou retire une contrainte.")
+                    .font(.caption).foregroundStyle(.white.opacity(0.65))
+                Button("Réactiver les mouvements") { store.enableAllExercises() }
+                    .buttonStyle(.borderedProminent).tint(.white).foregroundStyle(.black)
+            } else if let reaction {
                 Text(reaction.title).font(.headline).foregroundStyle(.white).multilineTextAlignment(.center)
                 Text("À bientôt.").font(.caption).foregroundStyle(.white.opacity(0.65))
             } else {

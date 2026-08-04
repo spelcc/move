@@ -15,7 +15,7 @@ struct WorkoutLibraryView: View {
                     .buttonStyle(.borderedProminent)
             }
             LazyVGrid(columns: [.init(.adaptive(minimum: 230))], spacing: 16) {
-            ForEach(customWorkouts.compactMap(\.template).filter { !$0.name.isEmpty }) { workout in
+            ForEach(customWorkouts.filter { !$0.archived }.compactMap(\.template).filter { !$0.name.isEmpty }) { workout in
                 workoutCard(workout)
             }
             ForEach(ExerciseLibrary.quickWorkouts) { workout in

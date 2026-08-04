@@ -32,8 +32,9 @@ import MoveCore
     var exercise: Exercise? {
         guard let category = ExerciseCategory(rawValue: categoryRaw),
               let metric = ExerciseMetric(rawValue: metricRaw) else { return nil }
+        let difficulty = tags.compactMap { $0.hasPrefix("difficulty-") ? Int(String($0.dropFirst("difficulty-".count))) : nil }.first ?? 1
         return Exercise(id: id, name: name, category: category, metric: metric,
-                        defaultAmount: max(0, defaultAmount), equipment: equipment,
+                        defaultAmount: max(0, defaultAmount), difficulty: min(3, max(1, difficulty)), equipment: equipment,
                         tags: tags.union(muscleZones.map { "zone-\($0)" }).union(["personnalisé"]),
                         emoji: emoji)
     }

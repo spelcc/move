@@ -124,6 +124,7 @@ private struct NewExerciseView: View {
     @State private var emoji = "💪"
     @State private var amount = 10
     @State private var category = ExerciseCategory.strength
+    @State private var difficulty = 1
     @State private var metric = ExerciseMetric.repetitions
     @State private var instructions = ""
     @State private var equipment: Set<String> = []
@@ -135,6 +136,11 @@ private struct NewExerciseView: View {
             TextField(MoveCopy.text("exercise.name"), text: $name)
             TextField(MoveCopy.text("exercise.emoji"), text: $emoji)
             Picker(MoveCopy.text("exercise.category"), selection: $category) { ForEach(ExerciseCategory.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
+            Picker(MoveCopy.text("exercise.difficulty"), selection: $difficulty) {
+                Text(MoveCopy.text("exercise.easy")).tag(1)
+                Text(MoveCopy.text("exercise.intermediate")).tag(2)
+                Text(MoveCopy.text("exercise.hard")).tag(3)
+            }
             Picker(MoveCopy.text("exercise.metric"), selection: $metric) { Text(MoveCopy.text("exercise.repetitions")).tag(ExerciseMetric.repetitions); Text(MoveCopy.text("exercise.seconds")).tag(ExerciseMetric.seconds); Text(MoveCopy.text("exercise.minutes")).tag(ExerciseMetric.minutes); Text(MoveCopy.text("exercise.free")).tag(ExerciseMetric.free) }
             Stepper(String(format: MoveCopy.text("exercise.defaultAmount"), amount), value: $amount, in: 1...999)
             Section("Matériel") {
@@ -158,7 +164,7 @@ private struct NewExerciseView: View {
                 Toggle("Centre du corps", isOn: setBinding("core", in: $muscleZones))
             }
             TextField(MoveCopy.text("exercise.instructionsOptional"), text: $instructions, axis: .vertical)
-            HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("common.create")) { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags, muscleZones: muscleZones)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
+            HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("common.create")) { onSave(CustomExerciseEntity(name: name, emoji: emoji, category: category, metric: metric, defaultAmount: amount, instructions: instructions, equipment: equipment, tags: tags.union(["difficulty-\(difficulty)"]), muscleZones: muscleZones)); dismiss() }.disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).buttonStyle(.borderedProminent) }
         }.padding().frame(width: 420, height: 620)
     }
 
@@ -186,6 +192,11 @@ private struct EditExerciseView: View {
                 Text(MoveCopy.text("exercise.seconds")).tag(ExerciseMetric.seconds.rawValue)
                 Text(MoveCopy.text("exercise.minutes")).tag(ExerciseMetric.minutes.rawValue)
                 Text(MoveCopy.text("exercise.free")).tag(ExerciseMetric.free.rawValue)
+            }
+            Picker(MoveCopy.text("exercise.difficulty"), selection: difficultyBinding) {
+                Text(MoveCopy.text("exercise.easy")).tag(1)
+                Text(MoveCopy.text("exercise.intermediate")).tag(2)
+                Text(MoveCopy.text("exercise.hard")).tag(3)
             }
             Stepper(String(format: MoveCopy.text("exercise.defaultAmount"), exercise.defaultAmount), value: $exercise.defaultAmount, in: 1...999)
             Section(MoveCopy.text("exercise.equipment")) {
@@ -217,6 +228,15 @@ private struct EditExerciseView: View {
         Binding(get: { exercise.tags.contains(tag) }, set: { enabled in
             var tags = exercise.tags
             if enabled { tags.insert(tag) } else { tags.remove(tag) }
+            exercise.tagsRaw = tags.sorted().joined(separator: ",")
+            exercise.updatedAt = .now
+        })
+    }
+
+    private var difficultyBinding: Binding<Int> {
+        Binding(get: { exercise.exercise?.difficulty ?? 1 }, set: { value in
+            var tags = exercise.tags.filter { !$0.hasPrefix("difficulty-") }
+            tags.insert("difficulty-\(value)")
             exercise.tagsRaw = tags.sorted().joined(separator: ",")
             exercise.updatedAt = .now
         })

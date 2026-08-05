@@ -39,6 +39,8 @@ targets:
     platform: iOS
     sources:
       - Sources/MoveiOS
+    resources:
+      - Sources/MoveiOS/Resources
     dependencies:
       - package: MoveCore
         product: MoveCore

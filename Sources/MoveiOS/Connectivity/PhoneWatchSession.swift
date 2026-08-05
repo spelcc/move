@@ -2,7 +2,7 @@ import Foundation
 import WatchConnectivity
 import MoveShared
 
-final class PhoneWatchSession: NSObject, WCSessionDelegate {
+final class PhoneWatchSession: NSObject, WCSessionDelegate, @unchecked Sendable {
     private let queue = WatchCommandQueue()
     static let shared = PhoneWatchSession()
     private override init() { super.init(); guard WCSession.isSupported() else { return }; WCSession.default.delegate = self; WCSession.default.activate() }

@@ -8,7 +8,8 @@ private func date(_ hour: Int, _ minute: Int = 0) -> Date {
 }
 
 @Test func plannerBuildsMoreThanOneReminder() {
-    let request = ReminderPlanRequest(now: date(8), horizon: date(8).addingTimeInterval(86400), maximumCount: 20, exercises: [ExerciseLibrary.builtIn[0]], calendar: Calendar(identifier: .gregorian))
+    var calendar = Calendar(identifier: .gregorian); calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    let request = ReminderPlanRequest(now: date(8), horizon: date(8).addingTimeInterval(86400), maximumCount: 20, exercises: [ExerciseLibrary.builtIn[0]], calendar: calendar)
     let plan = ReminderPlanner().plan(request)
     #expect(plan.count == 10)
     #expect(plan.first?.fireDate == date(9))

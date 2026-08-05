@@ -1,4 +1,5 @@
 import ActivityKit
+import Foundation
 
 public struct MoveActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {

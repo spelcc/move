@@ -176,7 +176,7 @@ struct HistoryView: View {
     }
 
     private func exerciseName(for id: String) -> String {
-        if let builtIn = ExerciseLibrary.all.first(where: { $0.id == id }) { return builtIn.name }
+        if let builtIn = ExerciseLibrary.all.first(where: { $0.id == id }) { return builtIn.displayName }
         return customExercises.first(where: { $0.id == id })?.name ?? id
     }
 
@@ -246,7 +246,7 @@ private struct WorkoutSessionDetailView: View {
     }
 
     private func exerciseName(_ id: String) -> String {
-        ExerciseLibrary.all.first(where: { $0.id == id })?.name
+        ExerciseLibrary.all.first(where: { $0.id == id })?.displayName
             ?? customExercises.first(where: { $0.id == id })?.name
             ?? id
     }
@@ -269,7 +269,7 @@ private struct AddActivityView: View {
     @State private var status = ActivityStatus.completed
     var body: some View {
         Form {
-            Picker(MoveCopy.text("history.movement"), selection: $exerciseID) { ForEach(allExercises) { Text($0.name).tag($0.id) } }
+            Picker(MoveCopy.text("history.movement"), selection: $exerciseID) { ForEach(allExercises) { Text($0.displayName).tag($0.id) } }
             Stepper(String(format: MoveCopy.text("history.amount"), amount), value: $amount, in: 0...9999)
             Picker(MoveCopy.text("history.status"), selection: $status) { ForEach(ActivityStatus.allCases, id: \.self) { Text($0.rawValue).tag($0) } }
             HStack { Spacer(); Button(MoveCopy.text("common.cancel")) { dismiss() }; Button(MoveCopy.text("history.add")) { save() }.buttonStyle(.borderedProminent) }

@@ -194,7 +194,7 @@ private struct WorkoutSummaryView: View {
         }.padding().frame(width: 420, height: 460)
     }
 
-    private func stepName(_ id: String) -> String { ExerciseLibrary.all.first { $0.id == id }?.name ?? MoveCopy.text("exercise.customName") }
+    private func stepName(_ id: String) -> String { ExerciseLibrary.all.first { $0.id == id }?.displayName ?? MoveCopy.text("exercise.customName") }
 }
 
 private struct WorkoutEditorView: View {
@@ -278,7 +278,7 @@ private struct WorkoutEditorView: View {
                 LazyVStack(alignment: .leading, spacing: 6) {
                     ForEach(filteredExercises) { exercise in
                         Button { add(exercise) } label: {
-                            Label("\(exercise.emoji) \(exercise.name)", systemImage: "plus.circle")
+                            Label("\(exercise.emoji) \(exercise.displayName)", systemImage: "plus.circle")
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }.buttonStyle(.plain)
                     }
@@ -301,7 +301,7 @@ private struct WorkoutEditorView: View {
     private func add(_ exercise: Exercise) { steps.append(WorkoutStep(exerciseID: exercise.id, workSeconds: mode == .free ? 600 : 40)) }
     private func duplicate(_ step: WorkoutStep) { steps.append(WorkoutStep(exerciseID: step.exerciseID, workSeconds: step.workSeconds, restSeconds: step.restSeconds)) }
     private func remove(_ step: WorkoutStep) { steps.removeAll { $0.id == step.id } }
-    private func exerciseName(_ id: String) -> String { allExercises.first { $0.id == id }?.name ?? MoveCopy.text("exercise.defaultName") }
+    private func exerciseName(_ id: String) -> String { allExercises.first { $0.id == id }?.displayName ?? MoveCopy.text("exercise.defaultName") }
 
     private var allExercises: [Exercise] {
         let custom = customExercises.filter { !$0.archived }.compactMap(\.exercise)
@@ -309,7 +309,7 @@ private struct WorkoutEditorView: View {
     }
 
     private var filteredExercises: [Exercise] {
-        allExercises.filter { search.isEmpty || $0.name.localizedStandardContains(search) }
+        allExercises.filter { search.isEmpty || $0.displayName.localizedStandardContains(search) }
     }
 }
 
@@ -356,7 +356,7 @@ private struct WorkoutRunnerView: View {
         }.foregroundStyle(.white) }
     }
     private var exerciseName: String {
-        store.exercise(withID: workout.steps[store.workoutStepIndex].exerciseID)?.name ?? MoveCopy.text("exercise.defaultName")
+        store.exercise(withID: workout.steps[store.workoutStepIndex].exerciseID)?.displayName ?? MoveCopy.text("exercise.defaultName")
     }
     private var phaseTitle: String {
         switch store.workoutState {
@@ -368,7 +368,7 @@ private struct WorkoutRunnerView: View {
     }
     private var nextExerciseName: String {
         let next = (store.workoutStepIndex + 1) % workout.steps.count
-        return store.exercise(withID: workout.steps[next].exerciseID)?.name ?? MoveCopy.text("exercise.defaultName")
+        return store.exercise(withID: workout.steps[next].exerciseID)?.displayName ?? MoveCopy.text("exercise.defaultName")
     }
     private var progress: Double {
         let completed = (store.workoutRound - 1) * workout.steps.count + store.workoutStepIndex

@@ -49,10 +49,10 @@ struct NotchPromptView: View {
                     Text(subMessage).font(.caption).foregroundStyle(.white.opacity(0.65)).multilineTextAlignment(.center)
                 }
                 HStack(spacing: 8) {
-                    NotchActionButton(title: MoveCopy.text("notch.action.snooze"), color: Color(red: 0.22, green: 0.025, blue: 0.025), textColor: .red) {
+                    NotchActionButton(title: MoveCopy.text("notch.action.snooze"), color: .red.opacity(0.18), textColor: .red) {
                         snooze(for: store.reminder.snoozeMinutes)
                     }
-                    NotchActionButton(title: MoveCopy.text("notch.action.done"), color: Color(red: 0.025, green: 0.22, blue: 0.07), textColor: .green) {
+                    NotchActionButton(title: MoveCopy.text("notch.action.done"), color: .green.opacity(0.18), textColor: .green) {
                         complete()
                     }
                     NotchActionButton(title: MoveCopy.text("notch.action.other"), color: Color.white.opacity(0.16), textColor: .white.opacity(0.82)) {

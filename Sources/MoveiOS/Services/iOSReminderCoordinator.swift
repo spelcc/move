@@ -11,6 +11,10 @@ import MoveShared
 
     func reconcile(now: Date = .now) async {
         preferences.enabled = UserDefaults.standard.object(forKey: "move.reminders.enabled") as? Bool ?? true
+        preferences.intervalMinutes = UserDefaults.standard.object(forKey: "move.reminders.intervalMinutes") as? Int ?? 60
+        preferences.activeStartHour = UserDefaults.standard.object(forKey: "move.reminders.startHour") as? Int ?? 9
+        preferences.activeEndHour = UserDefaults.standard.object(forKey: "move.reminders.endHour") as? Int ?? 19
+        preferences.snoozeMinutes = UserDefaults.standard.object(forKey: "move.reminders.snoozeMinutes") as? Int ?? 15
         host = ReminderHostPreference(rawValue: UserDefaults.standard.string(forKey: "move.reminders.host") ?? "") ?? .phoneAndWatch
         guard ReminderHostPolicy.shouldSchedule(on: host, platform: .phone) else {
             let ids = await client.pending().map(\.id).filter { $0.hasPrefix("move.") }

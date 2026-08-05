@@ -33,21 +33,25 @@ enum ReminderNotificationService {
         ])
     }
 
-    static func schedule(exercise: Exercise, at date: Date, sound: SoundMode = .normal) async throws {
+    static func schedule(exercise: Exercise, at date: Date, sound: SoundMode = .normal, reminderID: String? = nil, kind: ReminderKind = .scheduled) async throws {
         let content = UNMutableNotificationContent()
         content.title = MoveCopy.text("notification.title")
         content.body = "\(exercise.emoji) \(exercise.name) — \(exercise.defaultAmount)"
         content.categoryIdentifier = category
-        content.userInfo = ["exerciseID": exercise.id, "soundEnabled": sound != .off]
+        content.userInfo = ["exerciseID": exercise.id, "soundEnabled": sound != .off, "reminderID": reminderID ?? "move.normal.\(Int(date.timeIntervalSince1970)).\(exercise.id)", "kind": kind.rawValue]
         if sound != .off { content.sound = .default }
         let interval = max(1, date.timeIntervalSinceNow)
-        let request = UNNotificationRequest(identifier: "move-reminder-\(exercise.id)-\(date.timeIntervalSince1970)", content: content,
+        let request = UNNotificationRequest(identifier: reminderID ?? "move.normal.\(Int(date.timeIntervalSince1970)).\(exercise.id)", content: content,
                                              trigger: UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false))
         try await UNUserNotificationCenter.current().add(request)
     }
 
     static func cancelPending() {
-        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        let center = UNUserNotificationCenter.current()
+        center.getPendingNotificationRequests { requests in
+            let ids = requests.map(\.identifier).filter { $0.hasPrefix("move.") || $0.hasPrefix("move-reminder-") || $0.hasPrefix("move-deferred-") }
+            center.removePendingNotificationRequests(withIdentifiers: ids)
+        }
     }
 
     static func deferNotification(_ notification: UNNotification, after delay: TimeInterval = 15 * 60) {

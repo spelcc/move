@@ -3,6 +3,7 @@ import SwiftData
 import AppKit
 import UserNotifications
 import MoveCore
+import MoveShared
 
 @main struct MoveApp: App {
     private let container: ModelContainer
@@ -15,8 +16,8 @@ import MoveCore
         _persistenceError = State(initialValue: nil)
         ReminderNotificationService.configure()
         UNUserNotificationCenter.current().delegate = notificationDelegate
-        let schema = MoveSchemaV1.schema
-        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let schema = MoveSchemaV2.schema
+        let configuration = ModelConfiguration(schema: schema, cloudKitDatabase: .private(MoveModelContainer.cloudKitIdentifier))
         let container: ModelContainer
         var persistenceIssue: String?
         do {
@@ -24,7 +25,7 @@ import MoveCore
         } catch {
             NSLog("Move persistence failed: %@", String(describing: error))
             persistenceIssue = String(describing: error)
-            let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             container = (try? ModelContainer(for: schema, migrationPlan: MoveMigrationPlan.self, configurations: fallback)) ?? {
                 fatalError("Unable to create Move storage")
             }()

@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model final class ExerciseEntity {
-    @Attribute(.unique) var id: String
+    var id: String
     var name: String
     var categoryRaw: String
     var metricRaw: String

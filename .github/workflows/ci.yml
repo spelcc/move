@@ -41,6 +41,12 @@ jobs:
         run: swift test --parallel
       - name: Build macOS 26 app
         run: xcodebuild -project Move.xcodeproj -scheme Move -configuration Release -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO clean build
+      - name: Build iOS app and tests
+        run: xcodebuild -project Move.xcodeproj -scheme MoveiOS -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+      - name: Build watchOS app and tests
+        run: xcodebuild -project Move.xcodeproj -scheme MoveWatch -configuration Debug -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO build
+      - name: Build Widget extension
+        run: xcodebuild -project Move.xcodeproj -scheme MoveWidgets -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
       - name: Run macOS UI tests
         run: xcodebuild -project Move.xcodeproj -scheme Move -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
       - name: Package unsigned app

@@ -2,6 +2,7 @@
 DerivedData/
 build/
 .swiftpm/
+.build/
 *.xcuserstate
 xcuserdata/
 Move.xcodeproj/

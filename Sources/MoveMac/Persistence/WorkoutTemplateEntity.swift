@@ -3,7 +3,7 @@ import SwiftData
 import MoveCore
 
 @Model final class WorkoutTemplateEntity {
-    @Attribute(.unique) var id: UUID
+    var id: UUID
     var name: String
     var templateData: Data
     var archived: Bool

@@ -43,4 +43,13 @@ La CI GitHub Actions utilise macOS 26, lance les tests du cœur, compile en Rele
 - `Sources/MoveMac` : SwiftUI, AppKit, encoche, SwiftData, notifications et services système.
 - `Tests/MoveCoreTests` : tests unitaires Swift Testing.
 
-Les données restent locales en V1. Les UUID, dates de création/modification et l’archivage logique préparent une future synchronisation iCloud.
+Les données utilisent le container privé `iCloud.cc.spel.move` avec repli persistant local. Les requêtes de notifications ne sont jamais synchronisées : chaque hôte les reconstruit depuis le planner. Le schéma CloudKit doit être créé et validé en Development avant toute promotion en Production.
+
+`MoveCore` cible macOS, iOS et watchOS. `MoveShared` contient le planner de file, la réconciliation, la politique d’hôte et les commandes Watch idempotentes. L’iPhone est l’hôte par défaut ; watchOS reçoit le transfert système et ne programme pas de file locale.
+
+Build des nouvelles plateformes :
+
+```bash
+xcodebuild -project Move.xcodeproj -scheme MoveiOS -destination 'generic/platform=iOS Simulator' build
+xcodebuild -project Move.xcodeproj -scheme MoveWatch -destination 'generic/platform=watchOS Simulator' build
+```

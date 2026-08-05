@@ -4,6 +4,7 @@ import Observation
 import SwiftData
 import UserNotifications
 import MoveCore
+import MoveShared
 
 @MainActor @Observable final class MoveStore {
     var currentExercise: Exercise = ExerciseLibrary.all.first!
@@ -14,6 +15,7 @@ import MoveCore
     var movement = MovementPreferences()
     var noCompatibleExercises = false
     var appearance = AppearancePreferences()
+    var reminderHost = ReminderHostPreference.phoneAndWatch
     var activeWorkout: WorkoutTemplate?
     var completedWorkout: WorkoutTemplate?
     private var recentExerciseIDs: [String] = []
@@ -30,6 +32,7 @@ import MoveCore
     private var timer: Timer?
     private let selector = ExerciseSelector()
     private let scheduler = ReminderScheduler()
+    private let reminderPlanner = ReminderPlanner()
     private let context: ModelContext
     private var notificationObserver: NSObjectProtocol?
 
@@ -53,7 +56,7 @@ import MoveCore
             easyCompletionCounts = saved
         }
         if let saved = try? context.fetch(FetchDescriptor<AppSettingsEntity>()), let settings = saved.first {
-            let values = settings.values(); reminder = values.0; movement = values.1; appearance = values.2
+            let values = settings.values(); reminder = values.0; movement = values.1; appearance = values.2; reminderHost = settings.reminderHost
         }
         resumableWorkout = (try? context.fetch(FetchDescriptor<WorkoutSessionEntity>(predicate: #Predicate { session in
             session.stateRaw != "completed" && session.stateRaw != "cancelled"
@@ -89,6 +92,7 @@ import MoveCore
         UserDefaults.standard.set(settings.reminderData, forKey: "move.reminderPreferences")
         settings.movementData = (try? JSONEncoder().encode(movement)) ?? Data()
         settings.appearanceData = (try? JSONEncoder().encode(appearance)) ?? Data()
+        settings.reminderHost = reminderHost
         settings.updatedAt = .now
         if existing == nil { context.insert(settings) }
         try? context.save()
@@ -128,7 +132,10 @@ import MoveCore
     }
 
     func scheduleNextReminder(from now: Date = .now) {
-        guard let next = scheduler.nextDate(now: now, preferences: reminder, state: reminderState) else { MoveLogger.scheduler.warning("No compatible reminder date") ; return }
+        guard ReminderHostPolicy.shouldSchedule(on: reminderHost, platform: .mac) else { ReminderNotificationService.cancelPending(); return }
+        let horizon = Calendar.current.date(byAdding: .day, value: 14, to: now) ?? now.addingTimeInterval(14 * 86400)
+        let plan = reminderPlanner.plan(.init(now: now, horizon: horizon, maximumCount: 64, preferences: reminder, state: reminderState, exercises: availableExercises, recentExerciseIDs: recentExerciseIDs))
+        guard let next = plan.first?.fireDate else { MoveLogger.scheduler.warning("No compatible reminder date"); ReminderNotificationService.cancelPending(); return }
         reminderState.nextReminderAt = next
         let entity = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first ?? ReminderStateEntity(state: reminderState)
         entity.nextReminderAt = next; entity.updatedAt = .now
@@ -137,20 +144,23 @@ import MoveCore
         try? context.save()
         ReminderNotificationService.cancelPending()
         Task {
-            do { try await ReminderNotificationService.schedule(exercise: currentExercise, at: next, sound: appearance.sounds); MoveLogger.notifications.debug("Reminder scheduled") }
+            do {
+                for reminder in plan {
+                    guard let exercise = self.exercise(withID: reminder.exerciseID) else { continue }
+                    try await ReminderNotificationService.schedule(exercise: exercise, at: reminder.fireDate, sound: appearance.sounds, reminderID: reminder.id, kind: reminder.kind)
+                }
+                MoveLogger.notifications.debug("Reminder queue scheduled")
+            }
             catch { MoveLogger.notifications.error("Reminder scheduling failed: \(String(describing: error), privacy: .public)") }
         }
     }
 
     func scheduleNextReminderAfterWake(from now: Date = .now) {
-        guard let next = scheduler.nextDateAfterWake(now: now, preferences: reminder, state: reminderState) else {
+        guard scheduler.nextDateAfterWake(now: now, preferences: reminder, state: reminderState) != nil else {
             MoveLogger.scheduler.warning("No compatible reminder date after wake")
             return
         }
-        reminderState.nextReminderAt = next
-        persistReminderState()
-        ReminderNotificationService.cancelPending()
-        Task { try? await ReminderNotificationService.schedule(exercise: currentExercise, at: next, sound: appearance.sounds) }
+        scheduleNextReminder(from: now)
     }
 
     private func persistReminderState() {
@@ -159,6 +169,8 @@ import MoveCore
         entity.lastReminderAt = reminderState.lastReminderAt
         entity.lastUserInteractionAt = reminderState.lastUserInteractionAt
         entity.pausedUntil = reminderState.pausedUntil
+        entity.snoozedReminderAt = reminderState.snoozedReminderAt
+        entity.snoozedExerciseID = reminderState.snoozedExerciseID
         entity.updatedAt = .now
         if entity.modelContext == nil { context.insert(entity) }
         try? context.save()
@@ -238,8 +250,11 @@ import MoveCore
 
     func snoozeCurrent(for minutes: Int = 15) {
         context.insert(ActivityEntity(record: .init(exerciseID: currentExercise.id, amount: currentExercise.defaultAmount, metric: currentExercise.metric, status: .snoozed, source: .hourly)))
-        markReminderInteraction(); reminderState.pausedUntil = .now.addingTimeInterval(TimeInterval(minutes * 60))
-        try? context.save(); panelState = .snooze; chooseNext(); ReminderNotificationService.cancelPending(); scheduleNextReminder()
+        markReminderInteraction()
+        reminderState.snoozedReminderAt = .now.addingTimeInterval(TimeInterval(minutes * 60))
+        reminderState.snoozedExerciseID = currentExercise.id
+        reminderState.pausedUntil = nil
+        try? context.save(); panelState = .snooze; persistReminderState(); ReminderNotificationService.cancelPending(); scheduleNextReminder()
     }
 
     private func markReminderInteraction() {

@@ -3,7 +3,7 @@ import Combine
 import WatchConnectivity
 import MoveShared
 
-final class WatchSessionStore: NSObject, ObservableObject, WCSessionDelegate {
+final class WatchSessionStore: NSObject, ObservableObject, WCSessionDelegate, @unchecked Sendable {
     @Published var nextExerciseName = "Prochain mouvement"
     private let queue = WatchCommandQueue()
     override init() { super.init(); guard WCSession.isSupported() else { return }; WCSession.default.delegate = self; WCSession.default.activate() }

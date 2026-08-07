@@ -50,7 +50,7 @@ struct MoveProgressView: View {
     }
 
     private func exerciseName(for id: String) -> String {
-        if let builtIn = ExerciseLibrary.all.first(where: { $0.id == id }) { return builtIn.name }
+        if let builtIn = ExerciseLibrary.all.first(where: { $0.id == id }) { return builtIn.displayName }
         return customExercises.first(where: { $0.id == id })?.name ?? id
     }
 

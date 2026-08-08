@@ -8,7 +8,7 @@ import Testing
     _ = await monitor.observe { event in values.append(event) }
     await monitor.emit(.remoteChange, debounceNanoseconds: 1_000_000)
     await monitor.emit(.remoteChange, debounceNanoseconds: 1_000_000)
-    try? await Task.sleep(nanoseconds: 20_000_000)
+    await monitor.waitForPendingDelivery()
     #expect(values.count == 1)
 }
 

@@ -341,6 +341,7 @@ private struct EditExerciseView: View {
 struct SettingsView: View {
     @Bindable var store: MoveStore
     @Environment(\.modelContext) private var modelContext
+    @Query private var customExercises: [CustomExerciseEntity]
     @State private var pendingDataAction: DataAction?
     @State private var launchAtLogin = false
     @State private var launchError: String?
@@ -381,6 +382,26 @@ struct SettingsView: View {
                 Stepper(String(format: MoveCopy.text("settings.endHour"), store.reminder.activeEndHour), value: $store.reminder.activeEndHour, in: 1...24)
                 Toggle(MoveCopy.text("settings.fullScreen"), isOn: $store.reminder.notificationsDuringFullScreen)
                 Toggle(MoveCopy.text("settings.meetings"), isOn: $store.reminder.notificationsDuringMeetings)
+            }
+            Section("Grease the Groove") {
+                Toggle("Activer ce mode", isOn: $store.reminder.greaseTheGrooveEnabled)
+                if store.reminder.greaseTheGrooveEnabled {
+                    Picker("Mouvement", selection: Binding(
+                        get: { store.reminder.greaseTheGrooveExerciseID ?? allExercises.first?.id ?? "" },
+                        set: { store.reminder.greaseTheGrooveExerciseID = $0 }
+                    )) {
+                        ForEach(allExercises, id: \.id) { exercise in
+                            Text("\(exercise.emoji) \(exercise.displayName)").tag(exercise.id)
+                        }
+                    }
+                    Stepper("Rep max : \(store.reminder.greaseTheGrooveRepMax)", value: $store.reminder.greaseTheGrooveRepMax, in: 1...200)
+                    Stepper("Pourcentage : \(store.reminder.greaseTheGroovePercentage)%", value: $store.reminder.greaseTheGroovePercentage, in: 10...90, step: 5)
+                    Stepper("Réétalonnage : tous les \(store.reminder.greaseTheGrooveCalibrationIntervalDays) jours", value: $store.reminder.greaseTheGrooveCalibrationIntervalDays, in: 7...90, step: 7)
+                    Text("Chaque rappel propose uniquement ce mouvement à \(max(1, store.reminder.greaseTheGrooveRepMax * store.reminder.greaseTheGroovePercentage / 100)) répétitions.")
+                        .font(.caption).foregroundStyle(.secondary)
+                    if needsCalibration { Text("⚠️ Rep max à réétalonner").foregroundStyle(.orange) }
+                    Button("Marquer la rep max comme étalonnée") { store.reminder.greaseTheGrooveLastCalibratedAt = .now }
+                }
             }
             Section("Appareil hôte des rappels") {
                 Picker("Programmer les notifications sur", selection: $store.reminderHost) {
@@ -462,5 +483,16 @@ struct SettingsView: View {
         .init(get: { store.movement.availableEquipment.contains(item) }, set: { enabled in
             if enabled { store.movement.availableEquipment.insert(item) } else { store.movement.availableEquipment.remove(item) }
         })
+    }
+
+    private var allExercises: [Exercise] {
+        ExerciseLibrary.all + customExercises.filter { !$0.archived }.compactMap(\.exercise)
+    }
+
+    private var needsCalibration: Bool {
+        guard let date = store.reminder.greaseTheGrooveLastCalibratedAt,
+              let due = Calendar.current.date(byAdding: .day, value: store.reminder.greaseTheGrooveCalibrationIntervalDays, to: date)
+        else { return true }
+        return due <= .now
     }
 }

@@ -1,9 +1,12 @@
 import SwiftUI
 import UserNotifications
 import MoveCore
+import MoveShared
+import SwiftData
 
 struct iOSReminderSettingsView: View {
     @Bindable var store: iOSAppStore
+    @Query private var customExercises: [CustomExerciseEntity]
 
     var body: some View {
         NavigationStack {
@@ -36,6 +39,32 @@ struct iOSReminderSettingsView: View {
                         step: 5,
                         valueText: { "\($0) min" }
                     )
+                }
+
+                Section("Grease the Groove") {
+                    Toggle("Activer ce mode", isOn: $store.reminder.greaseTheGrooveEnabled)
+                    if store.reminder.greaseTheGrooveEnabled {
+                        Picker("Mouvement", selection: Binding(
+                            get: { store.reminder.greaseTheGrooveExerciseID ?? allExercises.first?.id ?? "" },
+                            set: { store.reminder.greaseTheGrooveExerciseID = $0 }
+                        )) {
+                            ForEach(allExercises, id: \.id) { exercise in
+                                Text("\(exercise.emoji) \(exercise.name)").tag(exercise.id)
+                            }
+                        }
+                        iOSSettingsStepper("Rep max", value: $store.reminder.greaseTheGrooveRepMax, in: 1...200)
+                        iOSSettingsStepper("Pourcentage", value: $store.reminder.greaseTheGroovePercentage, in: 10...90, step: 5, valueText: { "\($0) %" })
+                        iOSSettingsStepper("Réétalonnage", value: $store.reminder.greaseTheGrooveCalibrationIntervalDays, in: 7...90, step: 7, valueText: { "tous les \($0) jours" })
+                        Text("Chaque rappel proposera uniquement ce mouvement, à \(max(1, store.reminder.greaseTheGrooveRepMax * store.reminder.greaseTheGroovePercentage / 100)) répétitions.")
+                            .font(.footnote).foregroundStyle(.secondary)
+                        if needsCalibration {
+                            Label("Rep max à réétalonner", systemImage: "exclamationmark.triangle")
+                                .foregroundStyle(.orange)
+                        }
+                        Button("Marquer la rep max comme étalonnée") {
+                            store.reminder.greaseTheGrooveLastCalibratedAt = .now
+                        }
+                    }
                 }
 
                 Section("Jours actifs") {
@@ -108,6 +137,17 @@ struct iOSReminderSettingsView: View {
         case .mac: "Les rappels sont programmés uniquement par le Mac."
         case .all: "Mac et iPhone programment les rappels. Des doublons sont possibles."
         }
+    }
+
+    private var allExercises: [Exercise] {
+        ExerciseLibrary.all + customExercises.filter { !$0.archived }.compactMap(\.exercise)
+    }
+
+    private var needsCalibration: Bool {
+        guard let date = store.reminder.greaseTheGrooveLastCalibratedAt,
+              let due = Calendar.current.date(byAdding: .day, value: store.reminder.greaseTheGrooveCalibrationIntervalDays, to: date)
+        else { return true }
+        return due <= .now
     }
 
     private func hour(_ value: Int) -> String { String(format: "%02d:00", value) }

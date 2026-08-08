@@ -39,7 +39,7 @@ final class MacNotificationClient: NSObject, @unchecked Sendable, NotificationCl
                 ?? ExerciseLibrary.all.first { $0.id == reminder.exerciseID }
             let content = UNMutableNotificationContent()
             content.title = MoveCopy.text("notification.title")
-            content.body = exercise.map { "\($0.emoji) \($0.displayName) — \($0.defaultAmount)" }
+            content.body = exercise.map { "\($0.emoji) \($0.displayName) — \(reminder.targetAmount ?? $0.defaultAmount)" }
                 ?? MoveCopy.text("notification.title")
             content.categoryIdentifier = ReminderNotificationService.category
             content.userInfo = MoveNotificationContent.userInfo(for: reminder)

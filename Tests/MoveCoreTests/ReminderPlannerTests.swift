@@ -50,3 +50,20 @@ private func date(_ hour: Int, _ minute: Int = 0) -> Date {
     let request = ReminderPlanRequest(now: now, horizon: now.addingTimeInterval(86400), exercises: ExerciseLibrary.builtIn, calendar: calendar)
     #expect(ReminderPlanner().plan(request) == ReminderPlanner().plan(request))
 }
+
+@Test func greaseTheGrooveUsesOneExerciseAndTargetPercentage() {
+    var preferences = ReminderPreferences()
+    preferences.enabledWeekdays = Set(1...7)
+    preferences.greaseTheGrooveEnabled = true
+    preferences.greaseTheGrooveExerciseID = ExerciseLibrary.builtIn[0].id
+    preferences.greaseTheGrooveRepMax = 20
+    preferences.greaseTheGroovePercentage = 50
+    let plan = ReminderPlanner().plan(.init(
+        now: date(8), horizon: date(8).addingTimeInterval(86400),
+        preferences: preferences, exercises: ExerciseLibrary.builtIn,
+        calendar: Calendar(identifier: .gregorian)
+    ))
+    #expect(!plan.isEmpty)
+    #expect(Set(plan.map(\.exerciseID)) == [ExerciseLibrary.builtIn[0].id])
+    #expect(plan.allSatisfy { $0.targetAmount == 10 })
+}

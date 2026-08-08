@@ -60,8 +60,14 @@ public struct ReminderPreferences: Codable, Equatable, Sendable {
     public var snoozeMinutes = 15
     public var notificationsDuringFullScreen = false
     public var notificationsDuringMeetings = false
+    public var greaseTheGrooveEnabled = false
+    public var greaseTheGrooveExerciseID: String?
+    public var greaseTheGrooveRepMax = 10
+    public var greaseTheGroovePercentage = 50
+    public var greaseTheGrooveCalibrationIntervalDays = 30
+    public var greaseTheGrooveLastCalibratedAt: Date?
     public init() {}
-    private enum CodingKeys: String, CodingKey { case enabled, intervalMinutes, activeStartHour, activeEndHour, enabledWeekdays, snoozeMinutes, notificationsDuringFullScreen, notificationsDuringMeetings }
+    private enum CodingKeys: String, CodingKey { case enabled, intervalMinutes, activeStartHour, activeEndHour, enabledWeekdays, snoozeMinutes, notificationsDuringFullScreen, notificationsDuringMeetings, greaseTheGrooveEnabled, greaseTheGrooveExerciseID, greaseTheGrooveRepMax, greaseTheGroovePercentage, greaseTheGrooveCalibrationIntervalDays, greaseTheGrooveLastCalibratedAt }
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         enabled = try values.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
@@ -72,6 +78,12 @@ public struct ReminderPreferences: Codable, Equatable, Sendable {
         snoozeMinutes = try values.decodeIfPresent(Int.self, forKey: .snoozeMinutes) ?? 15
         notificationsDuringFullScreen = try values.decodeIfPresent(Bool.self, forKey: .notificationsDuringFullScreen) ?? false
         notificationsDuringMeetings = try values.decodeIfPresent(Bool.self, forKey: .notificationsDuringMeetings) ?? false
+        greaseTheGrooveEnabled = try values.decodeIfPresent(Bool.self, forKey: .greaseTheGrooveEnabled) ?? false
+        greaseTheGrooveExerciseID = try values.decodeIfPresent(String.self, forKey: .greaseTheGrooveExerciseID)
+        greaseTheGrooveRepMax = try values.decodeIfPresent(Int.self, forKey: .greaseTheGrooveRepMax) ?? 10
+        greaseTheGroovePercentage = try values.decodeIfPresent(Int.self, forKey: .greaseTheGroovePercentage) ?? 50
+        greaseTheGrooveCalibrationIntervalDays = try values.decodeIfPresent(Int.self, forKey: .greaseTheGrooveCalibrationIntervalDays) ?? 30
+        greaseTheGrooveLastCalibratedAt = try values.decodeIfPresent(Date.self, forKey: .greaseTheGrooveLastCalibratedAt)
     }
 }
 

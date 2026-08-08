@@ -3,7 +3,7 @@ import SwiftData
 import MoveCore
 
 @Model final class CustomExerciseEntity {
-    @Attribute(.unique) var id: String
+    var id: String
     var name: String
     var emoji: String
     var categoryRaw: String

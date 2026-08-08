@@ -10,6 +10,7 @@ public enum HumorMode: String, Codable, CaseIterable, Sendable { case normal, di
 public enum AnimationMode: String, Codable, CaseIterable, Sendable { case full, reduced, disabled }
 public enum SoundMode: String, Codable, CaseIterable, Sendable { case off, discreet, normal }
 public enum ReminderScreenTarget: String, Codable, CaseIterable, Sendable { case main, active, macBook }
+public enum ReminderHostPreference: String, Codable, CaseIterable, Sendable { case phoneAndWatch, mac, all }
 
 public struct Exercise: Identifiable, Codable, Hashable, Sendable {
     public let id: String
@@ -88,9 +89,22 @@ public struct ReminderState: Codable, Equatable, Sendable {
     public var lastReminderAt: Date?
     public var lastUserInteractionAt: Date?
     public var pausedUntil: Date?
-    public init(nextReminderAt: Date? = nil, lastReminderAt: Date? = nil, lastUserInteractionAt: Date? = nil, pausedUntil: Date? = nil) {
+    public var snoozedReminderAt: Date?
+    public var snoozedExerciseID: String?
+    public init(nextReminderAt: Date? = nil, lastReminderAt: Date? = nil, lastUserInteractionAt: Date? = nil, pausedUntil: Date? = nil, snoozedReminderAt: Date? = nil, snoozedExerciseID: String? = nil) {
         self.nextReminderAt = nextReminderAt; self.lastReminderAt = lastReminderAt
         self.lastUserInteractionAt = lastUserInteractionAt; self.pausedUntil = pausedUntil
+        self.snoozedReminderAt = snoozedReminderAt; self.snoozedExerciseID = snoozedExerciseID
+    }
+    private enum CodingKeys: String, CodingKey { case nextReminderAt, lastReminderAt, lastUserInteractionAt, pausedUntil, snoozedReminderAt, snoozedExerciseID }
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        nextReminderAt = try values.decodeIfPresent(Date.self, forKey: .nextReminderAt)
+        lastReminderAt = try values.decodeIfPresent(Date.self, forKey: .lastReminderAt)
+        lastUserInteractionAt = try values.decodeIfPresent(Date.self, forKey: .lastUserInteractionAt)
+        pausedUntil = try values.decodeIfPresent(Date.self, forKey: .pausedUntil)
+        snoozedReminderAt = try values.decodeIfPresent(Date.self, forKey: .snoozedReminderAt)
+        snoozedExerciseID = try values.decodeIfPresent(String.self, forKey: .snoozedExerciseID)
     }
 }
 

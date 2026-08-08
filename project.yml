@@ -3,10 +3,14 @@ options:
   bundleIdPrefix: cc.spel
   deploymentTarget:
     macOS: "26.0"
+    iOS: "26.0"
+    watchOS: "26.0"
 settings:
   base:
     SWIFT_VERSION: "6.2"
     MACOSX_DEPLOYMENT_TARGET: "26.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+    WATCHOS_DEPLOYMENT_TARGET: "26.0"
     CODE_SIGNING_ALLOWED: NO
 packages:
   MoveCore:
@@ -22,12 +26,61 @@ targets:
     dependencies:
       - package: MoveCore
         product: MoveCore
+      - package: MoveCore
+        product: MoveShared
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move
         PRODUCT_NAME: Move
         INFOPLIST_FILE: Sources/MoveMac/Info.plist
         CODE_SIGN_ENTITLEMENTS: Sources/MoveMac/Move.entitlements
+  MoveiOS:
+    type: application
+    platform: iOS
+    sources:
+      - Sources/MoveiOS
+    resources:
+      - Sources/MoveiOS/Resources
+    dependencies:
+      - package: MoveCore
+        product: MoveCore
+      - package: MoveCore
+        product: MoveShared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move.ios
+        PRODUCT_NAME: Move
+        INFOPLIST_FILE: Sources/MoveiOS/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Sources/MoveiOS/MoveiOS.entitlements
+  MoveWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - Sources/MoveWatch
+    dependencies:
+      - package: MoveCore
+        product: MoveCore
+      - package: MoveCore
+        product: MoveShared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move.watchkitapp
+        PRODUCT_NAME: Move Watch
+        INFOPLIST_FILE: Sources/MoveWatch/Info.plist
+        WATCHOS_DEPLOYMENT_TARGET: "26.0"
+  MoveWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Sources/MoveWidgets
+    dependencies:
+      - package: MoveCore
+        product: MoveCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move.widgets
+        INFOPLIST_FILE: Sources/MoveWidgets/Info.plist
+        SWIFT_OPTIMIZATION_LEVEL: "-Onone"
   MoveUITests:
     type: bundle.ui-testing
     platform: macOS
@@ -37,6 +90,24 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move.uitests
+  MoveiOSTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - Tests/MoveiOSTests
+    testTarget: MoveiOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move.ios.tests
+  MoveWatchTests:
+    type: bundle.unit-test
+    platform: watchOS
+    sources:
+      - Tests/MoveWatchTests
+    testTarget: MoveWatch
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move.watch.tests
 schemes:
   Move:
     build:
@@ -46,3 +117,23 @@ schemes:
     test:
       targets:
         - MoveUITests
+  MoveiOS:
+    build:
+      targets:
+        MoveiOS: all
+        MoveiOSTests: [test]
+    test:
+      targets:
+        - MoveiOSTests
+  MoveWatch:
+    build:
+      targets:
+        MoveWatch: all
+        MoveWatchTests: [test]
+    test:
+      targets:
+        - MoveWatchTests
+  MoveWidgets:
+    build:
+      targets:
+        MoveWidgets: all

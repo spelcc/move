@@ -9,6 +9,9 @@ struct MoveDiagnosticReport: Codable {
     let appVersion: String
     let osVersion: String
     let schemaVersion: String
+    let cloudKitMode: String
+    let reminderHost: ReminderHostPreference
+    let reminderQueueCapacity: Int
     let activityCount: Int
     let customExerciseCount: Int
     let workoutTemplateCount: Int
@@ -31,7 +34,10 @@ struct MoveDiagnosticReport: Codable {
             generatedAt: .now,
             appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev",
             osVersion: ProcessInfo.processInfo.operatingSystemVersionString,
-            schemaVersion: "MoveSchemaV1",
+            schemaVersion: "MoveSchemaV2",
+            cloudKitMode: "localOnly",
+            reminderHost: store.reminderHost,
+            reminderQueueCapacity: 64,
             activityCount: activities,
             customExerciseCount: customExercises,
             workoutTemplateCount: templates,

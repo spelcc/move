@@ -381,6 +381,14 @@ struct SettingsView: View {
                 Toggle(MoveCopy.text("settings.fullScreen"), isOn: $store.reminder.notificationsDuringFullScreen)
                 Toggle(MoveCopy.text("settings.meetings"), isOn: $store.reminder.notificationsDuringMeetings)
             }
+            Section("Appareil hôte des rappels") {
+                Picker("Programmer les notifications sur", selection: $store.reminderHost) {
+                    Text("iPhone et Apple Watch").tag(ReminderHostPreference.phoneAndWatch)
+                    Text("Mac").tag(ReminderHostPreference.mac)
+                    Text("Tous les appareils (doublons possibles)").tag(ReminderHostPreference.all)
+                }
+                Text("L’Apple Watch suit toujours la file programmée par l’iPhone.").font(.caption).foregroundStyle(.secondary)
+            }
             Section(MoveCopy.text("settings.constraints")) { Toggle(MoveCopy.text("settings.noJumps"), isOn: tagBinding("jump")); Toggle(MoveCopy.text("settings.quiet"), isOn: tagBinding("noisy")); Toggle(MoveCopy.text("settings.avoidFloor"), isOn: tagBinding("floor")); Toggle(MoveCopy.text("settings.avoidWrists"), isOn: tagBinding("wrists")); Toggle(MoveCopy.text("settings.pullupBar"), isOn: equipmentBinding("pullup-bar")) }
             Section(MoveCopy.text("settings.appearance")) {
                 Picker(MoveCopy.text("settings.screenTarget"), selection: $store.appearance.screenTarget) {
@@ -418,6 +426,7 @@ struct SettingsView: View {
         .onChange(of: store.reminder) { _, _ in store.persistSettings() }
         .onChange(of: store.movement) { _, _ in store.persistSettings(); store.chooseNext() }
         .onChange(of: store.appearance) { _, _ in store.persistSettings() }
+        .onChange(of: store.reminderHost) { _, _ in store.persistSettings(); store.scheduleNextReminder() }
         .onAppear { launchAtLogin = LaunchAtLoginService.isEnabled }
         .alert(item: $pendingDataAction) { action in
             Alert(title: Text(action.title), message: Text(action.message),

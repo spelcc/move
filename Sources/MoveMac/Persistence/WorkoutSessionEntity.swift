@@ -3,7 +3,7 @@ import SwiftData
 import MoveCore
 
 @Model final class WorkoutSessionEntity {
-    @Attribute(.unique) var id: UUID
+    var id: UUID
     var workoutID: UUID
     var workoutName: String
     var stepIndex: Int

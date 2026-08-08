@@ -3,6 +3,7 @@ import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
 import MoveCore
+import MoveShared
 
 struct MoveDiagnosticReport: Codable {
     let generatedAt: Date

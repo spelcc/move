@@ -15,7 +15,8 @@ import MoveShared
     var movement = MovementPreferences()
     var noCompatibleExercises = false
     var appearance = AppearancePreferences()
-    var reminderHost = ReminderHostPreference.phoneAndWatch
+    var reminderHost = ReminderHostPreference.mac
+    var notificationAuthorizationStatus: UNAuthorizationStatus = .notDetermined
     var activeWorkout: WorkoutTemplate?
     var completedWorkout: WorkoutTemplate?
     private var recentExerciseIDs: [String] = []
@@ -35,6 +36,7 @@ import MoveShared
     private let reminderPlanner = ReminderPlanner()
     private let context: ModelContext
     private var notificationObserver: NSObjectProtocol?
+    private var reminderScheduleTask: Task<Void, Never>?
 
     private var availableExercises: [Exercise] {
         let custom = (try? context.fetch(FetchDescriptor<CustomExerciseEntity>())) ?? []
@@ -56,7 +58,20 @@ import MoveShared
             easyCompletionCounts = saved
         }
         if let saved = try? context.fetch(FetchDescriptor<AppSettingsEntity>()), let settings = saved.first {
-            let values = settings.values(); reminder = values.0; movement = values.1; appearance = values.2; reminderHost = settings.reminderHost
+            let values = settings.values()
+            reminder = values.0
+            movement = values.1
+            appearance = values.2
+            if !UserDefaults.standard.bool(forKey: "move.macReminderHostDefaultApplied"),
+               settings.reminderHost == .phoneAndWatch {
+                reminderHost = .mac
+                settings.reminderHostRaw = ReminderHostPreference.mac.rawValue
+                settings.updatedAt = .now
+                UserDefaults.standard.set(true, forKey: "move.macReminderHostDefaultApplied")
+                try? context.save()
+            } else {
+                reminderHost = settings.reminderHost
+            }
         }
         resumableWorkout = (try? context.fetch(FetchDescriptor<WorkoutSessionEntity>(predicate: #Predicate { session in
             session.stateRaw != "completed" && session.stateRaw != "cancelled"
@@ -87,7 +102,7 @@ import MoveShared
 
     func persistSettings() {
         let existing = (try? context.fetch(FetchDescriptor<AppSettingsEntity>()))?.first
-        let settings = existing ?? AppSettingsEntity()
+        let settings = existing ?? AppSettingsEntity(reminderHost: .mac)
         settings.reminderData = (try? JSONEncoder().encode(reminder)) ?? Data()
         UserDefaults.standard.set(settings.reminderData, forKey: "move.reminderPreferences")
         settings.movementData = (try? JSONEncoder().encode(movement)) ?? Data()
@@ -102,6 +117,7 @@ import MoveShared
         reminder = ReminderPreferences()
         movement = MovementPreferences()
         appearance = AppearancePreferences()
+        reminderHost = .mac
         reminderState = ReminderState()
         resetAdaptationState()
         persistSettings()
@@ -121,6 +137,7 @@ import MoveShared
         reminder = ReminderPreferences()
         movement = MovementPreferences()
         appearance = AppearancePreferences()
+        reminderHost = .mac
         reminderState = ReminderState()
         resetAdaptationState()
         resumableWorkout = nil
@@ -131,27 +148,30 @@ import MoveShared
         scheduleNextReminder()
     }
 
-    func scheduleNextReminder(from now: Date = .now) {
-        guard ReminderHostPolicy.shouldSchedule(on: reminderHost, platform: .mac) else { ReminderNotificationService.cancelPending(); return }
+    func scheduleNextReminder(from now: Date = .now, debounce: Duration = .milliseconds(200)) {
+        let shouldSchedule = ReminderHostPolicy.shouldSchedule(on: reminderHost, platform: .mac)
         let horizon = Calendar.current.date(byAdding: .day, value: 14, to: now) ?? now.addingTimeInterval(14 * 86400)
-        let plan = reminderPlanner.plan(.init(now: now, horizon: horizon, maximumCount: 64, preferences: reminder, state: reminderState, exercises: availableExercises, recentExerciseIDs: recentExerciseIDs))
-        guard let next = plan.first?.fireDate else { MoveLogger.scheduler.warning("No compatible reminder date"); ReminderNotificationService.cancelPending(); return }
-        reminderState.nextReminderAt = next
+        let exercises = availableExercises
+        let plan = shouldSchedule
+            ? reminderPlanner.plan(.init(now: now, horizon: horizon, maximumCount: 64, preferences: reminder, state: reminderState, exercises: exercises, recentExerciseIDs: recentExerciseIDs))
+            : []
+        reminderState.nextReminderAt = plan.first?.fireDate
         let entity = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first ?? ReminderStateEntity(state: reminderState)
-        entity.nextReminderAt = next; entity.updatedAt = .now
+        entity.nextReminderAt = reminderState.nextReminderAt
+        entity.updatedAt = .now
         if entity.modelContext == nil { context.insert(entity) }
         reminderState = entity.state
         try? context.save()
-        ReminderNotificationService.cancelPending()
-        Task {
-            do {
-                for reminder in plan {
-                    guard let exercise = self.exercise(withID: reminder.exerciseID) else { continue }
-                    try await ReminderNotificationService.schedule(exercise: exercise, at: reminder.fireDate, sound: appearance.sounds, reminderID: reminder.id, kind: reminder.kind)
-                }
-                MoveLogger.notifications.debug("Reminder queue scheduled")
-            }
-            catch { MoveLogger.notifications.error("Reminder scheduling failed: \(String(describing: error), privacy: .public)") }
+
+        reminderScheduleTask?.cancel()
+        let sound = appearance.sounds
+        reminderScheduleTask = Task { [weak self] in
+            if debounce > .zero { try? await Task.sleep(for: debounce) }
+            guard !Task.isCancelled else { return }
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            guard !Task.isCancelled else { return }
+            self?.notificationAuthorizationStatus = settings.authorizationStatus
+            await MacReminderScheduleQueue.shared.submit(.init(plan: plan, exercises: exercises, sound: sound))
         }
     }
 
@@ -181,7 +201,7 @@ import MoveShared
         let entity = (try? context.fetch(FetchDescriptor<ReminderStateEntity>()))?.first ?? ReminderStateEntity(state: reminderState)
         entity.pausedUntil = date; entity.nextReminderAt = date; entity.updatedAt = .now
         if entity.modelContext == nil { context.insert(entity) }
-        try? context.save(); ReminderNotificationService.cancelPending(); scheduleNextReminder()
+        try? context.save(); scheduleNextReminder(debounce: .zero)
     }
 
     func chooseNext() {
@@ -254,7 +274,7 @@ import MoveShared
         reminderState.snoozedReminderAt = .now.addingTimeInterval(TimeInterval(minutes * 60))
         reminderState.snoozedExerciseID = currentExercise.id
         reminderState.pausedUntil = nil
-        try? context.save(); panelState = .snooze; persistReminderState(); ReminderNotificationService.cancelPending(); scheduleNextReminder()
+        try? context.save(); panelState = .snooze; persistReminderState(); scheduleNextReminder(debounce: .zero)
     }
 
     private func markReminderInteraction() {

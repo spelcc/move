@@ -1,5 +1,6 @@
 import Foundation
 import MoveCore
+import MoveShared
 
 enum MoveCopy {
     static func text(_ key: String) -> String {

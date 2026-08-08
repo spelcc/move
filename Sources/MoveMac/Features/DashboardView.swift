@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import MoveCore
+import MoveShared
 
 struct DashboardView: View {
     @Query(sort: \ActivityEntity.performedAt, order: .reverse) private var activities: [ActivityEntity]

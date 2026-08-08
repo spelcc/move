@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
 import MoveCore
+import MoveShared
 
 struct MovementSettingsView: View {
     @Bindable var store: MoveStore
@@ -423,9 +424,9 @@ struct SettingsView: View {
             }
         }.formStyle(.grouped).padding().navigationTitle(MoveCopy.text("settings.title"))
         .fileExporter(isPresented: $exportingDiagnostic, document: diagnosticDocument, contentType: .json, defaultFilename: "move-diagnostic.json") { _ in }
-        .onChange(of: store.reminder) { _, _ in store.persistSettings() }
-        .onChange(of: store.movement) { _, _ in store.persistSettings(); store.chooseNext() }
-        .onChange(of: store.appearance) { _, _ in store.persistSettings() }
+        .onChange(of: store.reminder) { _, _ in store.persistSettings(); store.scheduleNextReminder() }
+        .onChange(of: store.movement) { _, _ in store.persistSettings(); store.chooseNext(); store.scheduleNextReminder() }
+        .onChange(of: store.appearance) { _, _ in store.persistSettings(); store.scheduleNextReminder() }
         .onChange(of: store.reminderHost) { _, _ in store.persistSettings(); store.scheduleNextReminder() }
         .onAppear { launchAtLogin = LaunchAtLoginService.isEnabled }
         .alert(item: $pendingDataAction) { action in

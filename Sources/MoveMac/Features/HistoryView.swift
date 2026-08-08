@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
 import MoveCore
+import MoveShared
 
 struct HistoryView: View {
     @Environment(\.modelContext) private var modelContext

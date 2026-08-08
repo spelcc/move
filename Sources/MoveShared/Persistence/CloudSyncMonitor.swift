@@ -19,5 +19,8 @@ public actor CloudSyncMonitor {
             await self?.clearTask()
         }
     }
+    public func waitForPendingDelivery() async {
+        await pendingTask?.value
+    }
     private func clearTask() { pendingTask = nil }
 }

@@ -1,8 +1,11 @@
 {
   "images" : [
-    { "filename" : "MoveIcon.svg", "idiom" : "universal", "scale" : "1x" },
-    { "filename" : "MoveIcon.svg", "idiom" : "universal", "scale" : "2x" },
-    { "filename" : "MoveIcon.svg", "idiom" : "universal", "scale" : "3x" }
+    {
+      "filename" : "AppIcon-1024.png",
+      "idiom" : "universal",
+      "platform" : "ios",
+      "size" : "1024x1024"
+    }
   ],
   "info" : { "author" : "xcode", "version" : 1 }
 }

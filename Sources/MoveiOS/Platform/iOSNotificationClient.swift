@@ -5,6 +5,11 @@ import MoveShared
 
 final class iOSNotificationClient: NSObject, @unchecked Sendable, NotificationClient {
     private let center = UNUserNotificationCenter.current()
+    private let exercises: [String: Exercise]
+
+    init(exercises: [Exercise] = []) {
+        self.exercises = Dictionary(uniqueKeysWithValues: exercises.map { ($0.id, $0) })
+    }
     func requestAuthorization() async throws -> Bool { try await center.requestAuthorization(options: [.alert, .sound, .badge]) }
     func pending() async -> [PendingNotification] {
         let requests = await center.pendingNotificationRequests()
@@ -16,7 +21,7 @@ final class iOSNotificationClient: NSObject, @unchecked Sendable, NotificationCl
     }
     func schedule(_ reminders: [PlannedReminder]) async throws {
         for reminder in reminders {
-            let exercise = ExerciseLibrary.all.first { $0.id == reminder.exerciseID }
+            let exercise = exercises[reminder.exerciseID] ?? ExerciseLibrary.all.first { $0.id == reminder.exerciseID }
             let content = UNMutableNotificationContent()
             content.title = (exercise?.emoji ?? "💪") + " " + (exercise?.name ?? "Bouger")
             content.subtitle = "Pause mouvement"

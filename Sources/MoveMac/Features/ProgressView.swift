@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import MoveCore
+import MoveShared
 
 struct MoveProgressView: View {
     @Query private var activities: [ActivityEntity]

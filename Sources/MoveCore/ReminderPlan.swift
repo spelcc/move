@@ -33,17 +33,17 @@ public struct ReminderPlanner: Sendable {
               request.preferences.intervalMinutes >= 15,
               request.preferences.activeStartHour < request.preferences.activeEndHour,
               request.horizon > request.now else { return [] }
-        if let pause = request.state.pausedUntil, pause > request.now { return [] }
+        let planningStart = max(request.now, request.state.pausedUntil ?? request.now)
         let selector = ExerciseSelector()
         let available = request.exercises
         guard !available.isEmpty else { return [] }
         var result: [PlannedReminder] = []
-        var day = request.calendar.startOfDay(for: request.now)
+        var day = request.calendar.startOfDay(for: planningStart)
         while day < request.horizon && result.count < request.maximumCount {
             let weekday = request.calendar.component(.weekday, from: day)
             if request.preferences.enabledWeekdays.contains(weekday) {
                 for minute in stride(from: request.preferences.activeStartHour * 60, to: request.preferences.activeEndHour * 60, by: request.preferences.intervalMinutes) {
-                    guard let date = request.calendar.date(byAdding: .minute, value: minute, to: day), date > request.now, date < request.horizon else { continue }
+                    guard let date = request.calendar.date(byAdding: .minute, value: minute, to: day), date > planningStart, date < request.horizon else { continue }
                     let exercise = selector.next(from: available, preferences: .init(), recentExerciseIDs: request.recentExerciseIDs, seed: stableSeed(date: date, state: request.state))!
                     result.append(PlannedReminder(id: "move.normal.\(Int(date.timeIntervalSince1970)).\(exercise.id)", fireDate: date, exerciseID: exercise.id, kind: .scheduled))
                     if result.count == request.maximumCount { break }

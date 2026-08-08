@@ -47,7 +47,13 @@ import MoveShared
                     .font(.caption)
                 Divider()
             }
-            if let pausedUntil = store.reminderState.pausedUntil, pausedUntil > .now {
+            if !ReminderHostPolicy.shouldSchedule(on: store.reminderHost, platform: .mac) {
+                Label("Rappels programmés sur iPhone/Watch", systemImage: "iphone")
+                    .foregroundStyle(.secondary)
+            } else if store.notificationAuthorizationStatus == .denied {
+                Label("Notifications macOS refusées", systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(.orange)
+            } else if let pausedUntil = store.reminderState.pausedUntil, pausedUntil > .now {
                 Label(String(format: MoveCopy.text("menu.pausedUntil"), pausedUntil.formatted(date: .omitted, time: .shortened)), systemImage: "pause.circle")
                     .foregroundStyle(.orange)
             } else if let next = store.reminderState.nextReminderAt {

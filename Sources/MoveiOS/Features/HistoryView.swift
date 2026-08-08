@@ -1,24 +1,118 @@
 import SwiftUI
+import SwiftData
 import MoveCore
-
-struct HistoryStore {
-    static let key = "move.activityRecords"
-    static func load() -> [ActivityRecord] { guard let data = UserDefaults.standard.data(forKey: key), let records = try? JSONDecoder().decode([ActivityRecord].self, from: data) else { return [] }; return records }
-    static func save(_ records: [ActivityRecord]) { if let data = try? JSONEncoder().encode(records) { UserDefaults.standard.set(data, forKey: key) } }
-    static func append(_ record: ActivityRecord) { save((load() + [record]).sorted { $0.performedAt > $1.performedAt }) }
-}
+import MoveShared
 
 struct HistoryView: View {
-    @State private var records = HistoryStore.load()
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \ActivityEntity.performedAt, order: .reverse) private var activities: [ActivityEntity]
+    @Query private var customExercises: [CustomExerciseEntity]
+    @State private var editingActivity: ActivityEntity?
+    @State private var pendingDeletion: ActivityEntity?
+
     var body: some View {
         NavigationStack {
             List {
-                if records.isEmpty { ContentUnavailableView("Aucune activité", systemImage: "clock", description: Text("Tes mouvements réalisés apparaîtront ici.")) }
-                ForEach(records) { record in
-                    let exercise = ExerciseLibrary.all.first { $0.id == record.exerciseID }
-                    HStack { Text(exercise?.emoji ?? "💪"); VStack(alignment: .leading) { Text(exercise?.name ?? record.exerciseID); Text(record.performedAt, style: .date).font(.caption).foregroundStyle(.secondary) }; Spacer(); Text(record.status == .completed ? "✓" : record.status.rawValue.capitalized).foregroundStyle(record.status == .completed ? .green : .secondary) }
+                if activities.isEmpty {
+                    ContentUnavailableView(
+                        "Aucune activité",
+                        systemImage: "clock",
+                        description: Text("Tes mouvements réalisés apparaîtront ici.")
+                    )
                 }
-            }.navigationTitle("Historique").onAppear { records = HistoryStore.load() }
+                ForEach(activities) { activity in
+                    let exercise = exercise(for: activity.exerciseID)
+                    HStack {
+                        Text(exercise?.emoji ?? "💪")
+                        VStack(alignment: .leading) {
+                            Text(exercise?.name ?? activity.exerciseID)
+                            Text(activity.performedAt, style: .date)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            if activity.statusRaw == ActivityStatus.completed.rawValue {
+                                Text(amountLabel(activity))
+                                    .font(.headline)
+                                    .monospacedDigit()
+                                Text("Terminé")
+                                    .font(.caption)
+                                    .foregroundStyle(.green)
+                            } else {
+                                Text(statusLabel(activity.statusRaw))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture { editingActivity = activity }
+                    .swipeActions {
+                        Button(role: .destructive) {
+                            pendingDeletion = activity
+                        } label: {
+                            Label("Supprimer", systemImage: "trash")
+                        }
+                        Button {
+                            editingActivity = activity
+                        } label: {
+                            Label("Modifier", systemImage: "pencil")
+                        }
+                        .tint(.blue)
+                    }
+                }
+            }
+            .navigationTitle("Historique")
+            .sheet(item: $editingActivity) { activity in
+                iOSActivityAmountEditView(
+                    activity: activity,
+                    exercise: exercise(for: activity.exerciseID)
+                )
+            }
+            .alert("Supprimer ce mouvement ?", isPresented: deletionAlertPresented) {
+                Button("Supprimer", role: .destructive) { deletePendingActivity() }
+                Button("Annuler", role: .cancel) { pendingDeletion = nil }
+            } message: {
+                Text("Cette action supprimera définitivement cette entrée de l’historique.")
+            }
         }
+    }
+
+    private var deletionAlertPresented: Binding<Bool> {
+        Binding(
+            get: { pendingDeletion != nil },
+            set: { if !$0 { pendingDeletion = nil } }
+        )
+    }
+
+    private func exercise(for id: String) -> Exercise? {
+        ExerciseLibrary.all.first { $0.id == id }
+            ?? customExercises.first { $0.id == id }?.exercise
+    }
+
+    private func statusLabel(_ raw: String) -> String {
+        switch ActivityStatus(rawValue: raw) {
+        case .skipped: "Ignoré"
+        case .snoozed: "Reporté"
+        case .replaced: "Remplacé"
+        case .proposed: "Proposé"
+        default: raw.capitalized
+        }
+    }
+
+    private func amountLabel(_ activity: ActivityEntity) -> String {
+        switch ExerciseMetric(rawValue: activity.metricRaw) {
+        case .repetitions: "\(activity.amount) rép."
+        case .seconds: "\(activity.amount) s"
+        case .minutes: "\(activity.amount) min"
+        default: "\(activity.amount)"
+        }
+    }
+
+    private func deletePendingActivity() {
+        guard let activity = pendingDeletion else { return }
+        modelContext.delete(activity)
+        try? modelContext.save()
+        pendingDeletion = nil
     }
 }

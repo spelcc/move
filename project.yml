@@ -23,6 +23,7 @@ targets:
       - Sources/MoveMac
     resources:
       - Sources/MoveMac/Resources
+      - Sources/MoveMac/Resources/AppIcon.icns
     dependencies:
       - package: MoveCore
         product: MoveCore
@@ -32,6 +33,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move
         PRODUCT_NAME: Move
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Sources/MoveMac/Info.plist
         CODE_SIGN_ENTITLEMENTS: Sources/MoveMac/Move.entitlements
   MoveiOS:
@@ -48,10 +50,13 @@ targets:
         product: MoveShared
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move.ios
-        PRODUCT_NAME: Move
+        PRODUCT_BUNDLE_IDENTIFIER: cc.test.spel.move.ios
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Sources/MoveiOS/Info.plist
         CODE_SIGN_ENTITLEMENTS: Sources/MoveiOS/MoveiOS.entitlements
+        CODE_SIGNING_ALLOWED: YES
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: K7S2UA57LP
   MoveWatch:
     type: application
     platform: watchOS
@@ -96,6 +101,12 @@ targets:
     sources:
       - Tests/MoveiOSTests
     testTarget: MoveiOS
+    dependencies:
+      - target: MoveiOS
+      - package: MoveCore
+        product: MoveCore
+      - package: MoveCore
+        product: MoveShared
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cc.spel.move.ios.tests

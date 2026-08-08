@@ -7,6 +7,26 @@ private func date(_ hour: Int, _ minute: Int = 0) -> Date {
     return calendar.date(from: DateComponents(calendar: calendar, year: 2026, month: 8, day: 3, hour: hour, minute: minute))!
 }
 
+@Test func plannerResumesAfterPauseWithoutSchedulingDuringIt() {
+    let calendar = Calendar(identifier: .gregorian)
+    let now = calendar.date(from: DateComponents(year: 2026, month: 8, day: 7, hour: 9))!
+    let pause = calendar.date(byAdding: .hour, value: 2, to: now)!
+    let horizon = calendar.date(byAdding: .day, value: 1, to: now)!
+    var preferences = ReminderPreferences()
+    preferences.enabledWeekdays = Set(1...7)
+    var state = ReminderState()
+    state.pausedUntil = pause
+    let plan = ReminderPlanner().plan(.init(
+        now: now,
+        horizon: horizon,
+        preferences: preferences,
+        state: state,
+        exercises: [ExerciseLibrary.all[0]],
+        calendar: calendar
+    ))
+    #expect(plan.first?.fireDate ?? .distantPast > pause)
+}
+
 @Test func plannerBuildsMoreThanOneReminder() {
     var calendar = Calendar(identifier: .gregorian); calendar.timeZone = TimeZone(secondsFromGMT: 0)!
     let request = ReminderPlanRequest(now: date(8), horizon: date(8).addingTimeInterval(86400), maximumCount: 20, exercises: [ExerciseLibrary.builtIn[0]], calendar: calendar)

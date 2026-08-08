@@ -1,30 +1,124 @@
 import SwiftUI
+import UserNotifications
 import MoveCore
 
 struct iOSReminderSettingsView: View {
-    @AppStorage("move.reminders.enabled") private var enabled = true
-    @AppStorage("move.reminders.host") private var hostRaw = ReminderHostPreference.phoneAndWatch.rawValue
-    @AppStorage("move.reminders.intervalMinutes") private var intervalMinutes = 60
-    @AppStorage("move.reminders.startHour") private var startHour = 9
-    @AppStorage("move.reminders.endHour") private var endHour = 19
-    @AppStorage("move.reminders.snoozeMinutes") private var snoozeMinutes = 15
+    @Bindable var store: iOSAppStore
+
     var body: some View {
-        Form {
-            Section("Rappels") {
-                Toggle("Activer les rappels", isOn: $enabled)
-                Stepper("Fréquence : \(intervalMinutes) min", value: $intervalMinutes, in: 15...180, step: 15)
-                Stepper("Début : \(String(format: "%02d:00", startHour))", value: $startHour, in: 0...23)
-                Stepper("Fin : \(String(format: "%02d:00", endHour))", value: $endHour, in: 1...24)
-                Stepper("Snooze : \(snoozeMinutes) min", value: $snoozeMinutes, in: 5...60, step: 5)
-            Picker("Appareil hôte", selection: $hostRaw) {
-                Text("iPhone et Apple Watch").tag(ReminderHostPreference.phoneAndWatch.rawValue)
-                Text("Mac").tag(ReminderHostPreference.mac.rawValue)
-                Text("Tous les appareils").tag(ReminderHostPreference.all.rawValue)
+        NavigationStack {
+            Form {
+                Section("Rappels") {
+                    Toggle("Activer les rappels", isOn: $store.reminder.enabled)
+                    iOSSettingsStepper(
+                        "Fréquence",
+                        value: $store.reminder.intervalMinutes,
+                        in: 15...180,
+                        step: 15,
+                        valueText: { "\($0) min" }
+                    )
+                    iOSSettingsStepper(
+                        "Début",
+                        value: $store.reminder.activeStartHour,
+                        in: 0...max(0, store.reminder.activeEndHour - 1),
+                        valueText: hour
+                    )
+                    iOSSettingsStepper(
+                        "Fin",
+                        value: $store.reminder.activeEndHour,
+                        in: min(24, store.reminder.activeStartHour + 1)...24,
+                        valueText: hour
+                    )
+                    iOSSettingsStepper(
+                        "Snooze",
+                        value: $store.reminder.snoozeMinutes,
+                        in: 5...60,
+                        step: 5,
+                        valueText: { "\($0) min" }
+                    )
+                }
+
+                Section("Jours actifs") {
+                    ForEach(1...7, id: \.self) { weekday in
+                        Toggle(Calendar.current.weekdaySymbols[weekday - 1], isOn: weekdayBinding(weekday))
+                    }
+                }
+
+                Section("Appareil hôte") {
+                    Picker("Programmer sur", selection: $store.reminderHost) {
+                        Text("iPhone et Apple Watch").tag(ReminderHostPreference.phoneAndWatch)
+                        Text("Mac").tag(ReminderHostPreference.mac)
+                        Text("Tous les appareils").tag(ReminderHostPreference.all)
+                    }
+                    Text(hostExplanation).font(.footnote).foregroundStyle(.secondary)
+                }
+
+                Section("Catalogue") {
+                    NavigationLink {
+                        iOSMovementSettingsView(store: store)
+                    } label: {
+                        Label("Mouvements", systemImage: "list.bullet")
+                    }
+                }
+
+                Section("État") {
+                    notificationStatus
+                    if let next = store.reminderState.nextReminderAt {
+                        LabeledContent("Prochain rappel") {
+                            Text(next, format: .dateTime.weekday().hour().minute())
+                        }
+                    }
+                    if let error = store.schedulingError {
+                        Text(error).font(.footnote).foregroundStyle(.red)
+                    }
+                    Button("Autoriser les notifications") {
+                        Task { _ = await store.requestNotifications() }
+                    }
+                }
             }
-            Text("L’Apple Watch reçoit les rappels de l’iPhone.").font(.footnote).foregroundStyle(.secondary)
-            }
-            Section("À propos") { Text("Les réglages sont enregistrés automatiquement sur cet iPhone.").font(.footnote).foregroundStyle(.secondary) }
-        }
             .navigationTitle("Réglages")
+        }
+        .onChange(of: store.reminder) { _, _ in store.persistSettings() }
+        .onChange(of: store.reminderHost) { _, _ in store.persistSettings() }
+    }
+
+    private var notificationStatus: some View {
+        let label: String
+        let icon: String
+        switch store.notificationStatus {
+        case .authorized, .provisional, .ephemeral:
+            label = "Notifications autorisées"
+            icon = "checkmark.circle.fill"
+        case .denied:
+            label = "Notifications refusées dans iOS"
+            icon = "exclamationmark.triangle.fill"
+        case .notDetermined:
+            label = "Autorisation non demandée"
+            icon = "questionmark.circle"
+        @unknown default:
+            label = "État inconnu"
+            icon = "questionmark.circle"
+        }
+        return Label(label, systemImage: icon)
+    }
+
+    private var hostExplanation: String {
+        switch store.reminderHost {
+        case .phoneAndWatch: "Cet iPhone programme les rappels. L’Apple Watch les relaie."
+        case .mac: "Les rappels sont programmés uniquement par le Mac."
+        case .all: "Mac et iPhone programment les rappels. Des doublons sont possibles."
+        }
+    }
+
+    private func hour(_ value: Int) -> String { String(format: "%02d:00", value) }
+
+    private func weekdayBinding(_ weekday: Int) -> Binding<Bool> {
+        .init(
+            get: { store.reminder.enabledWeekdays.contains(weekday) },
+            set: { enabled in
+                if enabled { store.reminder.enabledWeekdays.insert(weekday) }
+                else { store.reminder.enabledWeekdays.remove(weekday) }
+            }
+        )
     }
 }

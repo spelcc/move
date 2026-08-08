@@ -7,8 +7,9 @@ public struct PlannedReminder: Identifiable, Equatable, Sendable {
     public let fireDate: Date
     public let exerciseID: String
     public let kind: ReminderKind
-    public init(id: String, fireDate: Date, exerciseID: String, kind: ReminderKind) {
-        self.id = id; self.fireDate = fireDate; self.exerciseID = exerciseID; self.kind = kind
+    public let targetAmount: Int?
+    public init(id: String, fireDate: Date, exerciseID: String, kind: ReminderKind, targetAmount: Int? = nil) {
+        self.id = id; self.fireDate = fireDate; self.exerciseID = exerciseID; self.kind = kind; self.targetAmount = targetAmount
     }
 }
 
@@ -44,8 +45,18 @@ public struct ReminderPlanner: Sendable {
             if request.preferences.enabledWeekdays.contains(weekday) {
                 for minute in stride(from: request.preferences.activeStartHour * 60, to: request.preferences.activeEndHour * 60, by: request.preferences.intervalMinutes) {
                     guard let date = request.calendar.date(byAdding: .minute, value: minute, to: day), date > planningStart, date < request.horizon else { continue }
-                    let exercise = selector.next(from: available, preferences: .init(), recentExerciseIDs: request.recentExerciseIDs, seed: stableSeed(date: date, state: request.state))!
-                    result.append(PlannedReminder(id: "move.normal.\(Int(date.timeIntervalSince1970)).\(exercise.id)", fireDate: date, exerciseID: exercise.id, kind: .scheduled))
+                    let exercise: Exercise
+                    let targetAmount: Int?
+                    if request.preferences.greaseTheGrooveEnabled,
+                       let gtgID = request.preferences.greaseTheGrooveExerciseID,
+                       let selected = available.first(where: { $0.id == gtgID }) {
+                        exercise = selected
+                        targetAmount = max(1, request.preferences.greaseTheGrooveRepMax * request.preferences.greaseTheGroovePercentage / 100)
+                    } else {
+                        exercise = selector.next(from: available, preferences: .init(), recentExerciseIDs: request.recentExerciseIDs, seed: stableSeed(date: date, state: request.state))!
+                        targetAmount = nil
+                    }
+                    result.append(PlannedReminder(id: "move.normal.\(Int(date.timeIntervalSince1970)).\(exercise.id)", fireDate: date, exerciseID: exercise.id, kind: .scheduled, targetAmount: targetAmount))
                     if result.count == request.maximumCount { break }
                 }
             }

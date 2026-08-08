@@ -8,6 +8,8 @@ public enum MoveNotificationContent {
     public static let skipAction = "SKIP"
 
     public static func userInfo(for reminder: PlannedReminder) -> [String: String] {
-        ["exerciseID": reminder.exerciseID, "reminderID": reminder.id, "kind": reminder.kind.rawValue]
+        var info = ["exerciseID": reminder.exerciseID, "reminderID": reminder.id, "kind": reminder.kind.rawValue]
+        if let targetAmount = reminder.targetAmount { info["targetAmount"] = String(targetAmount) }
+        return info
     }
 }

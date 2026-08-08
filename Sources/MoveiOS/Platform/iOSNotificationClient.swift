@@ -25,7 +25,8 @@ final class iOSNotificationClient: NSObject, @unchecked Sendable, NotificationCl
             let content = UNMutableNotificationContent()
             content.title = (exercise?.emoji ?? "💪") + " " + (exercise?.name ?? "Bouger")
             content.subtitle = "Pause mouvement"
-            content.body = exercise.map { String($0.defaultAmount) + " " + metricLabel($0.metric) + " — touche pour ouvrir les actions" } ?? "Il est temps de bouger"
+            let amount = reminder.targetAmount ?? exercise?.defaultAmount
+            content.body = exercise.map { String(amount ?? $0.defaultAmount) + " " + metricLabel($0.metric) + " — touche pour ouvrir les actions" } ?? "Il est temps de bouger"
             content.categoryIdentifier = MoveNotificationContent.categoryIdentifier
             content.userInfo = MoveNotificationContent.userInfo(for: reminder)
             let parts = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: reminder.fireDate)

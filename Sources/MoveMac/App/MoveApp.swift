@@ -21,13 +21,19 @@ import MoveShared
         let container: ModelContainer
         var persistenceIssue: String?
         do {
-            container = try ModelContainer(for: schema, migrationPlan: MoveMigrationPlan.self, configurations: configuration)
+            // V1 and V2 currently describe the same models. Passing the no-op
+            // migration plan makes SwiftData construct an invalid lightweight
+            // migration stage on macOS 27 and abort during app startup.
+            container = try ModelContainer(for: schema, configurations: configuration)
         } catch {
             NSLog("Move persistence failed: %@", String(describing: error))
             persistenceIssue = String(describing: error)
-            let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-            container = (try? ModelContainer(for: schema, migrationPlan: MoveMigrationPlan.self, configurations: fallback)) ?? {
-                fatalError("Unable to create Move storage")
+            // A damaged or incompatible on-disk store must not prevent launch.
+            // Keep this session usable and surface the persistence warning in
+            // the menu while the durable store is unavailable.
+            let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            container = (try? ModelContainer(for: schema, configurations: fallback)) ?? {
+                fatalError("Unable to create in-memory Move storage")
             }()
         }
         _persistenceError = State(initialValue: persistenceIssue)

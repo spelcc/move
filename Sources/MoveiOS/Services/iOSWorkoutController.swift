@@ -16,6 +16,7 @@ import MoveShared
 
     private let context: ModelContext
     private var timer: Timer?
+    private var timerDeadline: Date?
     private var stateBeforePause = WorkoutRunnerState.working
     private var preparationConsumed = false
 
@@ -103,16 +104,19 @@ import MoveShared
 
     func addTenSeconds() {
         secondsRemaining += 10
+        if state != .paused { timerDeadline = .now.addingTimeInterval(TimeInterval(secondsRemaining)) }
         saveProgress()
     }
 
     func subtractTenSeconds() {
         secondsRemaining = max(0, secondsRemaining - 10)
+        if state != .paused { timerDeadline = .now.addingTimeInterval(TimeInterval(secondsRemaining)) }
         saveProgress()
     }
 
     func cancel() {
         timer?.invalidate()
+        timerDeadline = nil
         state = .cancelled
         if let session = resumableSession {
             session.stateRaw = WorkoutRunnerState.cancelled.rawValue
@@ -130,11 +134,14 @@ import MoveShared
 
     func tick() {
         guard activeWorkout != nil, state != .paused else { return }
+        if let timerDeadline {
+            secondsRemaining = max(0, Int(ceil(timerDeadline.timeIntervalSinceNow)))
+        }
         if secondsRemaining > 0 {
-            secondsRemaining -= 1
             saveProgress()
             return
         }
+        self.timerDeadline = nil
         switch state {
         case .preparing:
             beginWork()
@@ -255,6 +262,7 @@ import MoveShared
 
     private func startTimer() {
         timer?.invalidate()
+        timerDeadline = .now.addingTimeInterval(TimeInterval(secondsRemaining))
         timer = .scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.tick() }
         }
